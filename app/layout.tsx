@@ -5,32 +5,32 @@ import "./globals.css";
 const deepThoughtFont = localFont({
   src: [
     {
-      path: "deepthought-bubbles\src\app\fonts\GenSenRounded2TW-EL.otf",
+      path: "../src/app/fonts/GenSenRounded2TW-EL.otf",
       weight: "200",
       style: "normal",
     },
     {
-      path: "deepthought-bubbles\src\app\fonts\GenSenRounded2TW-L.otf",
+      path: "../src/app/fonts/GenSenRounded2TW-L.otf",
       weight: "300",
       style: "normal",
     },
     {
-      path: "deepthought-bubbles\src\app\fonts\GenSenRounded2TW-R.otf",
+      path: "../src/app/fonts/GenSenRounded2TW-R.otf",
       weight: "400",
       style: "normal",
     },
     {
-      path: "deepthought-bubbles\src\app\fonts\GenSenRounded2TW-M.otf",
+      path: "../src/app/fonts/GenSenRounded2TW-M.otf",
       weight: "500",
       style: "normal",
     },
     {
-      path: "deepthought-bubbles\src\app\fonts\GenSenRounded2TW-B.otf",
+      path: "../src/app/fonts/GenSenRounded2TW-B.otf",
       weight: "700",
       style: "normal",
     },
     {
-      path: "deepthought-bubbles\src\app\fonts\GenSenRounded2TW-H.otf",
+      path: "../src/app/fonts/GenSenRounded2TW-H.otf",
       weight: "900",
       style: "normal",
     },
@@ -58,7 +58,7 @@ export default function RootLayout({
         <div className="min-h-screen bg-blue-900 md:bg-blue-900/80 md:backdrop-blur-md">
           {/* Desktop 深色遮罩層，讓中間容器更突出 */}
           <div className="hidden md:block fixed inset-0 bg-black/20 pointer-events-none" />
-          
+
           {/* 內層主容器：RWD 響應式設計 */}
           <div className="min-h-screen bg-blue-900 md:max-w-[430px] md:mx-auto md:shadow-2xl">
             {children}

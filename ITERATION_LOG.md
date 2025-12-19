@@ -2,6 +2,7 @@
 
 ## 修改歷史
 
+- [2025/12/19 23:53 v0.27] 檔案: `.ai-rules.md` | 內容: 追加「程式碼潔淨規範」章節，明確禁止在程式碼（含註解、字串、變數名）中使用 Emoji，對話中允許使用；掃描 src、app、components 目錄確認無 Emoji 存在 | 原因: 確保程式碼維持純文字格式，提升跨平台相容性與可讀性
 - [2025-12-19 v0.26] 檔案: `app/layout.tsx`, `tailwind.config.ts` | 內容: 設定專案本地字體 GenSenRounded2TW，使用 `next/font/local` 載入 6 個字重（ExtraLight 200、Light 300、Regular 400、Medium 500、Bold 700、Heavy 900），設定 CSS 變數為 `--font-deepthought`，將 `deepThoughtFont.variable` 加入 body className，在 tailwind.config.ts 中將 `var(--font-deepthought)` 設為 fontFamily.sans 的首選字體，保留系統字體作為後備 | 原因: 使用專案品牌字體 GenSenRounded2TW，提升視覺一致性和品牌識別度
 - [2025-12-19 v0.25] 檔案: `src/components/DiveView.tsx` | 內容: 實作初次進入時的歡迎訊息功能，新增 `showWelcome` 和 `isFading` 狀態管理，將原本的 HUD 層改為全螢幕歡迎畫面（fixed inset-0，flex 置中），點擊空白處後觸發 300ms 漸淡動畫消失，歡迎訊息顯示時畫布設為 opacity-0 pointer-events-none，消失後畫布正常顯示，所有間距值符合 4px/8px 倍數規範 | 原因: 提升使用者體驗，初次進入時顯示歡迎訊息引導使用者，點擊後平滑過渡到主畫面
 - [2025-12-19 v0.24] 檔案: `src/components/DiveView.tsx` | 內容: 修正裝飾性背景元素位置，將 `top-[-300px]` 改為 `top-[-304px]`，確保符合 VIBE 規範的 8px 倍數間距要求 | 原因: 符合 PRD 規範檢查，確保所有間距值為 4px 或 8px 的倍數
