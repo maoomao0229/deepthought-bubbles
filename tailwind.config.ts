@@ -49,8 +49,9 @@ const config: Config = {
         },
       },
       fontFamily: {
-        // 預設使用無襯線字體
+        // 使用本地字體 GenSenRounded2TW 作為首選，保留系統字體作為後備
         sans: [
+          "var(--font-deepthought)",
           "system-ui",
           "-apple-system",
           "BlinkMacSystemFont",

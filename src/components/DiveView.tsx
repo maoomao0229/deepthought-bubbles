@@ -240,6 +240,10 @@ const getDepthConfig = (depth: number): DepthConfig => {
 const DiveView = ({ onSend }: { onSend: (content: string) => void }) => {
   const [selectedTopic, setSelectedTopic] = useState<SeedTopic | null>(null);
 
+  // 歡迎訊息狀態管理
+  const [showWelcome, setShowWelcome] = useState(true); // 控制歡迎訊息顯示
+  const [isFading, setIsFading] = useState(false); // 控制漸淡動畫狀態
+
   // 畫布位移狀態
   const [panPosition, setPanPosition] = useState({ x: 0, y: 0 });
 
@@ -333,6 +337,19 @@ const DiveView = ({ onSend }: { onSend: (content: string) => void }) => {
     }
   };
 
+  // 處理歡迎訊息點擊（點擊空白處漸淡消失）
+  const handleWelcomeClick = () => {
+    if (!showWelcome || isFading) return; // 如果已經隱藏或正在動畫中，不處理
+
+    setIsFading(true); // 開始漸淡動畫
+
+    // 300ms 後完全隱藏（動畫時長）
+    setTimeout(() => {
+      setShowWelcome(false);
+      setIsFading(false);
+    }, 300);
+  };
+
   // 全域 MouseUp 監聽以確保拖曳結束
   useEffect(() => {
     const handleGlobalUp = () => {
@@ -349,23 +366,43 @@ const DiveView = ({ onSend }: { onSend: (content: string) => void }) => {
 
   return (
     <div className="h-full relative overflow-hidden bg-blue-900/50">
-      {/* 1. HUD 層 (固定 UI) */}
-      <div className="absolute top-0 left-0 w-full px-6 py-4 z-20 pointer-events-none text-center mt-2">
-        <h2 className="text-2xl font-light text-blue-100 leading-relaxed drop-shadow-lg">
-          早安，座頭鯨。
-          <br />
-          請選擇一顆<span className="text-green-300 font-medium">思想的種子</span>。
-        </h2>
-        <p className="text-xs text-blue-300/80 mt-2 tracking-widest flex justify-center items-center gap-2">
-          <Move size={12} className="animate-pulse" />
-          拖曳海域以探索更多氣泡
-        </p>
-      </div>
+      {/* 1. 歡迎訊息層 (初次進入時顯示，點擊後漸淡消失) */}
+      {showWelcome && (
+        <div
+          className={`
+            fixed inset-0 z-50 flex items-center justify-center
+            bg-blue-900/80 backdrop-blur-xl
+            transition-opacity duration-300 ease-out
+            ${isFading ? "opacity-0" : "opacity-100"}
+            cursor-pointer
+          `}
+          onClick={handleWelcomeClick}
+        >
+          <div className="text-center px-6 py-8 pointer-events-none">
+            <h2 className="text-2xl md:text-3xl font-light text-blue-100 leading-relaxed drop-shadow-lg mb-4">
+              歡迎，座頭鯨。
+              <br />
+              潛入海中<span className="text-yellow-300 font-medium">捕捉知識</span>。
+            </h2>
+            <p className="text-xs text-blue-300/80 mt-4 tracking-widest flex justify-center items-center gap-2">
+              <Move size={12} className="animate-pulse" />
+              點擊任意處開始狩獵
+            </p>
+          </div>
+        </div>
+      )}
 
-      {/* 2. World 層 (可拖曳畫布) */}
+      {/* 2. World 層 (可拖曳畫布) - 歡迎訊息消失後才顯示 */}
       <div
-        ref={containerRef}
-        className="w-full h-full cursor-grab active:cursor-grabbing touch-none"
+        className={`
+          w-full h-full
+          ${showWelcome ? "opacity-0 pointer-events-none" : "opacity-100 pointer-events-auto"}
+          transition-opacity duration-300
+        `}
+      >
+        <div
+          ref={containerRef}
+          className="w-full h-full cursor-grab active:cursor-grabbing touch-none"
         onMouseDown={handlePointerDown}
         onMouseMove={handlePointerMove}
         onMouseUp={handlePointerUp}
@@ -401,9 +438,10 @@ const DiveView = ({ onSend }: { onSend: (content: string) => void }) => {
           ))}
 
           {/* 裝飾性背景元素 */}
-          <div className="absolute top-[-300px] left-[-200px] w-[500px] h-[500px] bg-blue-500/5 rounded-full blur-[100px] pointer-events-none -z-10" />
+          <div className="absolute top-[-304px] left-[-200px] w-[500px] h-[500px] bg-blue-500/5 rounded-full blur-[100px] pointer-events-none -z-10" />
           <div className="absolute top-[100px] left-[200px] w-[300px] h-[300px] bg-indigo-500/5 rounded-full blur-[80px] pointer-events-none -z-10" />
         </div>
+      </div>
       </div>
 
       {/* 3. 互動 Modal */}

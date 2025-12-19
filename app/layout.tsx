@@ -1,15 +1,42 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+const deepThoughtFont = localFont({
+  src: [
+    {
+      path: "deepthought-bubbles\src\app\fonts\GenSenRounded2TW-EL.otf",
+      weight: "200",
+      style: "normal",
+    },
+    {
+      path: "deepthought-bubbles\src\app\fonts\GenSenRounded2TW-L.otf",
+      weight: "300",
+      style: "normal",
+    },
+    {
+      path: "deepthought-bubbles\src\app\fonts\GenSenRounded2TW-R.otf",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "deepthought-bubbles\src\app\fonts\GenSenRounded2TW-M.otf",
+      weight: "500",
+      style: "normal",
+    },
+    {
+      path: "deepthought-bubbles\src\app\fonts\GenSenRounded2TW-B.otf",
+      weight: "700",
+      style: "normal",
+    },
+    {
+      path: "deepthought-bubbles\src\app\fonts\GenSenRounded2TW-H.otf",
+      weight: "900",
+      style: "normal",
+    },
+  ],
+  variable: "--font-deepthought",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -25,7 +52,7 @@ export default function RootLayout({
   return (
     <html lang="zh-TW">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-blue-900 text-gray-50`}
+        className={`${deepThoughtFont.variable} antialiased bg-blue-900 text-gray-50`}
       >
         {/* 外層容器：全螢幕背景，Desktop 時加上模糊效果或深色遮罩 */}
         <div className="min-h-screen bg-blue-900 md:bg-blue-900/80 md:backdrop-blur-md">

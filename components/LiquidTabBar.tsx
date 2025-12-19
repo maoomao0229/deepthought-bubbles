@@ -85,7 +85,7 @@ const LiquidTabBar: React.FC<LiquidTabBarProps> = ({ currentView, onChange }) =>
           className="magic-indicator absolute w-[65px] h-[65px] bg-blue-900 rounded-full border-4 border-[#204a6e] transition-all duration-500 ease-out shadow-[0_4px_12px_0_rgba(0,0,0,0.15)]"
           style={{
             left: `${indicatorLeft}px`,
-            top: "-30px",
+            top: "-32px",
           }}
         ></div>
 
@@ -107,7 +107,7 @@ const LiquidTabBar: React.FC<LiquidTabBarProps> = ({ currentView, onChange }) =>
                 {/* 圖標容器：啟用時會向上移動並放大，確保在圓圈內置中 */}
                 <div
                   className={`relative flex items-center justify-center z-20 transition-all duration-500 ease-out ${
-                    isActive ? "-translate-y-[30px] scale-110" : "translate-y-0 text-white/50"
+                    isActive ? "-translate-y-[32px] scale-110" : "translate-y-0 text-white/50"
                   }`}
                 >
                   <IconComponent
