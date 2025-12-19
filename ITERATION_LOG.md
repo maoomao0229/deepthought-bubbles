@@ -2,6 +2,8 @@
 
 ## 修改歷史
 
+- [2025/12/20 00:32 v0.29] 檔案: `app/globals.css` | 內容: 在 @theme 區塊後新增 body 樣式，直接設定 font-family 使用 var(--font-deepthought) 作為首選字體，確保自訂字體 GenSenRounded2TW 能正確覆蓋 Tailwind 預設值並套用到整個頁面 | 原因: 修正字體未自動套用的問題，確保專案品牌字體正確顯示圓體效果
+- [2025/12/20 00:15 v0.28] 檔案: `next.config.ts` | 內容: 新增 turbopack.root 設定為 __dirname，解決因中文路徑「深思氣泡」導致 Turbopack 發生 byte boundary panic 的問題 | 原因: 修復 Turbopack 無法正確處理中文路徑的 Bug，確保開發伺服器正常運作
 - [2025/12/19 23:53 v0.27] 檔案: `.ai-rules.md` | 內容: 追加「程式碼潔淨規範」章節，明確禁止在程式碼（含註解、字串、變數名）中使用 Emoji，對話中允許使用；掃描 src、app、components 目錄確認無 Emoji 存在 | 原因: 確保程式碼維持純文字格式，提升跨平台相容性與可讀性
 - [2025-12-19 v0.26] 檔案: `app/layout.tsx`, `tailwind.config.ts` | 內容: 設定專案本地字體 GenSenRounded2TW，使用 `next/font/local` 載入 6 個字重（ExtraLight 200、Light 300、Regular 400、Medium 500、Bold 700、Heavy 900），設定 CSS 變數為 `--font-deepthought`，將 `deepThoughtFont.variable` 加入 body className，在 tailwind.config.ts 中將 `var(--font-deepthought)` 設為 fontFamily.sans 的首選字體，保留系統字體作為後備 | 原因: 使用專案品牌字體 GenSenRounded2TW，提升視覺一致性和品牌識別度
 - [2025-12-19 v0.25] 檔案: `src/components/DiveView.tsx` | 內容: 實作初次進入時的歡迎訊息功能，新增 `showWelcome` 和 `isFading` 狀態管理，將原本的 HUD 層改為全螢幕歡迎畫面（fixed inset-0，flex 置中），點擊空白處後觸發 300ms 漸淡動畫消失，歡迎訊息顯示時畫布設為 opacity-0 pointer-events-none，消失後畫布正常顯示，所有間距值符合 4px/8px 倍數規範 | 原因: 提升使用者體驗，初次進入時顯示歡迎訊息引導使用者，點擊後平滑過渡到主畫面
