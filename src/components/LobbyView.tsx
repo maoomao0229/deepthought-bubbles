@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Waves, Search, Filter, X, Send, MessageSquare } from "lucide-react";
+import { Waves, Search, Filter, X, Send, MessageSquare, Plus } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 
 interface LobbyViewProps {
@@ -76,7 +76,15 @@ const LobbyView = ({ bubbles, onSend }: LobbyViewProps) => {
     // 根據分類過濾主泡泡
     const filteredBubbles = activeCategory === "all"
         ? bubbles
-        : bubbles.filter(b => b.category?.toLowerCase() === activeCategory);
+        : bubbles.filter(b => {
+            const cat = b.category?.toLowerCase();
+            if (activeCategory === "blue") return cat === "blue" || cat === "時事";
+            if (activeCategory === "philosophy") return cat === "philosophy" || cat === "心理";
+            if (activeCategory === "culture") return cat === "culture" || cat === "文化";
+            return cat === activeCategory;
+        });
+
+    const [isNewBubbleOpen, setIsNewBubbleOpen] = useState(false);
 
     return (
         <div className="w-full h-full bg-blue-900/40 backdrop-blur-sm overflow-y-auto pb-24">
@@ -87,8 +95,17 @@ const LobbyView = ({ bubbles, onSend }: LobbyViewProps) => {
                         <Waves className="text-blue-400" />
                         意識大廳
                     </h1>
-                    <div className="p-2 bg-white/5 rounded-full text-blue-300">
-                        <Search size={20} />
+                    <div className="flex items-center gap-3">
+                        <button
+                            onClick={() => setIsNewBubbleOpen(true)}
+                            className="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-400 text-white rounded-full text-xs font-bold transition-all shadow-lg shadow-blue-500/20 active:scale-95"
+                        >
+                            <Plus size={14} />
+                            發起思考
+                        </button>
+                        <div className="p-2 bg-white/5 rounded-full text-blue-300">
+                            <Search size={20} />
+                        </div>
                     </div>
                 </div>
 
@@ -141,7 +158,7 @@ const LobbyView = ({ bubbles, onSend }: LobbyViewProps) => {
                                 </div>
                                 <div className="flex items-center gap-1.5 text-[10px] text-blue-400/40">
                                     <MessageSquare size={10} />
-                                    <span>對話中</span>
+                                    <span>深度對話</span>
                                 </div>
                             </div>
                         </div>
@@ -156,7 +173,7 @@ const LobbyView = ({ bubbles, onSend }: LobbyViewProps) => {
                 )}
             </div>
 
-            {/* Reply Thread Drawer/Modal */}
+            {/* Modals */}
             {selectedBubble && (
                 <div className="fixed inset-0 z-50 flex items-end justify-center md:items-center p-0 md:p-4">
                     <div className="absolute inset-0 bg-blue-950/80 backdrop-blur-md" onClick={() => setSelectedBubble(null)} />
@@ -182,8 +199,9 @@ const LobbyView = ({ bubbles, onSend }: LobbyViewProps) => {
                             <div className="space-y-4">
                                 <div className="flex items-center gap-2">
                                     <span className="text-[10px] px-2 py-0.5 bg-blue-500/20 text-blue-300 rounded border border-blue-500/30 uppercase font-bold">
-                                        主泡泡
+                                        主題
                                     </span>
+                                    <span className="text-[10px] text-blue-400/60 lowercase italic">繼承分類: {selectedBubble.category}</span>
                                 </div>
                                 <p className="text-lg text-white font-light leading-relaxed">
                                     {selectedBubble.content}
@@ -253,8 +271,52 @@ const LobbyView = ({ bubbles, onSend }: LobbyViewProps) => {
                                 </button>
                             </div>
                             <p className="text-[9px] text-blue-400/40 mt-2 ml-2 tracking-wider">
-                                按下發送以匯入意識流
+                                回應將標註為靛色以示區隔
                             </p>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* 發布新主題 Modal */}
+            {isNewBubbleOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+                    <div className="absolute inset-0 bg-blue-950/80 backdrop-blur-md" onClick={() => setIsNewBubbleOpen(false)} />
+                    <div className="relative w-full max-w-lg bg-blue-900/90 backdrop-blur-2xl border border-white/10 shadow-2xl rounded-4xl p-8 flex flex-col items-center animate-scale-up">
+                        <button onClick={() => setIsNewBubbleOpen(false)} className="absolute top-6 right-6 p-2 rounded-full hover:bg-white/10 text-blue-200">
+                            <X size={24} />
+                        </button>
+                        <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mb-6 border border-blue-500/30 shadow-lg shadow-blue-500/10">
+                            <Plus size={32} className="text-blue-300" />
+                        </div>
+                        <h2 className="text-2xl font-bold text-white mb-2 tracking-tight">發起新的思考</h2>
+                        <p className="text-blue-300/60 text-sm mb-8 text-center">在此海域釋放一個主氣泡，啟發更多潛水員的共鳴</p>
+
+                        <div className="w-full space-y-4">
+                            <textarea
+                                value={replyContent}
+                                onChange={(e) => setReplyContent(e.target.value)}
+                                placeholder="捕捉你的意識流..."
+                                className="w-full h-40 bg-blue-950/30 rounded-2xl p-5 text-gray-50 placeholder-blue-400/30 resize-none focus:outline-none focus:ring-1 focus:ring-blue-500/50 border border-white/10 leading-relaxed transition-all"
+                                autoFocus
+                            />
+                            <button
+                                onClick={async () => {
+                                    if (!replyContent.trim() || isSubmitting) return;
+                                    setIsSubmitting(true);
+                                    await onSend(replyContent, null); // 顯式發送 parent_id: null
+                                    setReplyContent("");
+                                    setIsSubmitting(false);
+                                    setIsNewBubbleOpen(false);
+                                }}
+                                disabled={!replyContent.trim() || isSubmitting}
+                                className={`w-full py-4 rounded-full text-base font-bold tracking-widest transition-all shadow-xl shadow-blue-500/10 ${replyContent.trim() && !isSubmitting
+                                    ? "bg-linear-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white transform hover:scale-[1.02]"
+                                    : "bg-blue-800/50 text-blue-500/50 cursor-not-allowed border border-white/5"
+                                    }`}
+                            >
+                                {isSubmitting ? "正在浮出水面..." : "釋放氣泡"}
+                            </button>
                         </div>
                     </div>
                 </div>

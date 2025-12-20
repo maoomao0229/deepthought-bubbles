@@ -2,6 +2,7 @@
 
 ## 修改歷史
 
+- [2025/12/20 20:30 v0.39] 檔案: `src/components/DiveView.tsx`, `src/components/LobbyView.tsx` | 內容: 完成潛入與大廳視圖的邏輯校正；為 `DiveView` 補齊留言清單與發送功能；於兩大視圖加入發布「新主題氣泡（parent_id: null）」的專屬入口；優化分類名稱與色彩映射的準確性 | 原因: 提供跨視圖的一致性體驗，確保使用者無論在畫布或大廳都能進行社交互動與內容發布，並校正資料讀寫邏輯
 - [2025/12/20 20:25 v0.38] 檔案: `app/page.tsx`, `src/components/LobbyView.tsx` | 內容: 校正氣泡讀取與寫入邏輯，顯式區分貼文（parent_id: null）與留言；統一 `handleSend` 進入點並支援分類繼承，確保回覆能延續主貼文分類顏色 | 原因: 符合資料庫結構規範，確保視圖層級正確，並透過邏輯統一提升系統穩定性與使用者體驗
 - [2025/12/20 20:15 v0.37] 檔案: `src/components/LobbyView.tsx` | 內容: 實作泡泡回覆功能（Bubble Threading），包含子氣泡抓取與發送邏輯；優化回覆視覺，採用 `indigo-500` (#6571BC) 顏色標記以區隔主從關係 | 原因: 增強社交互動性，讓使用者能針對特定思考進行深度對話，並透過視覺層級區分主氣泡與回覆
 - [2025/12/20 20:10 v0.36] 檔案: `src/components/LobbyView.tsx`, `src/components/DiveView.tsx`, `app/page.tsx` | 內容: 實作統一資料層，讓 Dive 與 Lobby 共享主氣泡資料（parent_id 為空）；重構 DiveView 支援外部 Props 並移除假資料；建立 LobbyView 分類大廳視圖 | 原因: 確保資料一致性，讓使用者在不同視圖間能看到即時同步的思考氣泡，並符合企劃書對大廳功能的定義
