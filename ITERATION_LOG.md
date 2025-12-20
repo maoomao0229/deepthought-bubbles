@@ -2,6 +2,7 @@
 
 ## 修改歷史
 
+- [2025/12/20 20:25 v0.38] 檔案: `app/page.tsx`, `src/components/LobbyView.tsx` | 內容: 校正氣泡讀取與寫入邏輯，顯式區分貼文（parent_id: null）與留言；統一 `handleSend` 進入點並支援分類繼承，確保回覆能延續主貼文分類顏色 | 原因: 符合資料庫結構規範，確保視圖層級正確，並透過邏輯統一提升系統穩定性與使用者體驗
 - [2025/12/20 20:15 v0.37] 檔案: `src/components/LobbyView.tsx` | 內容: 實作泡泡回覆功能（Bubble Threading），包含子氣泡抓取與發送邏輯；優化回覆視覺，採用 `indigo-500` (#6571BC) 顏色標記以區隔主從關係 | 原因: 增強社交互動性，讓使用者能針對特定思考進行深度對話，並透過視覺層級區分主氣泡與回覆
 - [2025/12/20 20:10 v0.36] 檔案: `src/components/LobbyView.tsx`, `src/components/DiveView.tsx`, `app/page.tsx` | 內容: 實作統一資料層，讓 Dive 與 Lobby 共享主氣泡資料（parent_id 為空）；重構 DiveView 支援外部 Props 並移除假資料；建立 LobbyView 分類大廳視圖 | 原因: 確保資料一致性，讓使用者在不同視圖間能看到即時同步的思考氣泡，並符合企劃書對大廳功能的定義
 - [2025/12/20 18:33 v0.35] 檔案: `app/page.tsx` | 內容: 強化 `handleSend` 邏輯，新增 `is_anonymous` 訪客轉化提示機制；優化寫入失敗時的 Yellow UI 錯誤回饋 | 原因: 提升產品轉化率，引導訪客轉換為註冊使用者，並確保錯誤提示符合視覺規範

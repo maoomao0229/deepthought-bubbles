@@ -6,13 +6,14 @@ import { supabase } from "@/lib/supabaseClient";
 
 interface LobbyViewProps {
     bubbles: any[];
+    onSend: (content: string, parentId?: string | null, category?: string) => Promise<void>;
 }
 
 /**
  * 泡泡大廳視圖
  * 顯示所有海域的主泡泡，支援分類過濾與深度回覆
  */
-const LobbyView = ({ bubbles }: LobbyViewProps) => {
+const LobbyView = ({ bubbles, onSend }: LobbyViewProps) => {
     const [activeCategory, setActiveCategory] = useState<string>("all");
     const [selectedBubble, setSelectedBubble] = useState<any | null>(null);
     const [replies, setReplies] = useState<any[]>([]);
@@ -54,39 +55,22 @@ const LobbyView = ({ bubbles }: LobbyViewProps) => {
 
     /**
      * 發送回覆邏輯
+     * 統一使用父組件傳入的 onSend 以維持邏輯一致性（含訪客提示與同步機制）
      */
     const handleSendReply = async () => {
         if (!replyContent.trim() || !selectedBubble || isSubmitting) return;
 
         setIsSubmitting(true);
-        const { data: sessionData } = await supabase.auth.getSession();
-        const userId = sessionData.session?.user.id;
-
-        if (!userId) {
-            alert("請先登入以發表回覆");
-            setIsSubmitting(false);
-            return;
-        }
-
-        const { error } = await supabase.from("bubbles").insert([
-            {
-                content: replyContent,
-                user_id: userId,
-                parent_id: selectedBubble.id,
-                category: selectedBubble.category, // 跟隨主氣泡分類
-                x_position: 0, // 回覆氣泡暫不需畫布座標
-                y_position: 0,
-            },
-        ]);
-
-        if (error) {
-            console.error("回覆失敗:", error.message);
-            alert("⚠️ 回覆失敗，請稍後再試。");
-        } else {
+        try {
+            // 傳遞內容、父 ID 以及繼承主泡泡的分類
+            await onSend(replyContent, selectedBubble.id, selectedBubble.category);
             setReplyContent("");
-            fetchReplies(selectedBubble.id); // 重新整理列表
+            fetchReplies(selectedBubble.id); // 成功後重新整理回覆列表
+        } catch (err) {
+            console.error("回覆發送過程出錯:", err);
+        } finally {
+            setIsSubmitting(false);
         }
-        setIsSubmitting(false);
     };
 
     // 根據分類過濾主泡泡

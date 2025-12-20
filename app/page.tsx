@@ -68,16 +68,15 @@ export default function Home() {
    * 將氣泡寫入 Supabase 資料庫，並針對訪客身分提供轉化建議
    * 
    * @param content - 使用者輸入的思考內容
+   * @param parentId - 父氣泡 ID (選填，若為 null 則視為主題貼文)
+   * @param category - 分類 (選填，預設為 'Blue')
    */
-  const handleSend = async (content: string) => {
+  const handleSend = async (content: string, parentId: string | null = null, category: string = "Blue") => {
     // 確認使用者已登入
     if (!session?.user?.id) {
       console.error("使用者未登入，無法發送氣泡");
       return;
     }
-
-    // 根據企劃書，預設分類為 'Blue'
-    const category = "Blue";
 
     // 隨機生成位置 (0 到 100 範圍的浮點數)
     const xPosition = Math.random() * 100;
@@ -89,7 +88,8 @@ export default function Home() {
         category: category,
         x_position: xPosition,
         y_position: yPosition,
-        user_id: session.user.id, // 使用真實的使用者 ID
+        user_id: session.user.id,
+        parent_id: parentId, // 顯式區分貼文 (null) 與留言 (id)
       },
     ]);
 
@@ -100,8 +100,8 @@ export default function Home() {
     } else {
       console.log("氣泡已成功寫入資料庫");
 
-      // 同步機制：發文成功後重新抓取
-      fetchBubbles();
+      // 同步機制：發文成功後重新抓取主列表 (僅在發布主題貼文時)
+      if (!parentId) fetchBubbles();
 
       // 轉化機制 (Conversion Logic)
       if (session.user.is_anonymous) {
@@ -123,7 +123,7 @@ export default function Home() {
         return <DiveView bubbles={bubbles} onSend={handleSend} />;
       case "lobby":
         // 泡泡大廳：顯示所有海域的主泡泡
-        return <LobbyView bubbles={bubbles} />;
+        return <LobbyView bubbles={bubbles} onSend={handleSend} />;
       case "sonar":
         return (
           <div className="w-full h-full flex items-center justify-center">
