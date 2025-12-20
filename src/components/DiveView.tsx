@@ -127,11 +127,13 @@ TopicBubble.displayName = "TopicBubble";
 const DiveModal = ({
   topic,
   onClose,
-  onSend
+  onSend,
+  isUnlocked
 }: {
   topic: SeedTopic;
   onClose: () => void;
   onSend: (content: string, parentId?: string | null, category?: string) => Promise<void>;
+  isUnlocked: boolean;
 }) => {
   const [inputValue, setInputValue] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -199,36 +201,47 @@ const DiveModal = ({
             </div>
           </div>
 
-          {/* Replies Thread */}
-          <div className="space-y-6">
-            <div className="flex items-center gap-3">
-              <div className="h-px flex-1 bg-white/5" />
-              <span className="text-[10px] text-blue-400/40 font-bold uppercase tracking-[0.2em]">共鳴回響 ({replies.length})</span>
-              <div className="h-px flex-1 bg-white/5" />
-            </div>
+          {/* Replies Thread: 僅在解鎖後顯示 */}
+          {isUnlocked ? (
+            <div className="space-y-6">
+              <div className="flex items-center gap-3">
+                <div className="h-px flex-1 bg-white/5" />
+                <span className="text-[10px] text-blue-400/40 font-bold uppercase tracking-[0.2em]">共鳴回響 ({replies.length})</span>
+                <div className="h-px flex-1 bg-white/5" />
+              </div>
 
-            {replies.length > 0 ? (
-              <div className="space-y-4">
-                {replies.map((reply) => (
-                  <div key={reply.id} className="flex gap-4 animate-fade-in">
-                    <div className="shrink-0 w-8 h-8 rounded-full bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
-                      <Waves size={14} />
+              {replies.length > 0 ? (
+                <div className="space-y-4">
+                  {replies.map((reply) => (
+                    <div key={reply.id} className="flex gap-4 animate-fade-in">
+                      <div className="shrink-0 w-8 h-8 rounded-full bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
+                        <Waves size={14} />
+                      </div>
+                      <div className="flex-1 bg-indigo-500/5 border border-indigo-500/10 rounded-2xl p-4">
+                        <p className="text-sm text-blue-50 font-light leading-relaxed">{reply.content}</p>
+                        <span className="text-[9px] text-blue-400/30 mt-2 block">
+                          {new Date(reply.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      </div>
                     </div>
-                    <div className="flex-1 bg-indigo-500/5 border border-indigo-500/10 rounded-2xl p-4">
-                      <p className="text-sm text-blue-50 font-light leading-relaxed">{reply.content}</p>
-                      <span className="text-[9px] text-blue-400/30 mt-2 block">
-                        {new Date(reply.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </span>
-                    </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-6 opacity-20 italic text-sm text-blue-200">
+                  深海寂靜，正在等待你的共鳴...
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="py-12 flex flex-col items-center justify-center space-y-4 animate-pulse">
+              <div className="w-12 h-12 bg-white/5 rounded-full flex items-center justify-center border border-white/10 text-white/20">
+                <MessageSquare size={20} />
               </div>
-            ) : (
-              <div className="text-center py-6 opacity-20 italic text-sm text-blue-200">
-                深海寂靜，正在等待你的共鳴...
-              </div>
-            )}
-          </div>
+              <p className="text-[10px] text-blue-400/30 font-bold uppercase tracking-[0.2em] text-center">
+                完成今日換氣後<br />即可觀測他人的意識回響
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Input Area */}
@@ -522,6 +535,7 @@ const DiveView = ({
           topic={selectedTopic}
           onClose={() => setSelectedTopic(null)}
           onSend={onSend}
+          isUnlocked={isUnlocked}
         />
       )}
       {isNewBubbleOpen && (

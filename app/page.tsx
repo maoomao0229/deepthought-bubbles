@@ -39,7 +39,6 @@ export default function Home() {
       .from("bubbles")
       .select("id")
       .eq("user_id", userId)
-      .is("parent_id", null)
       .gte("created_at", todayStart)
       .lt("created_at", tomorrowStart)
       .limit(1);
@@ -123,11 +122,9 @@ export default function Home() {
     } else {
       console.log("氣泡已成功寫入資料庫");
 
-      // 同步機制
-      if (!parentId) {
-        setIsUnlocked(true); // 立即手動解鎖，提供即時反饋
-        fetchBubbles();
-      }
+      // 同步機制：只要發送成功就解鎖
+      setIsUnlocked(true);
+      fetchBubbles();
 
       if (session.user.is_anonymous) {
         alert("這筆思考已紀錄！由於你是以訪客身分登入，建議註冊 Email 以永久保存你的肺活量與資料。");
