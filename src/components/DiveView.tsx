@@ -450,8 +450,8 @@ const DiveView = ({
 
       {/* 鎖定狀態下的發佈按鈕 (強引導) */}
       {!isUnlocked && !showWelcome && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center z-30 p-6 animate-fade-in">
-          <div className="bg-blue-900/60 backdrop-blur-2xl border border-white/10 p-8 rounded-4xl max-w-sm w-full shadow-2xl space-y-6 text-center">
+        <div className="absolute inset-0 flex flex-col items-center justify-center z-30 p-6 animate-fade-in pointer-events-none">
+          <div className="bg-blue-900/60 backdrop-blur-2xl border border-white/10 p-8 rounded-4xl max-w-sm w-full shadow-2xl space-y-6 text-center pointer-events-auto">
             <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-2 border border-blue-500/30">
               <Feather size={28} className="text-blue-300" />
             </div>
@@ -459,7 +459,7 @@ const DiveView = ({
             <p className="text-blue-300/60 text-sm leading-relaxed">發布一個今日思考主題，即可解鎖意識海域與大廳對話。</p>
             <button
               onClick={() => setIsNewBubbleOpen(true)}
-              className="w-full py-4 bg-linear-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white rounded-full font-bold tracking-widest transition-all shadow-xl shadow-blue-500/20"
+              className="w-full py-4 bg-linear-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white rounded-full font-bold tracking-widest transition-all shadow-xl shadow-blue-500/20 active:scale-95"
             >
               釋放今日第一氣泡
             </button>

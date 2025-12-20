@@ -30,19 +30,18 @@ export default function Home() {
    * 檢查當前使用者今天是否已完成潛入 (發布主題貼文)
    */
   const checkDailyDive = async (userId: string) => {
-    // 取得今天的開始與結束時間
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
+    // 使用本地時間判定今天是否存在紀錄 (避免 UTC 換日誤差)
+    const now = new Date();
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
+    const tomorrowStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1).toISOString();
 
     const { data, error } = await supabase
       .from("bubbles")
       .select("id")
       .eq("user_id", userId)
       .is("parent_id", null)
-      .gte("created_at", today.toISOString())
-      .lt("created_at", tomorrow.toISOString())
+      .gte("created_at", todayStart)
+      .lt("created_at", tomorrowStart)
       .limit(1);
 
     if (error) {
@@ -89,6 +88,9 @@ export default function Home() {
       if (session) {
         fetchBubbles();
         checkDailyDive(session.user.id);
+      } else {
+        setIsUnlocked(false);
+        setBubbles([]);
       }
     });
 
@@ -123,8 +125,8 @@ export default function Home() {
 
       // 同步機制
       if (!parentId) {
+        setIsUnlocked(true); // 立即手動解鎖，提供即時反饋
         fetchBubbles();
-        setIsUnlocked(true); // 完成今日潛入，解鎖所有功能
       }
 
       if (session.user.is_anonymous) {
@@ -187,13 +189,24 @@ export default function Home() {
   // 已登入：顯示主要內容
   return (
     <div className="relative w-full h-screen overflow-hidden">
+      {/* 逃生入口：無論是否解鎖，最上層始終提供登出按鈕 */}
+      <div className="absolute top-6 left-6 z-50 pointer-events-auto">
+        <button
+          onClick={() => supabase.auth.signOut()}
+          className="px-4 py-2 bg-blue-900/40 backdrop-blur-md hover:bg-red-500/20 border border-white/5 text-blue-200/50 hover:text-red-400 text-[10px] tracking-widest uppercase rounded-full transition-all active:scale-95"
+          title="終止潛行並返回水面"
+        >
+          終止潛行 (Logout)
+        </button>
+      </div>
+
       {/* 主要內容區域：根據 currentView 切換顯示 */}
       <div className="w-full h-full relative z-0">
         {renderContentView()}
       </div>
 
       {/* 導航欄：固定在畫面最底部，z-index 高於內容區域 */}
-      <LiquidTabBar currentView={currentView} onChange={setCurrentView} />
+      <LiquidTabBar currentView={currentView} onChange={setCurrentView} isUnlocked={isUnlocked} />
     </div>
   );
 }
