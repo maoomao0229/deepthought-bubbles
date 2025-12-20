@@ -103,8 +103,14 @@ export default function Home() {
         );
       case "pantry":
         return (
-          <div className="w-full h-full flex items-center justify-center">
+          <div className="w-full h-full flex flex-col items-center justify-center gap-6">
             <p className="text-blue-300 text-lg">我的糧倉 - 建置中</p>
+            <button
+              onClick={() => supabase.auth.signOut()}
+              className="px-8 py-3 bg-white/5 hover:bg-white/10 text-yellow-500/80 border border-yellow-500/20 rounded-xl transition-all active:scale-95 text-sm tracking-widest font-light"
+            >
+              終止潛行 (登出)
+            </button>
           </div>
         );
       default:

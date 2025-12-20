@@ -2,6 +2,7 @@
 
 ## 修改歷史
 
+- [2025/12/20 18:32 v0.34] 檔案: `app/page.tsx` | 內容: 完善身分驗證條件渲染邏輯，並在「我的糧倉 (Pantry)」分頁新增「終止潛行 (登出)」按鈕，調用 supabase.auth.signOut() 實現完整登入登出閉環 | 原因: 讓使用者能自由切換帳號並完整測試身分驗證流程
 - [2025/12/20 18:30 v0.33] 檔案: `src/components/AuthView.tsx` | 內容: 擴充身分驗證功能，新增 Google OAuth 與匿名訪客登入按鈕，優化表單 Loading 狀態與錯誤提示視覺，確保符合 4px/8px 倍數間距規範 | 原因: 提供多樣化的登入方式以提升轉換率，並確保 UI 視覺與企劃書及開發規範 100% 一致
 - [2025/12/20 17:50 v0.32] 檔案: `src/components/DiveView.tsx` | 內容: 清理冗餘的本地 handleSend 函式，將發送邏輯完全交由父組件處理；優化 Tailwind v4 樣式類別（顏色、圓角、漸層寫法） | 原因: 移除重複邏輯，統一由首頁管理登入狀態與資料寫入，並符合最新 CSS 規範
 - [2025/12/20 17:42 v0.31] 檔案: `app/page.tsx` | 內容: 整合身分驗證邏輯，新增 session 狀態與 useEffect 監聽 onAuthStateChange，未登入顯示 AuthView，已登入顯示主內容，修改 handleSend 使用真實 user_id 從 session.user.id 取得 | 原因: 接通 Supabase RLS 權限控制，確保只有登入使用者才能發送氣泡
