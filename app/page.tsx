@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import DiveView from "@/src/components/DiveView";
+import DiveView from "@/components/DiveView";
 import LiquidTabBar, { ViewState } from "@/components/LiquidTabBar";
 
 /**

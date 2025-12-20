@@ -2,6 +2,43 @@
 
 import React, { useState, useRef, useEffect, forwardRef } from "react";
 import { Move, X, Feather, Waves } from "lucide-react";
+import { supabase } from "@/lib/supabaseClient";
+
+// 分類選項
+const CATEGORIES = ["philosophy", "ocean", "thought", "depth"] as const;
+
+/**
+ * 發送氣泡到 Supabase 資料庫
+ * @param content - 使用者輸入的思考內容
+ */
+const handleSend = async (content: string) => {
+  // 根據企劃書，預設海洋基調色為 'Blue' (#316794)
+  const category = "Blue";
+
+  // 隨機生成位置 (0 到 100 範圍的浮點數)
+  const xPosition = Math.random() * 100;
+  const yPosition = Math.random() * 100;
+
+  // 臨時使用固定的 user_id（尚未實作登入功能，已解除資料庫外鍵限制）
+  const tempUserId = "00000000-0000-0000-0000-000000000000";
+
+  const { data, error } = await supabase.from("bubbles").insert([
+    {
+      content: content,
+      category: category,
+      x_position: xPosition,
+      y_position: yPosition,
+      user_id: tempUserId,
+    },
+  ]);
+
+  if (error) {
+    // 錯誤處理：使用 Yellow (#FFC678) 提示（禁止使用紅色）
+    console.error("⚠️ 氣泡寫入失敗:", error.message);
+  } else {
+    console.log("✅ 氣泡已成功寫入資料庫:", data);
+  }
+};
 
 // ==========================================
 // Types & Interfaces
@@ -280,7 +317,7 @@ const DiveView = ({ onSend }: { onSend: (content: string) => void }) => {
       // 檢查移動距離
       const moveDist = Math.sqrt(
         Math.pow(clientX - startDragClientPos.current.x, 2) +
-          Math.pow(clientY - startDragClientPos.current.y, 2)
+        Math.pow(clientY - startDragClientPos.current.y, 2)
       );
 
       if (moveDist > 5) {
@@ -403,45 +440,45 @@ const DiveView = ({ onSend }: { onSend: (content: string) => void }) => {
         <div
           ref={containerRef}
           className="w-full h-full cursor-grab active:cursor-grabbing touch-none"
-        onMouseDown={handlePointerDown}
-        onMouseMove={handlePointerMove}
-        onMouseUp={handlePointerUp}
-        onMouseLeave={handlePointerUp}
-        onTouchStart={handlePointerDown}
-        onTouchMove={handlePointerMove}
-        onTouchEnd={handlePointerUp}
-      >
-        <div
-          className="absolute top-1/2 left-1/2 w-0 h-0 transition-transform duration-75 ease-out"
-          style={{
-            transform: `translate(${panPosition.x}px, ${panPosition.y}px)`,
-          }}
+          onMouseDown={handlePointerDown}
+          onMouseMove={handlePointerMove}
+          onMouseUp={handlePointerUp}
+          onMouseLeave={handlePointerUp}
+          onTouchStart={handlePointerDown}
+          onTouchMove={handlePointerMove}
+          onTouchEnd={handlePointerUp}
         >
-          {SEED_TOPICS.map((topic, index) => (
-            <div
-              key={topic.id}
-              className="absolute"
-              style={{
-                left: `${topic.x}px`,
-                top: `${topic.y}px`,
-                transform: "translate(-50%, -50%)",
-              }}
-            >
-              <TopicBubble
-                ref={(el) => {
-                  bubblesRef.current[index] = el;
+          <div
+            className="absolute top-1/2 left-1/2 w-0 h-0 transition-transform duration-75 ease-out"
+            style={{
+              transform: `translate(${panPosition.x}px, ${panPosition.y}px)`,
+            }}
+          >
+            {SEED_TOPICS.map((topic, index) => (
+              <div
+                key={topic.id}
+                className="absolute"
+                style={{
+                  left: `${topic.x}px`,
+                  top: `${topic.y}px`,
+                  transform: "translate(-50%, -50%)",
                 }}
-                topic={topic}
-                onClick={() => handleBubbleClick(topic)}
-              />
-            </div>
-          ))}
+              >
+                <TopicBubble
+                  ref={(el) => {
+                    bubblesRef.current[index] = el;
+                  }}
+                  topic={topic}
+                  onClick={() => handleBubbleClick(topic)}
+                />
+              </div>
+            ))}
 
-          {/* 裝飾性背景元素 */}
-          <div className="absolute top-[-304px] left-[-200px] w-[500px] h-[500px] bg-blue-500/5 rounded-full blur-[100px] pointer-events-none -z-10" />
-          <div className="absolute top-[100px] left-[200px] w-[300px] h-[300px] bg-indigo-500/5 rounded-full blur-[80px] pointer-events-none -z-10" />
+            {/* 裝飾性背景元素 */}
+            <div className="absolute top-[-304px] left-[-200px] w-[500px] h-[500px] bg-blue-500/5 rounded-full blur-[100px] pointer-events-none -z-10" />
+            <div className="absolute top-[100px] left-[200px] w-[300px] h-[300px] bg-indigo-500/5 rounded-full blur-[80px] pointer-events-none -z-10" />
+          </div>
         </div>
-      </div>
       </div>
 
       {/* 3. 互動 Modal */}
@@ -450,6 +487,7 @@ const DiveView = ({ onSend }: { onSend: (content: string) => void }) => {
           topic={selectedTopic}
           onClose={() => setSelectedTopic(null)}
           onSend={(content) => {
+            handleSend(content); // 寫入 Supabase 資料庫
             onSend(content);
             setTimeout(() => setSelectedTopic(null), 1500);
           }}
@@ -627,11 +665,10 @@ const DiveModal = ({
             <button
               onClick={handleSubmit}
               disabled={!inputValue.trim()}
-              className={`w-full py-3 rounded-full text-base font-bold tracking-wide transition-all duration-300 shadow-lg ${
-                inputValue.trim()
-                  ? "bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400 text-white transform hover:scale-[1.02]"
-                  : "bg-blue-800 text-blue-500 cursor-not-allowed opacity-70"
-              }`}
+              className={`w-full py-3 rounded-full text-base font-bold tracking-wide transition-all duration-300 shadow-lg ${inputValue.trim()
+                ? "bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400 text-white transform hover:scale-[1.02]"
+                : "bg-blue-800 text-blue-500 cursor-not-allowed opacity-70"
+                }`}
             >
               發送氣泡
             </button>
