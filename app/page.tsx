@@ -1,26 +1,84 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { Session } from "@supabase/supabase-js";
+import { supabase } from "@/lib/supabaseClient";
 import DiveView from "@/components/DiveView";
 import LiquidTabBar, { ViewState } from "@/components/LiquidTabBar";
+import AuthView from "@/components/AuthView";
 
 /**
  * 首頁元件
- * 整合導航欄與各視圖內容，提供完整的 App 導航體驗
+ * 整合身分驗證、導航欄與各視圖內容，提供完整的 App 體驗
  */
 export default function Home() {
+  // 身分驗證狀態
+  const [session, setSession] = useState<Session | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
   // 管理當前視圖狀態
   const [currentView, setCurrentView] = useState<ViewState>("dive");
 
   /**
+   * 監聽 Supabase Auth 狀態變化
+   * 當使用者登入或登出時，自動更新 session 狀態
+   */
+  useEffect(() => {
+    // 取得目前的 session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setIsLoading(false);
+    });
+
+    // 監聽 Auth 狀態變化
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    // 清理監聽器
+    return () => subscription.unsubscribe();
+  }, []);
+
+  /**
    * 處理使用者送出觀點的回呼函式
-   * 當使用者在 DiveView 中輸入並送出思考內容時觸發
+   * 將氣泡寫入 Supabase 資料庫
    * 
    * @param content - 使用者輸入的思考內容
    */
-  const handleSend = (content: string) => {
-    // 暫時使用 console.log 輸出內容，後續可接後端 API
-    console.log("使用者送出的觀點：", content);
+  const handleSend = async (content: string) => {
+    // 確認使用者已登入
+    if (!session?.user?.id) {
+      console.error("使用者未登入，無法發送氣泡");
+      return;
+    }
+
+    // 根據企劃書，預設分類為 'Blue'
+    const category = "Blue";
+
+    // 隨機生成位置 (0 到 100 範圍的浮點數)
+    const xPosition = Math.random() * 100;
+    const yPosition = Math.random() * 100;
+
+    const { error } = await supabase.from("bubbles").insert([
+      {
+        content: content,
+        category: category,
+        x_position: xPosition,
+        y_position: yPosition,
+        user_id: session.user.id, // 使用真實的使用者 ID
+      },
+    ]);
+
+    if (error) {
+      // 錯誤處理：使用 Yellow (#FFC678) 提示
+      console.error("氣泡寫入失敗:", error.message);
+    } else {
+      console.log("氣泡已成功寫入資料庫");
+      // Task 3: 發送成功後顯示提示
+      alert("泡泡已浮起");
+    }
   };
 
   /**
@@ -54,6 +112,21 @@ export default function Home() {
     }
   };
 
+  // 載入中狀態
+  if (isLoading) {
+    return (
+      <div className="w-full h-screen bg-blue-900 flex items-center justify-center">
+        <p className="text-blue-300 text-lg animate-pulse">載入中...</p>
+      </div>
+    );
+  }
+
+  // 未登入：顯示登入/註冊畫面
+  if (!session) {
+    return <AuthView />;
+  }
+
+  // 已登入：顯示主要內容
   return (
     <div className="relative w-full h-screen overflow-hidden">
       {/* 主要內容區域：根據 currentView 切換顯示 */}

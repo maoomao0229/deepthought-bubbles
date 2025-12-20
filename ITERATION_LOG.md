@@ -2,6 +2,9 @@
 
 ## 修改歷史
 
+- [2025/12/20 17:50 v0.32] 檔案: `src/components/DiveView.tsx` | 內容: 清理冗餘的本地 handleSend 函式，將發送邏輯完全交由父組件處理；優化 Tailwind v4 樣式類別（顏色、圓角、漸層寫法） | 原因: 移除重複邏輯，統一由首頁管理登入狀態與資料寫入，並符合最新 CSS 規範
+- [2025/12/20 17:42 v0.31] 檔案: `app/page.tsx` | 內容: 整合身分驗證邏輯，新增 session 狀態與 useEffect 監聽 onAuthStateChange，未登入顯示 AuthView，已登入顯示主內容，修改 handleSend 使用真實 user_id 從 session.user.id 取得 | 原因: 接通 Supabase RLS 權限控制，確保只有登入使用者才能發送氣泡
+- [2025/12/20 17:42 v0.30] 檔案: `src/components/AuthView.tsx` | 內容: 建立身分驗證組件，包含 Email 和 Password 輸入框，支援登入/註冊模式切換，使用 supabase.auth.signInWithPassword 和 supabase.auth.signUp，錯誤訊息使用 text-yellow-500 (禁止紅色)，視覺風格保持深海主題 | 原因: 建立登入/註冊功能，配合 Supabase RLS 權限控制，保護使用者資料安全
 - [2025/12/20 00:32 v0.29] 檔案: `app/globals.css` | 內容: 在 @theme 區塊後新增 body 樣式，直接設定 font-family 使用 var(--font-deepthought) 作為首選字體，確保自訂字體 GenSenRounded2TW 能正確覆蓋 Tailwind 預設值並套用到整個頁面 | 原因: 修正字體未自動套用的問題，確保專案品牌字體正確顯示圓體效果
 - [2025/12/20 00:15 v0.28] 檔案: `next.config.ts` | 內容: 新增 turbopack.root 設定為 __dirname，解決因中文路徑「深思氣泡」導致 Turbopack 發生 byte boundary panic 的問題 | 原因: 修復 Turbopack 無法正確處理中文路徑的 Bug，確保開發伺服器正常運作
 - [2025/12/19 23:53 v0.27] 檔案: `.ai-rules.md` | 內容: 追加「程式碼潔淨規範」章節，明確禁止在程式碼（含註解、字串、變數名）中使用 Emoji，對話中允許使用；掃描 src、app、components 目錄確認無 Emoji 存在 | 原因: 確保程式碼維持純文字格式，提升跨平台相容性與可讀性

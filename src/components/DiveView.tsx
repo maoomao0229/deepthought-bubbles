@@ -2,43 +2,6 @@
 
 import React, { useState, useRef, useEffect, forwardRef } from "react";
 import { Move, X, Feather, Waves } from "lucide-react";
-import { supabase } from "@/lib/supabaseClient";
-
-// 分類選項
-const CATEGORIES = ["philosophy", "ocean", "thought", "depth"] as const;
-
-/**
- * 發送氣泡到 Supabase 資料庫
- * @param content - 使用者輸入的思考內容
- */
-const handleSend = async (content: string) => {
-  // 根據企劃書，預設海洋基調色為 'Blue' (#316794)
-  const category = "Blue";
-
-  // 隨機生成位置 (0 到 100 範圍的浮點數)
-  const xPosition = Math.random() * 100;
-  const yPosition = Math.random() * 100;
-
-  // 臨時使用固定的 user_id（尚未實作登入功能，已解除資料庫外鍵限制）
-  const tempUserId = "00000000-0000-0000-0000-000000000000";
-
-  const { data, error } = await supabase.from("bubbles").insert([
-    {
-      content: content,
-      category: category,
-      x_position: xPosition,
-      y_position: yPosition,
-      user_id: tempUserId,
-    },
-  ]);
-
-  if (error) {
-    // 錯誤處理：使用 Yellow (#FFC678) 提示（禁止使用紅色）
-    console.error("⚠️ 氣泡寫入失敗:", error.message);
-  } else {
-    console.log("✅ 氣泡已成功寫入資料庫:", data);
-  }
-};
 
 // ==========================================
 // Types & Interfaces
@@ -487,7 +450,6 @@ const DiveView = ({ onSend }: { onSend: (content: string) => void }) => {
           topic={selectedTopic}
           onClose={() => setSelectedTopic(null)}
           onSend={(content) => {
-            handleSend(content); // 寫入 Supabase 資料庫
             onSend(content);
             setTimeout(() => setSelectedTopic(null), 1500);
           }}
@@ -610,8 +572,8 @@ const DiveModal = ({
       {/* 內容卡片 */}
       <div
         className="
-        relative w-full max-w-lg bg-[#316794]/90 backdrop-blur-2xl 
-        border border-white/20 shadow-2xl rounded-[2rem] 
+        relative w-full max-w-lg bg-blue-900/90 backdrop-blur-2xl 
+        border border-white/20 shadow-2xl rounded-4xl 
         flex flex-col items-center text-center overflow-hidden
         animate-scale-up p-6 md:p-8
       "
@@ -666,7 +628,7 @@ const DiveModal = ({
               onClick={handleSubmit}
               disabled={!inputValue.trim()}
               className={`w-full py-3 rounded-full text-base font-bold tracking-wide transition-all duration-300 shadow-lg ${inputValue.trim()
-                ? "bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400 text-white transform hover:scale-[1.02]"
+                ? "bg-linear-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400 text-white transform hover:scale-[1.02]"
                 : "bg-blue-800 text-blue-500 cursor-not-allowed opacity-70"
                 }`}
             >
