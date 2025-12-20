@@ -245,8 +245,8 @@ const DiveModal = ({
               onClick={handleSubmit}
               disabled={!inputValue.trim() || isSubmitting}
               className={`p-3 rounded-xl transition-all ${inputValue.trim() && !isSubmitting
-                  ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/20 active:scale-95"
-                  : "bg-white/5 text-blue-400/20 cursor-not-allowed"
+                ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/20 active:scale-95"
+                : "bg-white/5 text-blue-400/20 cursor-not-allowed"
                 }`}
             >
               <Send size={18} />
@@ -309,8 +309,8 @@ const NewBubbleModal = ({ onClose, onSend }: { onClose: () => void; onSend: (con
             onClick={handleSubmit}
             disabled={!content.trim() || isSubmitting}
             className={`w-full py-4 rounded-full text-base font-bold tracking-widest transition-all shadow-xl ${content.trim() && !isSubmitting
-                ? "bg-linear-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white transform hover:scale-[1.02]"
-                : "bg-blue-800/50 text-blue-500/50 cursor-not-allowed border border-white/5"
+              ? "bg-linear-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white transform hover:scale-[1.02]"
+              : "bg-blue-800/50 text-blue-500/50 cursor-not-allowed border border-white/5"
               }`}
           >
             {isSubmitting ? "正在浮出水面..." : "釋放氣泡"}
@@ -327,10 +327,12 @@ const NewBubbleModal = ({ onClose, onSend }: { onClose: () => void; onSend: (con
 
 const DiveView = ({
   bubbles = [],
-  onSend
+  onSend,
+  isUnlocked = false
 }: {
   bubbles?: any[],
-  onSend: (content: string, parentId?: string | null, category?: string) => Promise<void>
+  onSend: (content: string, parentId?: string | null, category?: string) => Promise<void>,
+  isUnlocked?: boolean
 }) => {
   const [selectedTopic, setSelectedTopic] = useState<SeedTopic | null>(null);
   const [isNewBubbleOpen, setIsNewBubbleOpen] = useState(false);
@@ -358,6 +360,7 @@ const DiveView = ({
   }));
 
   const handlePointerDown = (e: React.MouseEvent | React.TouchEvent) => {
+    if (!isUnlocked) return; // 未解鎖時禁止拖曳
     isPointerDown.current = true;
     isDragging.current = false;
     const clientX = "touches" in e ? e.touches[0].clientX : (e as React.MouseEvent).clientX;
@@ -369,13 +372,15 @@ const DiveView = ({
   const handlePointerMove = (e: React.MouseEvent | React.TouchEvent) => {
     const clientX = "touches" in e ? e.touches[0].clientX : (e as React.MouseEvent).clientX;
     const clientY = "touches" in e ? e.touches[0].clientY : (e as React.MouseEvent).clientY;
-    if (isPointerDown.current) {
+
+    if (isPointerDown.current && isUnlocked) {
       const moveDist = Math.sqrt(Math.pow(clientX - startDragClientPos.current.x, 2) + Math.pow(clientY - startDragClientPos.current.y, 2));
       if (moveDist > 5) isDragging.current = true;
       setPanPosition({ x: clientX - startPanOffset.current.x, y: clientY - startPanOffset.current.y });
       return;
     }
-    if ("touches" in e) return;
+    if ("touches" in e || !isUnlocked) return;
+
     bubblesRef.current.forEach((bubble) => {
       if (!bubble) return;
       const speed = parseFloat(bubble.getAttribute("data-speed") || "0.5");
@@ -411,20 +416,27 @@ const DiveView = ({
 
   return (
     <div className="h-full relative overflow-hidden bg-blue-900/50">
+      {/* 歡迎界面 (僅在未解鎖或初回顯示) */}
       {showWelcome && (
         <div className={`fixed inset-0 z-50 flex items-center justify-center bg-blue-900/80 backdrop-blur-xl transition-opacity duration-300 ease-out ${isFading ? "opacity-0" : "opacity-100"} cursor-pointer`} onClick={handleWelcomeClick}>
           <div className="text-center px-6 py-8 pointer-events-none">
-            <h2 className="text-2xl md:text-3xl font-light text-blue-100 leading-relaxed drop-shadow-lg mb-4">歡迎，座頭鯨。<br />潛入海中<span className="text-yellow-300 font-medium">捕捉知識</span>。</h2>
-            <p className="text-xs text-blue-300/80 mt-4 tracking-widest flex justify-center items-center gap-2"><Move size={12} className="animate-pulse" />點擊任意處開始狩獵</p>
+            <h2 className="text-2xl md:text-3xl font-light text-blue-100 leading-relaxed drop-shadow-lg mb-4">
+              {isUnlocked ? "歡迎回到呼吸頻率。" : "開始潛入海中。"}
+              <br />
+              捕捉此刻的<span className="text-yellow-300 font-medium">{isUnlocked ? "深刻共鳴" : "第一抹清醒"}</span>。
+            </h2>
+            <p className="text-xs text-blue-300/80 mt-4 tracking-widest flex justify-center items-center gap-2">
+              <Move size={12} className="animate-pulse" />點擊任意處進入海域
+            </p>
           </div>
         </div>
       )}
 
       {/* 畫布內容 */}
-      <div className={`w-full h-full ${showWelcome ? "opacity-0 pointer-events-none" : "opacity-100 pointer-events-auto"} transition-opacity duration-300`}>
-        <div ref={containerRef} className="w-full h-full cursor-grab active:cursor-grabbing touch-none" onMouseDown={handlePointerDown} onMouseMove={handlePointerMove} onMouseUp={handlePointerUp} onMouseLeave={handlePointerUp} onTouchStart={handlePointerDown} onTouchMove={handlePointerMove} onTouchEnd={handlePointerUp}>
+      <div className={`w-full h-full transition-all duration-700 ${showWelcome ? "opacity-0 pointer-events-none" : "opacity-100 pointer-events-auto"} ${!isUnlocked && !showWelcome ? "blur-md scale-105" : "blur-0 scale-100"}`}>
+        <div ref={containerRef} className={`w-full h-full cursor-grab active:cursor-grabbing touch-none ${!isUnlocked ? "pointer-events-none" : ""}`} onMouseDown={handlePointerDown} onMouseMove={handlePointerMove} onMouseUp={handlePointerUp} onMouseLeave={handlePointerUp} onTouchStart={handlePointerDown} onTouchMove={handlePointerMove} onTouchEnd={handlePointerUp}>
           <div className="absolute top-1/2 left-1/2 w-0 h-0 transition-transform duration-75 ease-out" style={{ transform: `translate(${panPosition.x}px, ${panPosition.y}px)` }}>
-            {mappedTopics.map((topic, index) => (
+            {isUnlocked && mappedTopics.map((topic, index) => (
               <div key={topic.id} className="absolute" style={{ left: `${topic.x}px`, top: `${topic.y}px`, transform: "translate(-50%, -50%)" }}>
                 <TopicBubble ref={(el) => { bubblesRef.current[index] = el; }} topic={topic} onClick={() => !isDragging.current && setSelectedTopic(topic)} />
               </div>
@@ -436,13 +448,34 @@ const DiveView = ({
         </div>
       </div>
 
-      {/* 右下角 FAB: 發布新主題 */}
-      <button
-        onClick={() => setIsNewBubbleOpen(true)}
-        className={`fixed bottom-24 right-6 z-40 p-4 bg-blue-500 hover:bg-blue-400 text-white rounded-full shadow-2xl shadow-blue-500/30 transition-all duration-300 hover:scale-110 active:scale-95 group ${showWelcome ? "opacity-0 translate-y-10" : "opacity-100 translate-y-0"}`}
-      >
-        <Plus size={24} className="group-hover:rotate-90 transition-transform duration-300" />
-      </button>
+      {/* 鎖定狀態下的發佈按鈕 (強引導) */}
+      {!isUnlocked && !showWelcome && (
+        <div className="absolute inset-0 flex flex-col items-center justify-center z-30 p-6 animate-fade-in">
+          <div className="bg-blue-900/60 backdrop-blur-2xl border border-white/10 p-8 rounded-4xl max-w-sm w-full shadow-2xl space-y-6 text-center">
+            <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-2 border border-blue-500/30">
+              <Feather size={28} className="text-blue-300" />
+            </div>
+            <h3 className="text-xl font-bold text-white tracking-tight">今日尚未潛入</h3>
+            <p className="text-blue-300/60 text-sm leading-relaxed">發布一個今日思考主題，即可解鎖意識海域與大廳對話。</p>
+            <button
+              onClick={() => setIsNewBubbleOpen(true)}
+              className="w-full py-4 bg-linear-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white rounded-full font-bold tracking-widest transition-all shadow-xl shadow-blue-500/20"
+            >
+              釋放今日第一氣泡
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* 右下角 FAB: 僅在解鎖後顯示 */}
+      {isUnlocked && !showWelcome && (
+        <button
+          onClick={() => setIsNewBubbleOpen(true)}
+          className="fixed bottom-24 right-6 z-40 p-4 bg-blue-500 hover:bg-blue-400 text-white rounded-full shadow-2xl shadow-blue-500/30 transition-all duration-300 hover:scale-110 active:scale-95 group animate-fade-in"
+        >
+          <Plus size={24} className="group-hover:rotate-90 transition-transform duration-300" />
+        </button>
+      )}
 
       {/* Modals */}
       {selectedTopic && (

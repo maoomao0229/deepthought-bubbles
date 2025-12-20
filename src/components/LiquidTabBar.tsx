@@ -10,6 +10,7 @@ export type ViewState = "dive" | "lobby" | "sonar" | "pantry";
 interface LiquidTabBarProps {
   currentView: ViewState;
   onChange: (view: ViewState) => void;
+  isUnlocked?: boolean;
 }
 
 // 定義選單項目類型
@@ -20,7 +21,7 @@ interface MenuItem {
   label: string;
 }
 
-const LiquidTabBar: React.FC<LiquidTabBarProps> = ({ currentView, onChange }) => {
+const LiquidTabBar: React.FC<LiquidTabBarProps> = ({ currentView, onChange, isUnlocked = false }) => {
   // 使用 useMemo 優化選單配置，避免每次渲染都重新建立
   const menus = useMemo<MenuItem[]>(
     () => [
@@ -46,16 +47,16 @@ const LiquidTabBar: React.FC<LiquidTabBarProps> = ({ currentView, onChange }) =>
       if (menuRefs.current[activeIndex] && containerRef.current) {
         const activeItem = menuRefs.current[activeIndex];
         const container = containerRef.current;
-        
+
         if (activeItem) {
           // 獲取選單項目的實際位置
           const itemRect = activeItem.getBoundingClientRect();
           const containerRect = container.getBoundingClientRect();
-          
+
           // 計算相對於容器的中心位置（減去圓圈寬度的一半）
           const itemCenterX = itemRect.left + itemRect.width / 2 - containerRect.left;
           const circleRadius = 32.5; // 65px / 2
-          
+
           setIndicatorLeft(itemCenterX - circleRadius);
         }
       }
@@ -66,7 +67,7 @@ const LiquidTabBar: React.FC<LiquidTabBarProps> = ({ currentView, onChange }) =>
 
     // 監聽視窗大小變化，重新計算位置
     window.addEventListener("resize", updateIndicatorPosition);
-    
+
     // 使用 requestAnimationFrame 確保 DOM 已更新
     const timeoutId = setTimeout(updateIndicatorPosition, 0);
 
@@ -75,6 +76,15 @@ const LiquidTabBar: React.FC<LiquidTabBarProps> = ({ currentView, onChange }) =>
       clearTimeout(timeoutId);
     };
   }, [activeIndex]);
+
+  const handleTabClick = (viewId: ViewState) => {
+    // 每日解鎖邏輯：未解鎖前只能留在「每日潛入」
+    if (!isUnlocked && viewId !== "dive") {
+      alert("🌊 潛入深海需要先完成今日的呼吸頻率思考喔！");
+      return;
+    }
+    onChange(viewId);
+  };
 
   return (
     <div className="absolute bottom-0 w-full px-4 pb-6 z-40">
@@ -93,6 +103,7 @@ const LiquidTabBar: React.FC<LiquidTabBarProps> = ({ currentView, onChange }) =>
         <ul className="grid grid-cols-4 w-full h-full relative z-10">
           {menus.map((menu, i) => {
             const isActive = i === activeIndex;
+            const isLocked = !isUnlocked && menu.id !== "dive";
             const IconComponent = menu.icon;
 
             return (
@@ -101,27 +112,30 @@ const LiquidTabBar: React.FC<LiquidTabBarProps> = ({ currentView, onChange }) =>
                 ref={(el) => {
                   menuRefs.current[i] = el;
                 }}
-                className="relative h-full flex flex-col items-center justify-center cursor-pointer group"
-                onClick={() => onChange(menu.id)}
+                className={`relative h-full flex flex-col items-center justify-center cursor-pointer group ${isLocked ? "opacity-40" : ""}`}
+                onClick={() => handleTabClick(menu.id)}
               >
                 {/* 圖標容器：啟用時會向上移動並放大，確保在圓圈內置中 */}
                 <div
-                  className={`relative flex items-center justify-center z-20 transition-all duration-500 ease-out ${
-                    isActive ? "-translate-y-[32px] scale-110" : "translate-y-0 text-white/50"
-                  }`}
+                  className={`relative flex items-center justify-center z-20 transition-all duration-500 ease-out ${isActive ? "-translate-y-[32px] scale-110" : "translate-y-0 text-white/50"
+                    }`}
                 >
                   <IconComponent
                     size={26}
                     className={`transition-colors duration-300 ${isActive ? menu.color : "text-inherit"}`}
                     strokeWidth={isActive ? 2.5 : 2}
                   />
+                  {isLocked && !isActive && (
+                    <div className="absolute -top-1 -right-1 text-[8px] bg-blue-900/80 rounded-full p-0.5">
+                      🔒
+                    </div>
+                  )}
                 </div>
 
                 {/* 標籤文字：啟用時顯示，未啟用時隱藏 */}
                 <span
-                  className={`absolute bottom-3 text-[10px] font-bold tracking-widest transition-all duration-500 delay-100 ${
-                    isActive ? "opacity-100 translate-y-0 text-white" : "opacity-0 translate-y-4"
-                  }`}
+                  className={`absolute bottom-3 text-[10px] font-bold tracking-widest transition-all duration-500 delay-100 ${isActive ? "opacity-100 translate-y-0 text-white" : "opacity-0 translate-y-4"
+                    }`}
                 >
                   {menu.label}
                 </span>

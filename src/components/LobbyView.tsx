@@ -7,13 +7,14 @@ import { supabase } from "@/lib/supabaseClient";
 interface LobbyViewProps {
     bubbles: any[];
     onSend: (content: string, parentId?: string | null, category?: string) => Promise<void>;
+    isUnlocked?: boolean;
 }
 
 /**
  * 泡泡大廳視圖
  * 顯示所有海域的主泡泡，支援分類過濾與深度回覆
  */
-const LobbyView = ({ bubbles, onSend }: LobbyViewProps) => {
+const LobbyView = ({ bubbles, onSend, isUnlocked = false }: LobbyViewProps) => {
     const [activeCategory, setActiveCategory] = useState<string>("all");
     const [selectedBubble, setSelectedBubble] = useState<any | null>(null);
     const [replies, setReplies] = useState<any[]>([]);
@@ -87,95 +88,107 @@ const LobbyView = ({ bubbles, onSend }: LobbyViewProps) => {
     const [isNewBubbleOpen, setIsNewBubbleOpen] = useState(false);
 
     return (
-        <div className="w-full h-full bg-blue-900/40 backdrop-blur-sm overflow-y-auto pb-24">
-            {/* Header */}
-            <div className="sticky top-0 z-20 bg-blue-900/60 backdrop-blur-md px-6 py-6 border-b border-white/5">
-                <div className="flex items-center justify-between mb-6">
-                    <h1 className="text-2xl font-bold text-white tracking-tight flex items-center gap-3">
-                        <Waves className="text-blue-400" />
-                        意識大廳
-                    </h1>
-                    <div className="flex items-center gap-3">
-                        <button
-                            onClick={() => setIsNewBubbleOpen(true)}
-                            className="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-400 text-white rounded-full text-xs font-bold transition-all shadow-lg shadow-blue-500/20 active:scale-95"
-                        >
-                            <Plus size={14} />
-                            發起思考
-                        </button>
-                        <div className="p-2 bg-white/5 rounded-full text-blue-300">
-                            <Search size={20} />
+        <div className="w-full h-full bg-blue-900/40 backdrop-blur-sm overflow-hidden relative">
+            <div className={`w-full h-full flex flex-col transition-all duration-700 ${!isUnlocked ? "blur-2xl scale-105 opacity-30 select-none pointer-events-none" : "blur-0 scale-100 opacity-100"}`}>
+                {/* Header */}
+                <div className="sticky top-0 z-20 bg-blue-900/60 backdrop-blur-md px-6 py-6 border-b border-white/5">
+                    <div className="flex items-center justify-between mb-6">
+                        <h1 className="text-2xl font-bold text-white tracking-tight flex items-center gap-3">
+                            <Waves className="text-blue-400" />
+                            意識大廳
+                        </h1>
+                        <div className="flex items-center gap-3">
+                            <button
+                                onClick={() => setIsNewBubbleOpen(true)}
+                                className="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-400 text-white rounded-full text-xs font-bold transition-all shadow-lg shadow-blue-500/20 active:scale-95"
+                            >
+                                <Plus size={14} />
+                                發起思考
+                            </button>
                         </div>
+                    </div>
+
+                    {/* 分類切換 */}
+                    <div className="flex gap-2 overflow-x-auto no-scrollbar">
+                        {categories.map((cat) => (
+                            <button
+                                key={cat.id}
+                                onClick={() => setActiveCategory(cat.id)}
+                                className={`
+                    px-4 py-2 rounded-full text-xs font-medium whitespace-nowrap transition-all
+                    ${activeCategory === cat.id
+                                        ? "bg-blue-500 text-white shadow-lg shadow-blue-500/20"
+                                        : "bg-white/5 text-blue-300 hover:bg-white/10"
+                                    }
+                  `}
+                            >
+                                {cat.name}
+                            </button>
+                        ))}
                     </div>
                 </div>
 
-                {/* 分類切換 */}
-                <div className="flex gap-2 overflow-x-auto no-scrollbar">
-                    {categories.map((cat) => (
-                        <button
-                            key={cat.id}
-                            onClick={() => setActiveCategory(cat.id)}
-                            className={`
-                px-4 py-2 rounded-full text-xs font-medium whitespace-nowrap transition-all
-                ${activeCategory === cat.id
-                                    ? "bg-blue-500 text-white shadow-lg shadow-blue-500/20"
-                                    : "bg-white/5 text-blue-300 hover:bg-white/10"
-                                }
-              `}
-                        >
-                            {cat.name}
-                        </button>
-                    ))}
-                </div>
-            </div>
-
-            {/* Bubble Grid */}
-            <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {filteredBubbles.length > 0 ? (
-                    filteredBubbles.map((bubble) => (
-                        <div
-                            key={bubble.id}
-                            onClick={() => setSelectedBubble(bubble)}
-                            className="group bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl p-5 transition-all hover:scale-[1.02] cursor-pointer"
-                        >
-                            <div className="flex items-start justify-between mb-4">
-                                <span className="text-[10px] px-2 py-1 bg-blue-500/20 text-blue-300 rounded-md uppercase tracking-widest font-bold">
-                                    {bubble.category || "General"}
-                                </span>
-                                <span className="text-[10px] text-blue-400/60">
-                                    {new Date(bubble.created_at).toLocaleDateString()}
-                                </span>
-                            </div>
-                            <p className="text-blue-50 text-sm leading-relaxed line-clamp-3 mb-4 font-light">
-                                {bubble.content}
-                            </p>
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-2">
-                                    <div className="w-6 h-6 rounded-full bg-blue-700 border border-blue-900 flex items-center justify-center text-[10px] text-white">
-                                        鯨
+                {/* Bubble Grid */}
+                <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 overflow-y-auto no-scrollbar pb-32">
+                    {filteredBubbles.length > 0 ? (
+                        filteredBubbles.map((bubble) => (
+                            <div
+                                key={bubble.id}
+                                onClick={() => setSelectedBubble(bubble)}
+                                className="group bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl p-5 transition-all hover:scale-[1.02] cursor-pointer"
+                            >
+                                <div className="flex items-start justify-between mb-4">
+                                    <span className="text-[10px] px-2 py-1 bg-blue-500/20 text-blue-300 rounded-md uppercase tracking-widest font-bold">
+                                        {bubble.category || "General"}
+                                    </span>
+                                    <span className="text-[10px] text-blue-400/60">
+                                        {new Date(bubble.created_at).toLocaleDateString()}
+                                    </span>
+                                </div>
+                                <p className="text-blue-50 text-sm leading-relaxed line-clamp-3 mb-4 font-light">
+                                    {bubble.content}
+                                </p>
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-6 h-6 rounded-full bg-blue-700 border border-blue-900 flex items-center justify-center text-[10px] text-white">
+                                            鯨
+                                        </div>
+                                        <span className="text-[10px] text-blue-300/60">獵手</span>
                                     </div>
-                                    <span className="text-[10px] text-blue-300/60">獵手</span>
-                                </div>
-                                <div className="flex items-center gap-1.5 text-[10px] text-blue-400/40">
-                                    <MessageSquare size={10} />
-                                    <span>深度對話</span>
+                                    <div className="flex items-center gap-1.5 text-[10px] text-blue-400/40">
+                                        <MessageSquare size={10} />
+                                        <span>深度對話</span>
+                                    </div>
                                 </div>
                             </div>
+                        ))
+                    ) : (
+                        <div className="col-span-full py-20 text-center">
+                            <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4 border border-white/10">
+                                <Search className="text-blue-300/30" size={24} />
+                            </div>
+                            <p className="text-blue-300/50 text-sm">目前該海域尚無氣泡浮起</p>
                         </div>
-                    ))
-                ) : (
-                    <div className="col-span-full py-20 text-center">
-                        <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4 border border-white/10">
-                            <Filter className="text-blue-300/30" />
-                        </div>
-                        <p className="text-blue-300/50 text-sm">目前該海域尚無氣泡浮起</p>
-                    </div>
-                )}
+                    )}
+                </div>
             </div>
 
-            {/* Modals */}
+            {/* 鎖定遮罩層 (僅在未解鎖時顯示) */}
+            {!isUnlocked && (
+                <div className="absolute inset-0 flex flex-col items-center justify-center z-30 p-6 animate-fade-in">
+                    <div className="bg-blue-900/60 backdrop-blur-2xl border border-white/10 p-10 rounded-4xl max-w-sm w-full shadow-2xl space-y-6 text-center">
+                        <div className="w-20 h-20 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-2 border border-blue-500/30">
+                            <span className="text-4xl">🔒</span>
+                        </div>
+                        <h3 className="text-xl font-bold text-white tracking-tight">海域深度鎖定中</h3>
+                        <p className="text-blue-300/60 text-sm leading-relaxed">發布一個今日思考主題，即可解鎖意識海域與大廳對話。</p>
+                    </div>
+                </div>
+            )}
+
+            {/* Modals (保持在遮罩外或根據選中狀態顯示) */}
             {selectedBubble && (
-                <div className="fixed inset-0 z-50 flex items-end justify-center md:items-center p-0 md:p-4">
+                <div className="fixed inset-0 z-50 flex items-end justify-center md:items-center p-0 md:p-4 animate-fade-in">
                     <div className="absolute inset-0 bg-blue-950/80 backdrop-blur-md" onClick={() => setSelectedBubble(null)} />
 
                     <div className="relative w-full max-w-2xl bg-blue-900/90 backdrop-blur-2xl border-t md:border border-white/10 rounded-t-3xl md:rounded-3xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden animate-in slide-in-from-bottom duration-300">

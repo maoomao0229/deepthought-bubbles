@@ -17,11 +17,40 @@ export default function Home() {
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  // 解鎖狀態 (今日是否已潛入)
+  const [isUnlocked, setIsUnlocked] = useState(false);
+
   // 管理當前視圖狀態
   const [currentView, setCurrentView] = useState<ViewState>("dive");
 
   // 泡泡資料狀態
   const [bubbles, setBubbles] = useState<any[]>([]);
+
+  /**
+   * 檢查當前使用者今天是否已完成潛入 (發布主題貼文)
+   */
+  const checkDailyDive = async (userId: string) => {
+    // 取得今天的開始與結束時間
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    const { data, error } = await supabase
+      .from("bubbles")
+      .select("id")
+      .eq("user_id", userId)
+      .is("parent_id", null)
+      .gte("created_at", today.toISOString())
+      .lt("created_at", tomorrow.toISOString())
+      .limit(1);
+
+    if (error) {
+      console.error("查驗每日潛入狀態失敗:", error.message);
+    } else {
+      setIsUnlocked(data && data.length > 0);
+    }
+  };
 
   /**
    * 抓取所有主泡泡 (parent_id 為空)
@@ -42,43 +71,36 @@ export default function Home() {
 
   /**
    * 監聽 Supabase Auth 狀態變化
-   * 當使用者登入或登出時，自動更新 session 狀態
    */
   useEffect(() => {
-    // 取得目前的 session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setIsLoading(false);
-      if (session) fetchBubbles(); // 登入後抓取資料
+      if (session) {
+        fetchBubbles();
+        checkDailyDive(session.user.id); // 查驗當日解鎖狀態
+      }
     });
 
-    // 監聽 Auth 狀態變化
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
+      if (session) {
+        fetchBubbles();
+        checkDailyDive(session.user.id);
+      }
     });
 
-    // 清理監聽器
     return () => subscription.unsubscribe();
   }, []);
 
   /**
-   * 處理使用者送出觀點的回呼函式
-   * 將氣泡寫入 Supabase 資料庫，並針對訪客身分提供轉化建議
-   * 
-   * @param content - 使用者輸入的思考內容
-   * @param parentId - 父氣泡 ID (選填，若為 null 則視為主題貼文)
-   * @param category - 分類 (選填，預設為 'Blue')
+   * 處理使用者送出觀點
    */
   const handleSend = async (content: string, parentId: string | null = null, category: string = "Blue") => {
-    // 確認使用者已登入
-    if (!session?.user?.id) {
-      console.error("使用者未登入，無法發送氣泡");
-      return;
-    }
+    if (!session?.user?.id) return;
 
-    // 隨機生成位置 (0 到 100 範圍的浮點數)
     const xPosition = Math.random() * 100;
     const yPosition = Math.random() * 100;
 
@@ -89,21 +111,22 @@ export default function Home() {
         x_position: xPosition,
         y_position: yPosition,
         user_id: session.user.id,
-        parent_id: parentId, // 顯式區分貼文 (null) 與留言 (id)
+        parent_id: parentId,
       },
     ]);
 
     if (error) {
-      // 錯誤處理：使用 Yellow (#FFC678) 提示
       console.error("氣泡寫入失敗:", error.message);
       alert("⚠️ 氣泡回傳失敗，請稍後再試。");
     } else {
       console.log("氣泡已成功寫入資料庫");
 
-      // 同步機制：發文成功後重新抓取主列表 (僅在發布主題貼文時)
-      if (!parentId) fetchBubbles();
+      // 同步機制
+      if (!parentId) {
+        fetchBubbles();
+        setIsUnlocked(true); // 完成今日潛入，解鎖所有功能
+      }
 
-      // 轉化機制 (Conversion Logic)
       if (session.user.is_anonymous) {
         alert("這筆思考已紀錄！由於你是以訪客身分登入，建議註冊 Email 以永久保存你的肺活量與資料。");
       } else {
@@ -120,10 +143,10 @@ export default function Home() {
     switch (currentView) {
       case "dive":
         // 每日潛入：顯示今日泡泡或精選主泡泡
-        return <DiveView bubbles={bubbles} onSend={handleSend} />;
+        return <DiveView bubbles={bubbles} onSend={handleSend} isUnlocked={isUnlocked} />;
       case "lobby":
         // 泡泡大廳：顯示所有海域的主泡泡
-        return <LobbyView bubbles={bubbles} onSend={handleSend} />;
+        return <LobbyView bubbles={bubbles} onSend={handleSend} isUnlocked={isUnlocked} />;
       case "sonar":
         return (
           <div className="w-full h-full flex items-center justify-center">
