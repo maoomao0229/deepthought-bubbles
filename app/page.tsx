@@ -43,7 +43,7 @@ export default function Home() {
 
   /**
    * 處理使用者送出觀點的回呼函式
-   * 將氣泡寫入 Supabase 資料庫
+   * 將氣泡寫入 Supabase 資料庫，並針對訪客身分提供轉化建議
    * 
    * @param content - 使用者輸入的思考內容
    */
@@ -74,10 +74,16 @@ export default function Home() {
     if (error) {
       // 錯誤處理：使用 Yellow (#FFC678) 提示
       console.error("氣泡寫入失敗:", error.message);
+      alert("⚠️ 氣泡回傳失敗，請稍後再試。");
     } else {
       console.log("氣泡已成功寫入資料庫");
-      // Task 3: 發送成功後顯示提示
-      alert("泡泡已浮起");
+
+      // 轉化機制 (Conversion Logic)
+      if (session.user.is_anonymous) {
+        alert("這筆思考已紀錄！由於你是以訪客身分登入，建議註冊 Email 以永久保存你的肺活量與資料。");
+      } else {
+        alert("泡泡已浮起");
+      }
     }
   };
 
