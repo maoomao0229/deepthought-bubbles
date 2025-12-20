@@ -237,8 +237,8 @@ const DiveModal = ({
               <div className="w-12 h-12 bg-white/5 rounded-full flex items-center justify-center border border-white/10 text-white/20">
                 <MessageSquare size={20} />
               </div>
-              <p className="text-[10px] text-blue-400/30 font-bold uppercase tracking-[0.2em] text-center">
-                完成今日換氣後<br />即可觀測他人的意識回響
+              <p className="text-[10px] text-blue-400/30 font-bold uppercase tracking-[0.2em] text-center px-8 leading-relaxed">
+                貢獻你的思考氣泡後<br />即可觀測他人的意識回聲
               </p>
             </div>
           )}
@@ -342,12 +342,10 @@ const DiveView = ({
   bubbles = [],
   onSend,
   isUnlocked = false,
-  onLogout
 }: {
   bubbles?: any[],
   onSend: (content: string, parentId?: string | null, category?: string) => Promise<void>,
   isUnlocked?: boolean,
-  onLogout?: () => void
 }) => {
   const [selectedTopic, setSelectedTopic] = useState<SeedTopic | null>(null);
   const [isNewBubbleOpen, setIsNewBubbleOpen] = useState(false);
@@ -431,28 +429,6 @@ const DiveView = ({
 
   return (
     <div className="h-full relative overflow-hidden bg-blue-900/50 font-sans">
-      {/* 頂部選單與狀態列 (逃生路徑) */}
-      {!showWelcome && (
-        <div className="absolute top-0 left-0 w-full p-6 flex items-center justify-between z-40 bg-linear-to-b from-blue-950/60 to-transparent pointer-events-none">
-          <div className="flex flex-col gap-1 pointer-events-auto">
-            <h1 className="text-white font-bold text-lg tracking-tight">深思氣泡</h1>
-            <div className="flex items-center gap-2">
-              <div className={`w-1.5 h-1.5 rounded-full ${isUnlocked ? 'bg-green-400' : 'bg-yellow-400 animate-pulse'}`} />
-              <span className="text-blue-300/80 text-[9px] font-bold tracking-widest uppercase">
-                {isUnlocked ? '已完成今日共鳴' : '尚未潛入海域'}
-              </span>
-            </div>
-          </div>
-
-          <button
-            onClick={onLogout}
-            className="px-4 py-2 bg-white/5 hover:bg-white/10 backdrop-blur-md border border-white/5 text-blue-200/50 hover:text-white text-[9px] tracking-[0.2em] uppercase rounded-xl transition-all active:scale-95 pointer-events-auto"
-          >
-            終止潛行
-          </button>
-        </div>
-      )}
-
       {/* 歡迎界面 (僅在未解鎖或初回顯示) */}
       {showWelcome && (
         <div className={`fixed inset-0 z-50 flex items-center justify-center bg-blue-900/80 backdrop-blur-xl transition-opacity duration-300 ease-out ${isFading ? "opacity-0" : "opacity-100"} cursor-pointer`} onClick={handleWelcomeClick}>

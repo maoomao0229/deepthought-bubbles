@@ -27,9 +27,9 @@ export default function Home() {
   const [bubbles, setBubbles] = useState<any[]>([]);
 
   /**
-   * 檢查當前使用者今天是否已完成潛入 (發布主題貼文)
+   * 檢查解鎖狀態：當前使用者今天是否有任何紀錄
    */
-  const checkDailyDive = async (userId: string) => {
+  const checkUnlockStatus = async (userId: string) => {
     // 使用本地時間判定今天是否存在紀錄 (避免 UTC 換日誤差)
     const now = new Date();
     const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
@@ -76,7 +76,7 @@ export default function Home() {
       setIsLoading(false);
       if (session) {
         fetchBubbles();
-        checkDailyDive(session.user.id); // 查驗當日解鎖狀態
+        checkUnlockStatus(session.user.id); // 查驗解鎖狀態
       }
     });
 
@@ -86,7 +86,7 @@ export default function Home() {
       setSession(session);
       if (session) {
         fetchBubbles();
-        checkDailyDive(session.user.id);
+        checkUnlockStatus(session.user.id);
       } else {
         setIsUnlocked(false);
         setBubbles([]);
@@ -186,18 +186,20 @@ export default function Home() {
   // 已登入：顯示主要內容
   return (
     <div className="relative w-full h-screen overflow-hidden">
+      {/* 逃生入口：全局最頂層登出按鈕 */}
+      <div className="absolute top-6 left-6 z-50 pointer-events-auto">
+        <button
+          onClick={() => supabase.auth.signOut()}
+          className="px-4 py-2 bg-blue-900/40 backdrop-blur-md hover:bg-white/10 border border-white/5 text-blue-200/50 hover:text-white text-[9px] tracking-[0.2em] uppercase rounded-xl transition-all active:scale-95 shadow-xl"
+          title="終止潛行並返回水面"
+        >
+          終止潛行
+        </button>
+      </div>
+
       {/* 主要內容區域：根據 currentView 切換顯示 */}
       <div className="w-full h-full relative z-0">
-        {currentView === "dive" ? (
-          <DiveView
-            bubbles={bubbles}
-            onSend={handleSend}
-            isUnlocked={isUnlocked}
-            onLogout={() => supabase.auth.signOut()}
-          />
-        ) : (
-          renderContentView()
-        )}
+        {renderContentView()}
       </div>
 
       {/* 導航欄：固定在畫面最底部，z-index 高於內容區域 */}
