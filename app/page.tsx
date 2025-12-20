@@ -99,7 +99,13 @@ export default function Home() {
   /**
    * 處理使用者送出觀點
    */
-  const handleSend = async (content: string, parentId: string | null = null, category: string = "Blue") => {
+  const handleSend = async (
+    content: string,
+    parentId: string | null = null,
+    category: string = "Blue",
+    topic: string | null = null,
+    title: string | null = null
+  ) => {
     if (!session?.user?.id) return;
 
     const xPosition = Math.random() * 100;
@@ -109,6 +115,8 @@ export default function Home() {
       {
         content: content,
         category: category,
+        topic: topic,
+        title: title,
         x_position: xPosition,
         y_position: yPosition,
         user_id: session.user.id,

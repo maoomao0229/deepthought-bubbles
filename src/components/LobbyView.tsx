@@ -6,7 +6,7 @@ import { supabase } from "@/lib/supabaseClient";
 
 interface LobbyViewProps {
     bubbles: any[];
-    onSend: (content: string, parentId?: string | null, category?: string) => Promise<void>;
+    onSend: (content: string, parentId?: string | null, category?: string, topic?: string | null, title?: string | null) => Promise<void>;
     isUnlocked?: boolean;
 }
 
@@ -139,15 +139,16 @@ const LobbyView = ({ bubbles, onSend, isUnlocked = false }: LobbyViewProps) => {
                             >
                                 <div className="flex items-start justify-between mb-4">
                                     <span className="text-[10px] px-2 py-1 bg-blue-500/20 text-blue-300 rounded-md uppercase tracking-widest font-bold">
-                                        {bubble.category || "General"}
+                                        {bubble.topic || bubble.category || "General"}
                                     </span>
                                     <span className="text-[10px] text-blue-400/60">
                                         {new Date(bubble.created_at).toLocaleDateString()}
                                     </span>
                                 </div>
-                                <p className="text-blue-50 text-sm leading-relaxed line-clamp-3 mb-4 font-light">
-                                    {bubble.content}
-                                </p>
+                                <h3 className="text-white text-base font-bold mb-2 line-clamp-1">
+                                    {bubble.title || "探索標題"}
+                                </h3>
+                                <div className="h-px w-8 bg-blue-500/30 mb-4" />
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-2">
                                         <div className="w-6 h-6 rounded-full bg-blue-700 border border-blue-900 flex items-center justify-center text-[10px] text-white">
@@ -212,13 +213,17 @@ const LobbyView = ({ bubbles, onSend, isUnlocked = false }: LobbyViewProps) => {
                             <div className="space-y-4">
                                 <div className="flex items-center gap-2">
                                     <span className="text-[10px] px-2 py-0.5 bg-blue-500/20 text-blue-300 rounded border border-blue-500/30 uppercase font-bold">
-                                        主題
+                                        {selectedBubble.topic || "探索主題"}
                                     </span>
-                                    <span className="text-[10px] text-blue-400/60 lowercase italic">繼承分類: {selectedBubble.category}</span>
                                 </div>
-                                <p className="text-lg text-white font-light leading-relaxed">
-                                    {selectedBubble.content}
-                                </p>
+                                <h2 className="text-2xl font-bold text-white tracking-tight">
+                                    {selectedBubble.title || "無標題的思考"}
+                                </h2>
+                                <div className="bg-blue-950/40 rounded-2xl p-5 border border-white/5 group">
+                                    <p className="text-base text-blue-50 font-light leading-relaxed whitespace-pre-wrap">
+                                        {selectedBubble.content}
+                                    </p>
+                                </div>
                                 <div className="text-[10px] text-blue-400/60 pb-4 border-b border-white/5">
                                     發佈於 {new Date(selectedBubble.created_at).toLocaleString()}
                                 </div>
@@ -226,34 +231,48 @@ const LobbyView = ({ bubbles, onSend, isUnlocked = false }: LobbyViewProps) => {
 
                             {/* Replies List */}
                             <div className="space-y-6">
-                                <h4 className="text-[10px] text-blue-300/40 uppercase tracking-[0.2em] font-bold">
-                                    共鳴回覆 ({replies.length})
-                                </h4>
+                                {isUnlocked ? (
+                                    <>
+                                        <h4 className="text-[10px] text-blue-300/40 uppercase tracking-[0.2em] font-bold">
+                                            共鳴回覆 ({replies.length})
+                                        </h4>
 
-                                {replies.length > 0 ? (
-                                    replies.map((reply) => (
-                                        <div key={reply.id} className="flex gap-4 group">
-                                            <div className="shrink-0 w-8 h-8 rounded-full bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center text-indigo-300">
-                                                <Waves size={14} />
-                                            </div>
-                                            <div className="flex-1 space-y-2">
-                                                <div className="flex items-center gap-2">
-                                                    <span className="text-[10px] text-indigo-400 font-bold uppercase tracking-wider">
-                                                        潛水員
-                                                    </span>
-                                                    <span className="text-[10px] text-blue-400/30">
-                                                        {new Date(reply.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                                    </span>
+                                        {replies.length > 0 ? (
+                                            replies.map((reply) => (
+                                                <div key={reply.id} className="flex gap-4 group">
+                                                    <div className="shrink-0 w-8 h-8 rounded-full bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center text-indigo-300">
+                                                        <Waves size={14} />
+                                                    </div>
+                                                    <div className="flex-1 space-y-2">
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="text-[10px] text-indigo-400 font-bold uppercase tracking-wider">
+                                                                潛水員
+                                                            </span>
+                                                            <span className="text-[10px] text-blue-400/30">
+                                                                {new Date(reply.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                            </span>
+                                                        </div>
+                                                        <div className="bg-indigo-500/5 border border-indigo-500/10 rounded-2xl rounded-tl-none p-4 text-sm text-blue-50 leading-relaxed font-light">
+                                                            {reply.content}
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                                <div className="bg-indigo-500/5 border border-indigo-500/10 rounded-2xl rounded-tl-none p-4 text-sm text-blue-50 leading-relaxed font-light">
-                                                    {reply.content}
-                                                </div>
+                                            ))
+                                        ) : (
+                                            <div className="py-10 text-center opacity-30">
+                                                <p className="text-sm font-light italic">此海域尚無回聲...</p>
                                             </div>
-                                        </div>
-                                    ))
+                                        )}
+                                    </>
                                 ) : (
-                                    <div className="py-10 text-center opacity-30">
-                                        <p className="text-sm font-light italic">此海域尚無回聲...</p>
+                                    <div className="py-8 flex flex-col items-center justify-center space-y-4">
+                                        <div className="h-px w-full bg-white/5 mb-4" />
+                                        <div className="w-12 h-12 bg-white/5 rounded-full flex items-center justify-center border border-white/10 text-white/20">
+                                            <MessageSquare size={20} />
+                                        </div>
+                                        <p className="text-[10px] text-blue-400/30 font-bold uppercase tracking-[0.2em] text-center px-8 leading-relaxed">
+                                            回應此觀點以解鎖更多回聲
+                                        </p>
                                     </div>
                                 )}
                             </div>
@@ -265,7 +284,7 @@ const LobbyView = ({ bubbles, onSend, isUnlocked = false }: LobbyViewProps) => {
                                 <textarea
                                     value={replyContent}
                                     onChange={(e) => setReplyContent(e.target.value)}
-                                    placeholder="輸入你的共鳴..."
+                                    placeholder={isUnlocked ? "輸入你的共鳴..." : "回應此觀點以解鎖更多回聲..."}
                                     className="flex-1 bg-transparent border-none focus:ring-0 text-sm text-blue-50 placeholder-blue-400/30 p-2 min-h-[44px] max-h-32 resize-none leading-relaxed"
                                     rows={1}
                                 />
@@ -299,11 +318,30 @@ const LobbyView = ({ bubbles, onSend, isUnlocked = false }: LobbyViewProps) => {
                         <button onClick={() => setIsNewBubbleOpen(false)} className="absolute top-6 right-6 p-2 rounded-full hover:bg-white/10 text-blue-200">
                             <X size={24} />
                         </button>
-                        <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mb-6 border border-blue-500/30 shadow-lg shadow-blue-500/10">
-                            <Plus size={32} className="text-blue-300" />
-                        </div>
                         <h2 className="text-2xl font-bold text-white mb-2 tracking-tight">發起新的思考</h2>
-                        <p className="text-blue-300/60 text-sm mb-8 text-center">在此海域釋放一個主氣泡，啟發更多潛水員的共鳴</p>
+                        <p className="text-blue-300/60 text-sm mb-6 text-center">在此海域釋放一個主氣泡，啟發更多潛水員的共鳴</p>
+
+                        <div className="w-full space-y-4 mb-6">
+                            <div className="space-y-2">
+                                <label className="text-[10px] text-blue-400/60 font-bold uppercase tracking-widest ml-1">主題 Topic</label>
+                                <input
+                                    type="text"
+                                    id="lobby-topic"
+                                    placeholder="例如：哲學、心理、時事..."
+                                    className="w-full bg-blue-950/30 rounded-xl px-4 py-3 text-sm text-gray-50 placeholder-blue-400/20 border border-white/5 focus:outline-none focus:ring-1 focus:ring-blue-500/30 transition-all"
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-[10px] text-blue-400/60 font-bold uppercase tracking-widest ml-1">標題 Title</label>
+                                <input
+                                    type="text"
+                                    id="lobby-title"
+                                    placeholder="為你的思考定一個標題..."
+                                    className="w-full bg-blue-950/30 rounded-xl px-4 py-3 text-sm text-gray-50 placeholder-blue-400/20 border border-white/5 focus:outline-none focus:ring-1 focus:ring-blue-500/30 transition-all"
+                                />
+                            </div>
+                        </div>
 
                         <div className="w-full space-y-4">
                             <textarea
@@ -315,9 +353,14 @@ const LobbyView = ({ bubbles, onSend, isUnlocked = false }: LobbyViewProps) => {
                             />
                             <button
                                 onClick={async () => {
-                                    if (!replyContent.trim() || isSubmitting) return;
+                                    const topicInput = document.getElementById("lobby-topic") as HTMLInputElement;
+                                    const titleInput = document.getElementById("lobby-title") as HTMLInputElement;
+                                    const topicValue = topicInput?.value || "";
+                                    const titleValue = titleInput?.value || "";
+
+                                    if (!replyContent.trim() || !topicValue.trim() || !titleValue.trim() || isSubmitting) return;
                                     setIsSubmitting(true);
-                                    await onSend(replyContent, null); // 顯式發送 parent_id: null
+                                    await onSend(replyContent, null, "Blue", topicValue, titleValue); // 顯式發送 parent_id: null
                                     setReplyContent("");
                                     setIsSubmitting(false);
                                     setIsNewBubbleOpen(false);

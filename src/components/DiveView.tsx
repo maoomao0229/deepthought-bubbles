@@ -12,7 +12,8 @@ interface SeedTopic {
   id: string;
   x: number; // 畫布上的 X 座標
   y: number; // 畫布上的 Y 座標
-  title: string;
+  topic?: string;
+  title?: string;
   category: "philosophy" | "ocean" | "thought" | "depth" | string;
   speed: number;
   content: string;
@@ -101,17 +102,17 @@ const TopicBubble = forwardRef<HTMLDivElement, TopicBubbleProps>(
       >
         <div className={`
           ${sizeClasses[topic.size]}
-          rounded-full flex flex-col items-center justify-center text-center p-3
+          rounded-full flex flex-col items-center justify-center text-center p-4
           backdrop-blur-xl bg-linear-to-br ${catConfig.bg}
           border ${catConfig.color.replace("text-", "border-").replace("200", "500")}/30
           shadow-lg hover:shadow-[0_0_20px_rgba(255,255,255,0.2)]
           transition-all duration-500 hover:scale-105 animate-float
         `}>
-          <span className={`block font-bold mb-1 ${catConfig.color} opacity-80 uppercase tracking-widest text-[9px]`}>
-            {catConfig.name}
+          <span className={`block font-bold mb-1 ${catConfig.color} opacity-80 uppercase tracking-widest text-[8px]`}>
+            {topic.topic || catConfig.name}
           </span>
-          <h3 className="font-medium text-blue-50 leading-tight px-1 drop-shadow-md select-none line-clamp-2">
-            {topic.title}
+          <h3 className="font-bold text-blue-50 leading-tight px-1 drop-shadow-md select-none line-clamp-2 text-base">
+            {topic.title || (topic.content.length > 15 ? topic.content.substring(0, 15) + "..." : topic.content)}
           </h3>
         </div>
       </div>
@@ -132,7 +133,7 @@ const DiveModal = ({
 }: {
   topic: SeedTopic;
   onClose: () => void;
-  onSend: (content: string, parentId?: string | null, category?: string) => Promise<void>;
+  onSend: (content: string, parentId?: string | null, category?: string, topic?: string | null, title?: string | null) => Promise<void>;
   isUnlocked: boolean;
 }) => {
   const [inputValue, setInputValue] = useState("");
@@ -193,8 +194,16 @@ const DiveModal = ({
         <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-8 no-scrollbar">
           {/* Main Content */}
           <div className="space-y-4">
-            <h2 className="text-2xl font-bold text-white tracking-tight">{topic.title}</h2>
-            <div className="bg-blue-950/40 rounded-2xl p-5 border border-white/5 group">
+            <div className="space-y-1">
+              <span className={`text-[10px] font-bold tracking-widest uppercase ${catConfig.color} opacity-60`}>
+                {topic.topic || "探索主題"}
+              </span>
+              <h2 className="text-3xl font-bold text-white tracking-tight leading-tight">
+                {topic.title || "無標題的思考"}
+              </h2>
+            </div>
+
+            <div className="bg-blue-950/40 rounded-3xl p-6 border border-white/5 group">
               <p className="text-blue-50 text-base leading-relaxed whitespace-pre-wrap font-light">
                 {topic.content}
               </p>
@@ -203,7 +212,7 @@ const DiveModal = ({
 
           {/* Replies Thread: 僅在解鎖後顯示 */}
           {isUnlocked ? (
-            <div className="space-y-6">
+            <div className="space-y-6 animate-fade-in">
               <div className="flex items-center gap-3">
                 <div className="h-px flex-1 bg-white/5" />
                 <span className="text-[10px] text-blue-400/40 font-bold uppercase tracking-[0.2em]">共鳴回響 ({replies.length})</span>
@@ -233,13 +242,19 @@ const DiveModal = ({
               )}
             </div>
           ) : (
-            <div className="py-12 flex flex-col items-center justify-center space-y-4 animate-pulse">
-              <div className="w-12 h-12 bg-white/5 rounded-full flex items-center justify-center border border-white/10 text-white/20">
-                <MessageSquare size={20} />
+            <div className="py-8 flex flex-col items-center justify-center space-y-6">
+              <div className="h-px w-full bg-white/5" />
+              <div className="flex flex-col items-center space-y-4">
+                <div className="w-14 h-14 bg-indigo-500/10 rounded-full flex items-center justify-center border border-indigo-500/20 text-indigo-400 animate-pulse">
+                  <MessageSquare size={24} />
+                </div>
+                <div className="text-center space-y-2">
+                  <h3 className="text-white font-medium">觀測點已鎖定</h3>
+                  <p className="text-xs text-blue-300/40 leading-relaxed max-w-[240px]">
+                    回應此觀點以解鎖更多回聲，<br />參與這場跨越時空的意識共振。
+                  </p>
+                </div>
               </div>
-              <p className="text-[10px] text-blue-400/30 font-bold uppercase tracking-[0.2em] text-center px-8 leading-relaxed">
-                貢獻你的思考氣泡後<br />即可觀測他人的意識回聲
-              </p>
             </div>
           )}
         </div>
@@ -250,7 +265,7 @@ const DiveModal = ({
             <textarea
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
-              placeholder="輸入你的見解..."
+              placeholder={isUnlocked ? "輸入你的見解..." : "回應此觀點以解鎖更多回聲..."}
               className="flex-1 bg-transparent border-none focus:ring-0 text-sm text-blue-50 placeholder-blue-400/20 p-2 min-h-[44px] max-h-32 resize-none leading-relaxed"
               rows={1}
             />
@@ -278,16 +293,18 @@ const DiveModal = ({
 /**
  * 建立新氣泡 Modal
  */
-const NewBubbleModal = ({ onClose, onSend }: { onClose: () => void; onSend: (content: string) => Promise<void>; }) => {
+const NewBubbleModal = ({ onClose, onSend }: { onClose: () => void; onSend: (content: string, parentId?: string | null, category?: string, topic?: string | null, title?: string | null) => Promise<void>; }) => {
   const [content, setContent] = useState("");
+  const [topic, setTopic] = useState("");
+  const [title, setTitle] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const depth = calculateDepth(content);
   const depthConfig = getDepthConfig(depth);
 
   const handleSubmit = async () => {
-    if (!content.trim() || isSubmitting) return;
+    if (!content.trim() || !topic.trim() || !title.trim() || isSubmitting) return;
     setIsSubmitting(true);
-    await onSend(content);
+    await onSend(content, null, "Blue", topic, title);
     setIsSubmitting(false);
     onClose();
   };
@@ -305,23 +322,50 @@ const NewBubbleModal = ({ onClose, onSend }: { onClose: () => void; onSend: (con
         <h2 className="text-2xl font-bold text-white mb-2">釋放新的思考氣泡</h2>
         <p className="text-blue-300/60 text-sm mb-8">主題貼文將漂浮在所有潛水員的視野中</p>
 
-        <div className="w-full space-y-4">
-          <div className="relative">
-            <textarea
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              placeholder="在此刻，捕捉你的意識流..."
-              className="w-full h-40 bg-blue-950/30 rounded-2xl p-5 text-gray-50 placeholder-blue-400/30 resize-none focus:outline-none focus:ring-1 focus:ring-blue-500/50 border border-white/10 leading-relaxed transition-all"
-              autoFocus
-            />
-            <div className="absolute bottom-4 right-4 py-1 px-3 rounded-full text-[10px] pointer-events-none transition-colors duration-300" style={{ backgroundColor: depthConfig.color.split(' ')[0] }}>
-              <span className={depthConfig.color.split(' ')[1]}>{depthConfig.label}級思維</span>
+        <div className="w-full space-y-6">
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <label className="text-[10px] text-blue-400/60 font-bold uppercase tracking-widest ml-1">主題 Topic</label>
+              <input
+                type="text"
+                value={topic}
+                onChange={(e) => setTopic(e.target.value)}
+                placeholder="例如：哲學、心理、時事..."
+                className="w-full bg-blue-950/30 rounded-xl px-4 py-3 text-sm text-gray-50 placeholder-blue-400/20 border border-white/5 focus:outline-none focus:ring-1 focus:ring-blue-500/30 transition-all"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[10px] text-blue-400/60 font-bold uppercase tracking-widest ml-1">標題 Title</label>
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="為你的思考定一個標題..."
+                className="w-full bg-blue-950/30 rounded-xl px-4 py-3 text-sm text-gray-50 placeholder-blue-400/20 border border-white/5 focus:outline-none focus:ring-1 focus:ring-blue-500/30 transition-all"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[10px] text-blue-400/60 font-bold uppercase tracking-widest ml-1">內文 Content</label>
+              <div className="relative">
+                <textarea
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  placeholder="在此刻，捕捉你的意識流..."
+                  className="w-full h-32 bg-blue-950/30 rounded-2xl p-4 text-gray-50 placeholder-blue-400/20 resize-none focus:outline-none focus:ring-1 focus:ring-blue-500/30 border border-white/5 leading-relaxed transition-all"
+                />
+                <div className="absolute bottom-3 right-3 py-0.5 px-2 rounded-full text-[9px] pointer-events-none transition-colors duration-300" style={{ backgroundColor: depthConfig.color.split(' ')[0] }}>
+                  <span className={depthConfig.color.split(' ')[1]}>{depthConfig.label}級思維</span>
+                </div>
+              </div>
             </div>
           </div>
+
           <button
             onClick={handleSubmit}
-            disabled={!content.trim() || isSubmitting}
-            className={`w-full py-4 rounded-full text-base font-bold tracking-widest transition-all shadow-xl ${content.trim() && !isSubmitting
+            disabled={!content.trim() || !topic.trim() || !title.trim() || isSubmitting}
+            className={`w-full py-4 rounded-full text-base font-bold tracking-widest transition-all shadow-xl ${content.trim() && topic.trim() && title.trim() && !isSubmitting
               ? "bg-linear-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white transform hover:scale-[1.02]"
               : "bg-blue-800/50 text-blue-500/50 cursor-not-allowed border border-white/5"
               }`}
@@ -344,7 +388,7 @@ const DiveView = ({
   isUnlocked = false,
 }: {
   bubbles?: any[],
-  onSend: (content: string, parentId?: string | null, category?: string) => Promise<void>,
+  onSend: (content: string, parentId?: string | null, category?: string, topic?: string | null, title?: string | null) => Promise<void>,
   isUnlocked?: boolean,
 }) => {
   const [selectedTopic, setSelectedTopic] = useState<SeedTopic | null>(null);
@@ -365,7 +409,8 @@ const DiveView = ({
     id: b.id,
     x: (b.x_position - 50) * 8,
     y: (b.y_position - 50) * 8,
-    title: b.content.substring(0, 15) + (b.content.length > 15 ? "..." : ""),
+    topic: b.topic,
+    title: b.title,
     category: b.category || "ocean",
     speed: 0.4 + Math.random() * 0.4,
     content: b.content,
@@ -517,7 +562,7 @@ const DiveView = ({
       {isNewBubbleOpen && (
         <NewBubbleModal
           onClose={() => setIsNewBubbleOpen(false)}
-          onSend={(content) => onSend(content, null)}
+          onSend={onSend}
         />
       )}
     </div>
