@@ -2,6 +2,7 @@
 
 ## 修改歷史
 
+- [2025/12/20 20:15 v0.37] 檔案: `src/components/LobbyView.tsx` | 內容: 實作泡泡回覆功能（Bubble Threading），包含子氣泡抓取與發送邏輯；優化回覆視覺，採用 `indigo-500` (#6571BC) 顏色標記以區隔主從關係 | 原因: 增強社交互動性，讓使用者能針對特定思考進行深度對話，並透過視覺層級區分主氣泡與回覆
 - [2025/12/20 20:10 v0.36] 檔案: `src/components/LobbyView.tsx`, `src/components/DiveView.tsx`, `app/page.tsx` | 內容: 實作統一資料層，讓 Dive 與 Lobby 共享主氣泡資料（parent_id 為空）；重構 DiveView 支援外部 Props 並移除假資料；建立 LobbyView 分類大廳視圖 | 原因: 確保資料一致性，讓使用者在不同視圖間能看到即時同步的思考氣泡，並符合企劃書對大廳功能的定義
 - [2025/12/20 18:33 v0.35] 檔案: `app/page.tsx` | 內容: 強化 `handleSend` 邏輯，新增 `is_anonymous` 訪客轉化提示機制；優化寫入失敗時的 Yellow UI 錯誤回饋 | 原因: 提升產品轉化率，引導訪客轉換為註冊使用者，並確保錯誤提示符合視覺規範
 - [2025/12/20 18:32 v0.34] 檔案: `app/page.tsx` | 內容: 完善身分驗證條件渲染邏輯，並在「我的糧倉 (Pantry)」分頁新增「終止潛行 (登出)」按鈕，調用 supabase.auth.signOut() 實現完整登入登出閉環 | 原因: 讓使用者能自由切換帳號並完整測試身分驗證流程

@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
-import { Waves, Search, Filter } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Waves, Search, Filter, X, Send, MessageSquare } from "lucide-react";
+import { supabase } from "@/lib/supabaseClient";
 
 interface LobbyViewProps {
     bubbles: any[];
@@ -9,10 +10,14 @@ interface LobbyViewProps {
 
 /**
  * 泡泡大廳視圖
- * 顯示所有海域的主泡泡，支援分類過濾
+ * 顯示所有海域的主泡泡，支援分類過濾與深度回覆
  */
 const LobbyView = ({ bubbles }: LobbyViewProps) => {
     const [activeCategory, setActiveCategory] = useState<string>("all");
+    const [selectedBubble, setSelectedBubble] = useState<any | null>(null);
+    const [replies, setReplies] = useState<any[]>([]);
+    const [replyContent, setReplyContent] = useState("");
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     // 分類清單
     const categories = [
@@ -22,7 +27,69 @@ const LobbyView = ({ bubbles }: LobbyViewProps) => {
         { id: "culture", name: "文化海域" },
     ];
 
-    // 根據分類過濾泡泡
+    /**
+     * 抓取選中氣泡的所有回覆
+     */
+    useEffect(() => {
+        if (selectedBubble) {
+            fetchReplies(selectedBubble.id);
+        } else {
+            setReplies([]);
+        }
+    }, [selectedBubble]);
+
+    const fetchReplies = async (parentId: string) => {
+        const { data, error } = await supabase
+            .from("bubbles")
+            .select("*")
+            .eq("parent_id", parentId)
+            .order("created_at", { ascending: true });
+
+        if (error) {
+            console.error("抓取回覆失敗:", error.message);
+        } else {
+            setReplies(data || []);
+        }
+    };
+
+    /**
+     * 發送回覆邏輯
+     */
+    const handleSendReply = async () => {
+        if (!replyContent.trim() || !selectedBubble || isSubmitting) return;
+
+        setIsSubmitting(true);
+        const { data: sessionData } = await supabase.auth.getSession();
+        const userId = sessionData.session?.user.id;
+
+        if (!userId) {
+            alert("請先登入以發表回覆");
+            setIsSubmitting(false);
+            return;
+        }
+
+        const { error } = await supabase.from("bubbles").insert([
+            {
+                content: replyContent,
+                user_id: userId,
+                parent_id: selectedBubble.id,
+                category: selectedBubble.category, // 跟隨主氣泡分類
+                x_position: 0, // 回覆氣泡暫不需畫布座標
+                y_position: 0,
+            },
+        ]);
+
+        if (error) {
+            console.error("回覆失敗:", error.message);
+            alert("⚠️ 回覆失敗，請稍後再試。");
+        } else {
+            setReplyContent("");
+            fetchReplies(selectedBubble.id); // 重新整理列表
+        }
+        setIsSubmitting(false);
+    };
+
+    // 根據分類過濾主泡泡
     const filteredBubbles = activeCategory === "all"
         ? bubbles
         : bubbles.filter(b => b.category?.toLowerCase() === activeCategory);
@@ -67,6 +134,7 @@ const LobbyView = ({ bubbles }: LobbyViewProps) => {
                     filteredBubbles.map((bubble) => (
                         <div
                             key={bubble.id}
+                            onClick={() => setSelectedBubble(bubble)}
                             className="group bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl p-5 transition-all hover:scale-[1.02] cursor-pointer"
                         >
                             <div className="flex items-start justify-between mb-4">
@@ -81,13 +149,15 @@ const LobbyView = ({ bubbles }: LobbyViewProps) => {
                                 {bubble.content}
                             </p>
                             <div className="flex items-center justify-between">
-                                <div className="flex -space-x-2">
+                                <div className="flex items-center gap-2">
                                     <div className="w-6 h-6 rounded-full bg-blue-700 border border-blue-900 flex items-center justify-center text-[10px] text-white">
                                         鯨
                                     </div>
+                                    <span className="text-[10px] text-blue-300/60">獵手</span>
                                 </div>
-                                <div className="text-[10px] text-blue-400/40">
-                                    12 筆共鳴
+                                <div className="flex items-center gap-1.5 text-[10px] text-blue-400/40">
+                                    <MessageSquare size={10} />
+                                    <span>對話中</span>
                                 </div>
                             </div>
                         </div>
@@ -101,6 +171,110 @@ const LobbyView = ({ bubbles }: LobbyViewProps) => {
                     </div>
                 )}
             </div>
+
+            {/* Reply Thread Drawer/Modal */}
+            {selectedBubble && (
+                <div className="fixed inset-0 z-50 flex items-end justify-center md:items-center p-0 md:p-4">
+                    <div className="absolute inset-0 bg-blue-950/80 backdrop-blur-md" onClick={() => setSelectedBubble(null)} />
+
+                    <div className="relative w-full max-w-2xl bg-blue-900/90 backdrop-blur-2xl border-t md:border border-white/10 rounded-t-3xl md:rounded-3xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden animate-in slide-in-from-bottom duration-300">
+                        {/* Modal Header */}
+                        <div className="flex items-center justify-between p-4 border-b border-white/5">
+                            <div className="flex items-center gap-2">
+                                <div className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
+                                <span className="text-xs text-blue-200 font-medium tracking-widest">深層對話</span>
+                            </div>
+                            <button
+                                onClick={() => setSelectedBubble(null)}
+                                className="p-2 hover:bg-white/5 rounded-full text-blue-300 transition-colors"
+                            >
+                                <X size={20} />
+                            </button>
+                        </div>
+
+                        {/* Modal Content - Scrollable Area */}
+                        <div className="flex-1 overflow-y-auto p-6 space-y-8 no-scrollbar">
+                            {/* Host Bubble */}
+                            <div className="space-y-4">
+                                <div className="flex items-center gap-2">
+                                    <span className="text-[10px] px-2 py-0.5 bg-blue-500/20 text-blue-300 rounded border border-blue-500/30 uppercase font-bold">
+                                        主泡泡
+                                    </span>
+                                </div>
+                                <p className="text-lg text-white font-light leading-relaxed">
+                                    {selectedBubble.content}
+                                </p>
+                                <div className="text-[10px] text-blue-400/60 pb-4 border-b border-white/5">
+                                    發佈於 {new Date(selectedBubble.created_at).toLocaleString()}
+                                </div>
+                            </div>
+
+                            {/* Replies List */}
+                            <div className="space-y-6">
+                                <h4 className="text-[10px] text-blue-300/40 uppercase tracking-[0.2em] font-bold">
+                                    共鳴回覆 ({replies.length})
+                                </h4>
+
+                                {replies.length > 0 ? (
+                                    replies.map((reply) => (
+                                        <div key={reply.id} className="flex gap-4 group">
+                                            <div className="shrink-0 w-8 h-8 rounded-full bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center text-indigo-300">
+                                                <Waves size={14} />
+                                            </div>
+                                            <div className="flex-1 space-y-2">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-[10px] text-indigo-400 font-bold uppercase tracking-wider">
+                                                        潛水員
+                                                    </span>
+                                                    <span className="text-[10px] text-blue-400/30">
+                                                        {new Date(reply.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                    </span>
+                                                </div>
+                                                <div className="bg-indigo-500/5 border border-indigo-500/10 rounded-2xl rounded-tl-none p-4 text-sm text-blue-50 leading-relaxed font-light">
+                                                    {reply.content}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className="py-10 text-center opacity-30">
+                                        <p className="text-sm font-light italic">此海域尚無回聲...</p>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Reply Input Area - Fixed at Bottom */}
+                        <div className="p-4 bg-blue-950/50 border-t border-white/10 backdrop-blur-md">
+                            <div className="relative flex items-end gap-2 bg-white/5 rounded-2xl p-2 focus-within:bg-white/10 transition-colors border border-white/5">
+                                <textarea
+                                    value={replyContent}
+                                    onChange={(e) => setReplyContent(e.target.value)}
+                                    placeholder="輸入你的共鳴..."
+                                    className="flex-1 bg-transparent border-none focus:ring-0 text-sm text-blue-50 placeholder-blue-400/30 p-2 min-h-[44px] max-h-32 resize-none leading-relaxed"
+                                    rows={1}
+                                />
+                                <button
+                                    onClick={handleSendReply}
+                                    disabled={!replyContent.trim() || isSubmitting}
+                                    className={`
+                    p-3 rounded-xl transition-all
+                    ${replyContent.trim() && !isSubmitting
+                                            ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/20 active:scale-95"
+                                            : "bg-white/5 text-blue-400/20 cursor-not-allowed"
+                                        }
+                  `}
+                                >
+                                    <Send size={18} />
+                                </button>
+                            </div>
+                            <p className="text-[9px] text-blue-400/40 mt-2 ml-2 tracking-wider">
+                                按下發送以匯入意識流
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
