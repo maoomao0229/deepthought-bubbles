@@ -163,7 +163,7 @@ export default function Home() {
               onClick={() => supabase.auth.signOut()}
               className="px-8 py-3 bg-white/5 hover:bg-white/10 text-yellow-500/80 border border-yellow-500/20 rounded-xl transition-all active:scale-95 text-sm tracking-widest font-light"
             >
-              終止潛行 (登出)
+              終止潛行 (Logout)
             </button>
           </div>
         );
@@ -189,20 +189,18 @@ export default function Home() {
   // 已登入：顯示主要內容
   return (
     <div className="relative w-full h-screen overflow-hidden">
-      {/* 逃生入口：無論是否解鎖，最上層始終提供登出按鈕 */}
-      <div className="absolute top-6 left-6 z-50 pointer-events-auto">
-        <button
-          onClick={() => supabase.auth.signOut()}
-          className="px-4 py-2 bg-blue-900/40 backdrop-blur-md hover:bg-red-500/20 border border-white/5 text-blue-200/50 hover:text-red-400 text-[10px] tracking-widest uppercase rounded-full transition-all active:scale-95"
-          title="終止潛行並返回水面"
-        >
-          終止潛行 (Logout)
-        </button>
-      </div>
-
       {/* 主要內容區域：根據 currentView 切換顯示 */}
       <div className="w-full h-full relative z-0">
-        {renderContentView()}
+        {currentView === "dive" ? (
+          <DiveView
+            bubbles={bubbles}
+            onSend={handleSend}
+            isUnlocked={isUnlocked}
+            onLogout={() => supabase.auth.signOut()}
+          />
+        ) : (
+          renderContentView()
+        )}
       </div>
 
       {/* 導航欄：固定在畫面最底部，z-index 高於內容區域 */}
