@@ -2,6 +2,7 @@
 
 ## 修改歷史
 
+- [2025/12/20 20:10 v0.36] 檔案: `src/components/LobbyView.tsx`, `src/components/DiveView.tsx`, `app/page.tsx` | 內容: 實作統一資料層，讓 Dive 與 Lobby 共享主氣泡資料（parent_id 為空）；重構 DiveView 支援外部 Props 並移除假資料；建立 LobbyView 分類大廳視圖 | 原因: 確保資料一致性，讓使用者在不同視圖間能看到即時同步的思考氣泡，並符合企劃書對大廳功能的定義
 - [2025/12/20 18:33 v0.35] 檔案: `app/page.tsx` | 內容: 強化 `handleSend` 邏輯，新增 `is_anonymous` 訪客轉化提示機制；優化寫入失敗時的 Yellow UI 錯誤回饋 | 原因: 提升產品轉化率，引導訪客轉換為註冊使用者，並確保錯誤提示符合視覺規範
 - [2025/12/20 18:32 v0.34] 檔案: `app/page.tsx` | 內容: 完善身分驗證條件渲染邏輯，並在「我的糧倉 (Pantry)」分頁新增「終止潛行 (登出)」按鈕，調用 supabase.auth.signOut() 實現完整登入登出閉環 | 原因: 讓使用者能自由切換帳號並完整測試身分驗證流程
 - [2025/12/20 18:30 v0.33] 檔案: `src/components/AuthView.tsx` | 內容: 擴充身分驗證功能，新增 Google OAuth 與匿名訪客登入按鈕，優化表單 Loading 狀態與錯誤提示視覺，確保符合 4px/8px 倍數間距規範 | 原因: 提供多樣化的登入方式以提升轉換率，並確保 UI 視覺與企劃書及開發規範 100% 一致

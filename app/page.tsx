@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabaseClient";
 import DiveView from "@/components/DiveView";
 import LiquidTabBar, { ViewState } from "@/components/LiquidTabBar";
 import AuthView from "@/components/AuthView";
+import LobbyView from "@/components/LobbyView";
 
 /**
  * 首頁元件
@@ -19,6 +20,26 @@ export default function Home() {
   // 管理當前視圖狀態
   const [currentView, setCurrentView] = useState<ViewState>("dive");
 
+  // 泡泡資料狀態
+  const [bubbles, setBubbles] = useState<any[]>([]);
+
+  /**
+   * 抓取所有主泡泡 (parent_id 為空)
+   */
+  const fetchBubbles = async () => {
+    const { data, error } = await supabase
+      .from("bubbles")
+      .select("*")
+      .is("parent_id", null) // 只讀取主泡泡
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("抓取泡泡失敗:", error.message);
+    } else {
+      setBubbles(data || []);
+    }
+  };
+
   /**
    * 監聽 Supabase Auth 狀態變化
    * 當使用者登入或登出時，自動更新 session 狀態
@@ -28,6 +49,7 @@ export default function Home() {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setIsLoading(false);
+      if (session) fetchBubbles(); // 登入後抓取資料
     });
 
     // 監聽 Auth 狀態變化
@@ -78,6 +100,9 @@ export default function Home() {
     } else {
       console.log("氣泡已成功寫入資料庫");
 
+      // 同步機制：發文成功後重新抓取
+      fetchBubbles();
+
       // 轉化機制 (Conversion Logic)
       if (session.user.is_anonymous) {
         alert("這筆思考已紀錄！由於你是以訪客身分登入，建議註冊 Email 以永久保存你的肺活量與資料。");
@@ -94,13 +119,11 @@ export default function Home() {
   const renderContentView = () => {
     switch (currentView) {
       case "dive":
-        return <DiveView onSend={handleSend} />;
+        // 每日潛入：顯示今日泡泡或精選主泡泡
+        return <DiveView bubbles={bubbles} onSend={handleSend} />;
       case "lobby":
-        return (
-          <div className="w-full h-full flex items-center justify-center">
-            <p className="text-blue-300 text-lg">氣泡大廳 - 建置中</p>
-          </div>
-        );
+        // 泡泡大廳：顯示所有海域的主泡泡
+        return <LobbyView bubbles={bubbles} />;
       case "sonar":
         return (
           <div className="w-full h-full flex items-center justify-center">
@@ -120,7 +143,7 @@ export default function Home() {
           </div>
         );
       default:
-        return <DiveView onSend={handleSend} />;
+        return <DiveView bubbles={bubbles} onSend={handleSend} />;
     }
   };
 
