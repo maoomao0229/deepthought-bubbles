@@ -2,6 +2,8 @@
 
 ## 修改歷史
 
+- [2025/12/21 21:35 v0.63] 檔案: `src/app/page.tsx` | 內容: 更新 `ShaderGradient` 設定為 "Shallow Sea" 風格 (淺藍綠色調)，並將背景容器定位改為 `fixed` 以避免捲動問題 | 原因: 優化視覺效果，符合使用者對淺海氛圍的預期
+
 - [2025/12/21 21:25 v0.62] 檔案: `src/app/page.tsx`, `src/components/DiveView.tsx`, `src/components/LobbyView.tsx` | 內容: 1. 導入 `ShaderGradient` 作為全域動態背景 (Water Plane 效果)；2. 將 `DiveView` 與 `LobbyView` 的背景改為 `bg-transparent` 以透出 Shader 效果；3. 安裝 `@react-spring/three` 依賴 | 原因: 提升整體視覺沈浸感，創造統一的深海氛圍
 
 - [2025/12/21 20:00 v0.61] 檔案: `src/app/page.tsx`, `src/components/DiveView.tsx`, `src/components/LobbyView.tsx` | 內容: 全面移除前端程式碼對 `category` 欄位的依賴，包括 `handleSend` 寫入資料庫的 payload、介面定義與過濾邏輯，改為完全依賴 `topic` 與 `depth_level` | 原因: 配合 Supabase 資料庫欄位變更 (已刪除 category 欄位)，解決 "Column not found: category" 錯誤，防止寫入失敗

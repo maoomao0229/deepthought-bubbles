@@ -203,7 +203,7 @@ export default function Home() {
   return (
     <div className="relative w-full h-screen overflow-hidden">
       {/* Global Background Shader */}
-      <div className="absolute inset-0 -z-10 pointer-events-none">
+      <div className="fixed inset-0 -z-10 pointer-events-none" style={{ position: 'fixed' }}>
         <ShaderGradientCanvas
           // @ts-ignore
           importedFiber={{ ...fiber, ...drei, ...reactSpring }}
