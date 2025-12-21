@@ -50,9 +50,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="zh-TW">
+    <html lang="zh-TW" suppressHydrationWarning>
       <body
         className={`${deepThoughtFont.variable} antialiased bg-blue-900 text-gray-50`}
+        suppressHydrationWarning
       >
         {/* 外層容器：全螢幕背景，Desktop 時加上模糊效果或深色遮罩 */}
         <div className="min-h-screen bg-blue-900 md:bg-blue-900/80 md:backdrop-blur-md">

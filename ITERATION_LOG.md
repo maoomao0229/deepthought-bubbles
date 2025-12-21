@@ -2,6 +2,8 @@
 
 ## 修改歷史
  
+- [2025/12/21 16:11 v0.49] 檔案: `app/layout.tsx` | 內容: 修復 Hydration Mismatch 錯誤：在 `html` 與 `body` 標籤加入 `suppressHydrationWarning` 屬性 | 原因: 防止行動端或電腦端瀏覽器外掛（如 Grammarly）注入自訂屬性導致伺服器渲染 HTML 與用戶端不一致的報錯
+
 - [2025/12/21 15:52 v0.48] 檔案: `src/components/DiveView.tsx` | 內容: 互動體驗優化：1. 將拖曳判定閾值從 `5px` 提高至 `15px` 並引入 `requestAnimationFrame` 提高流暢度；2. 點擊邏輯區分裝置：滑鼠點擊 (Desktop) 總是直接開啟內容，觸控點擊 (Mobile) 維持兩段式確認 | 原因: 減少因手抖或微小移動導致的點擊誤判，並為不同裝置提供更直覺的操作邏輯
 
 - [2025/12/21 15:42 v0.47] 檔案: `src/components/DiveView.tsx`, `src/components/LobbyView.tsx`, `app/globals.css` | 內容: 實作 Mobile-First 互動適配：1. 在拖曳畫布層加入 `touch-none` 禁止瀏覽器原生捲動；2. `DiveView` 實作點擊兩段式邏輯（首下浮起、次下打開），並支援點擊背景重置狀態；3. 全域加入 `overscroll-behavior: none` 防止 iOS 橡皮筋效果 | 原因: 優化手機版操作體驗，解決行動裝置無法正常拖曳畫布與選取底層氣泡的問題
