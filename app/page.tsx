@@ -109,6 +109,12 @@ export default function Home() {
     const xPosition = Math.random() * 100;
     const yPosition = Math.random() * 100;
 
+    // 計算深度等級 (Backend Logic)
+    let depthLevel = "Surface";
+    const len = content.length;
+    if (len > 200) depthLevel = "Depth";
+    else if (len >= 50) depthLevel = "Midzone";
+
     const { error } = await supabase.from("bubbles").insert([
       {
         content: content,
@@ -119,6 +125,7 @@ export default function Home() {
         y_position: yPosition,
         user_id: session.user.id,
         parent_id: parentId,
+        depth_level: depthLevel,
       },
     ]);
 

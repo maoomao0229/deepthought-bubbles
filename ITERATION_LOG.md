@@ -2,6 +2,8 @@
 
 ## 修改歷史
 
+- [2025/12/21 18:35 v0.53] 檔案: `src/app/page.tsx`, `src/components/DiveView.tsx` | 內容: 實作「海域深度系統」：1. 後端 `handleSend` 新增自動計算深度等級 (Surface/Midzone/Depth) 並寫入資料庫；2. 前端 `DiveView` 更新深度顯示邏輯，採用新的 3 層分級標準 (<50, 50-200, >200) 並套用 Cyan (上層), Blue (中層), Indigo (深層) 色票 | 原因: 將內容長度量化為深度概念，透過視覺化的層級區分 (顏色/標籤) 強化深海世界觀的沈浸感
+
 - [2025/12/21 17:18 v0.52] 檔案: `src/components/DiveView.tsx` | 內容: 程式碼風格優化：依據 IDE 建議，將 JIT 語法的 `z-[2000]` 改寫為 `z-2000` | 原因: 消除 IDE 警告 (The class can be written as...)，保持程式碼簡潔
 
 - [2025/12/21 17:15 v0.51] 檔案: `src/components/DiveView.tsx` | 內容: 修復 Mobile 版氣泡穿透 Modal 問題：將 `DiveModal` 與 `NewBubbleModal` 的層級從 `z-50` 大幅提升至 `z-[2000]` | 原因: 解決氣泡懸停時 (`zIndex: 1000`) 遮擋 Modal 的視覺 Bug，確保對話框始終位於最上層

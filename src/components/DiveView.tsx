@@ -56,20 +56,17 @@ const getCategoryConfig = (category: string): CategoryConfig => {
 const calculateDepth = (text: string): number => {
   const length = text.trim().length;
   if (length === 0) return 0;
-  if (length < 20) return 1;
-  if (length < 50) return 2;
-  if (length < 100) return 3;
-  return 4;
+  if (length > 200) return 2; // Depth
+  if (length >= 50) return 1; // Midzone
+  return 0; // Surface (< 50)
 };
 
 const getDepthConfig = (depth: number): DepthConfig => {
   switch (depth) {
-    case 0: return { label: "表面", color: "bg-blue-500/20 text-blue-300" };
-    case 1: return { label: "淺層", color: "bg-green-500/20 text-green-300" };
-    case 2: return { label: "中層", color: "bg-indigo-500/20 text-indigo-300" };
-    case 3: return { label: "深層", color: "bg-yellow-500/20 text-yellow-300" };
-    case 4: return { label: "極深", color: "bg-yellow-700/30 text-yellow-200" };
-    default: return { label: "未知", color: "bg-blue-500/20 text-blue-300" };
+    case 0: return { label: "上層", color: "bg-cyan-200/20 text-cyan-300" };
+    case 1: return { label: "中層", color: "bg-blue-500/20 text-blue-300" };
+    case 2: return { label: "深層", color: "bg-indigo-900/40 text-indigo-200 border border-indigo-500/30" };
+    default: return { label: "上層", color: "bg-cyan-200/20 text-cyan-300" };
   }
 };
 
