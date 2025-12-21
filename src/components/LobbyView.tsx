@@ -90,7 +90,7 @@ const DraggableRow: React.FC<DraggableRowProps> = ({ children }) => {
 };
 
 // ==========================================
-// BubbleCard 卡片元件
+// BubbleCard 卡片元件 (Horizontal Masonry)
 // ==========================================
 interface BubbleCardProps {
     bubble: any;
@@ -98,24 +98,32 @@ interface BubbleCardProps {
 }
 
 const BubbleCard: React.FC<BubbleCardProps> = ({ bubble, onClick }) => {
+    // 產生穩定的隨機寬度 (240px - 360px)，避免 Hydration 不一致
+    const cardWidth = React.useMemo(() => {
+        if (!bubble.id) return 260;
+        const seed = bubble.id.charCodeAt(0) + (bubble.id.length > 5 ? bubble.id.charCodeAt(5) : 0);
+        return 240 + (seed % 120);
+    }, [bubble.id]);
+
     return (
         <div
             onClick={onClick}
-            className="shrink-0 w-64 bg-blue-900/40 backdrop-blur-xl hover:bg-blue-800/60 border border-white/10 rounded-2xl p-5 transition-all hover:scale-105 cursor-pointer shadow-2xl"
+            style={{ width: `${cardWidth}px` }}
+            className="shrink-0 h-[260px] bg-blue-900/40 backdrop-blur-xl hover:bg-blue-800/60 border border-white/10 rounded-2xl p-5 transition-all hover:scale-105 cursor-pointer shadow-2xl flex flex-col"
         >
-            <div className="flex items-start justify-between mb-3">
+            <div className="flex items-start justify-between mb-3 shrink-0">
                 <span className="text-[8px] px-1.5 py-0.5 bg-blue-500/20 text-blue-300 rounded border border-blue-500/30 uppercase tracking-widest font-bold">
                     {bubble.topic || "General"}
                 </span>
             </div>
-            <h3 className="text-white text-sm font-bold mb-3 line-clamp-2 leading-snug">
+            <h3 className="text-white text-sm font-bold mb-3 line-clamp-2 leading-snug shrink-0">
                 {bubble.title || "探索標題"}
             </h3>
-            <p className="text-blue-200/60 text-xs line-clamp-2 mb-3">
+            <p className="text-blue-200/60 text-xs line-clamp-5 mb-3 flex-1">
                 {bubble.content}
             </p>
-            <div className="h-px w-6 bg-blue-500/40 mb-3" />
-            <div className="flex items-center justify-between">
+            <div className="h-px w-6 bg-blue-500/40 mb-3 shrink-0" />
+            <div className="flex items-center justify-between shrink-0">
                 <div className="flex items-center gap-1.5 opacity-60">
                     <div className="w-5 h-5 rounded-full bg-blue-700 border border-blue-900 flex items-center justify-center text-[8px] text-white">
                         鯨

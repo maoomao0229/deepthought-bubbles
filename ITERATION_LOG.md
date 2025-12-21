@@ -2,6 +2,8 @@
 
 ## 修改歷史
 
+- [2025/12/22 03:25 v0.76] 檔案: `src/app/page.tsx`, `src/components/LobbyView.tsx` | 內容: 1. `page.tsx`: 新增 `allBubbles` 狀態並在切換至 Lobby 時抓取所有歷史氣泡，按時間排序；2. `LobbyView.tsx`: 實作 Horizontal Masonry 佈局，`BubbleCard` 根據 ID 生成隨機寬度 (240px-360px)，創造有機且不規則的流動感 | 原因: 解決大廳資料不完整問題，並優化視覺節奏
+
 - [2025/12/22 03:05 v0.75] 檔案: `src/components/DiveView.tsx` | 內容: 修正氣泡陰影設定：更新 `COMPLEX_BUBBLE_SHADOW` 為向下投影 (Positive Y)，並大幅降低透明度至 0.05-0.1，消除原先過深且方向錯誤的黑色陰影 | 原因: 使氣泡陰影更符合深海漂浮的自然物理感，避免視覺過重
 
 - [2025/12/22 03:00 v0.74] 檔案: `src/components/LobbyView.tsx` | 內容: 重構為 Netflix 風格佈局：1. 移除無限畫布邏輯 (`panPosition`, `bubbleLayouts`)；2. 新增 `DraggableRow` 元件實現可拖曳水平滾動 (含慣性動量)；3. 氣泡按主題分組，以垂直區塊呈現；4. 簡化卡片樣式 (`BubbleCard`) | 原因: 提升內容密度與組織性，減少空白區域，改善瀏覽體驗

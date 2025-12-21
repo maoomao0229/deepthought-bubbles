@@ -29,6 +29,8 @@ export default function Home() {
 
   // 泡泡資料狀態
   const [bubbles, setBubbles] = useState<any[]>([]);
+  // 大廳專用：所有歷史泡泡
+  const [allBubbles, setAllBubbles] = useState<any[]>([]);
 
   /**
    * 檢查解鎖狀態：當前使用者今天是否有任何紀錄
@@ -95,8 +97,29 @@ export default function Home() {
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => subscription.unsubscribe(); return () => subscription.unsubscribe();
   }, []);
+
+  /**
+   * 當切換至 Lobby 時，抓取所有泡泡資料
+   */
+  useEffect(() => {
+    if (currentView === "lobby") {
+      const fetchAllBubbles = async () => {
+        const { data, error } = await supabase
+          .from("bubbles")
+          .select("*")
+          .order("created_at", { ascending: false });
+
+        if (error) {
+          console.error("抓取所有泡泡失敗:", error.message);
+        } else if (data) {
+          setAllBubbles(data);
+        }
+      };
+      fetchAllBubbles();
+    }
+  }, [currentView]);
 
   /**
    * 處理使用者送出觀點
@@ -160,8 +183,8 @@ export default function Home() {
         // 每日潛入：顯示今日泡泡或精選主泡泡
         return <DiveView bubbles={bubbles} onSend={handleSend} isUnlocked={isUnlocked} />;
       case "lobby":
-        // 泡泡大廳：顯示所有海域的主泡泡
-        return <LobbyView bubbles={bubbles} onSend={handleSend} isUnlocked={isUnlocked} />;
+        // 泡泡大廳：顯示所有海域的主泡泡 (使用 allBubbles)
+        return <LobbyView bubbles={allBubbles} onSend={handleSend} isUnlocked={isUnlocked} />;
       case "sonar":
         return (
           <div className="w-full h-full flex items-center justify-center">
