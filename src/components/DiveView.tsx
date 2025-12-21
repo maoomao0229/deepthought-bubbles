@@ -69,12 +69,13 @@ const getCategoryConfig = (category: string): CategoryConfig => {
   }
 };
 
-const calculateDepth = (text: string): number => {
-  const length = text.trim().length;
-  if (length === 0) return 0;
-  if (length > 200) return 2; // Depth
-  if (length >= 50) return 1; // Midzone
-  return 0; // Surface (< 50)
+const TOPIC_OPTIONS = ['科普', '生活', '時事', '奇想', '哲學', '議題'];
+
+const calculateDepth = (topic: string): number => {
+  if (["生活", "奇想"].includes(topic)) return 0; // Surface
+  if (["時事", "科普"].includes(topic)) return 1; // Midzone
+  if (["哲學", "議題"].includes(topic)) return 2; // Depth
+  return 0; // Default Surface
 };
 
 const getDepthConfig = (depth: number): DepthConfig => {
@@ -174,7 +175,7 @@ const DiveModal = ({
   const [replies, setReplies] = useState<any[]>([]);
 
   const catConfig = getCategoryConfig(topic.category);
-  const depth = calculateDepth(inputValue);
+  const depth = calculateDepth(topic.topic || "");
   const depthConfig = getDepthConfig(depth);
 
   useEffect(() => {
@@ -331,10 +332,10 @@ const DiveModal = ({
  */
 const NewBubbleModal = ({ onClose, onSend }: { onClose: () => void; onSend: (content: string, parentId?: string | null, category?: string, topic?: string | null, title?: string | null) => Promise<void>; }) => {
   const [content, setContent] = useState("");
-  const [topic, setTopic] = useState("");
+  const [topic, setTopic] = useState("科普");
   const [title, setTitle] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const depth = calculateDepth(content);
+  const depth = calculateDepth(topic);
   const depthConfig = getDepthConfig(depth);
 
   const handleSubmit = async () => {
@@ -362,13 +363,23 @@ const NewBubbleModal = ({ onClose, onSend }: { onClose: () => void; onSend: (con
           <div className="space-y-4">
             <div className="space-y-2">
               <label className="text-[10px] text-blue-400/60 font-bold uppercase tracking-widest ml-1">主題 Topic</label>
-              <input
-                type="text"
-                value={topic}
-                onChange={(e) => setTopic(e.target.value)}
-                placeholder="例如：哲學、心理、時事..."
-                className="w-full bg-blue-950/30 rounded-xl px-4 py-3 text-sm text-gray-50 placeholder-blue-400/20 border border-white/5 focus:outline-none focus:ring-1 focus:ring-blue-500/30 transition-all"
-              />
+              <label className="text-[10px] text-blue-400/60 font-bold uppercase tracking-widest ml-1">主題 Topic</label>
+              <div className="relative">
+                <select
+                  value={topic}
+                  onChange={(e) => setTopic(e.target.value)}
+                  className="w-full bg-blue-950/30 rounded-xl px-4 py-3 text-sm text-gray-50 border border-white/5 focus:outline-none focus:ring-1 focus:ring-blue-500/30 transition-all appearance-none cursor-pointer"
+                >
+                  {TOPIC_OPTIONS.map((opt) => (
+                    <option key={opt} value={opt} className="bg-blue-900 text-white">
+                      {opt}
+                    </option>
+                  ))}
+                </select>
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-blue-300/50">
+                  <span className="text-xs">▼</span>
+                </div>
+              </div>
             </div>
 
             <div className="space-y-2">
@@ -484,7 +495,7 @@ const DiveView = ({
         topic: b.topic,
         title: b.title,
         category: b.category || "ocean",
-        depthLevel: b.content.length > 200 ? "Depth" : b.content.length > 50 ? "Midzone" : "Surface",
+        depthLevel: ["哲學", "議題"].includes(b.topic) ? "Depth" : ["時事", "科普"].includes(b.topic) ? "Midzone" : "Surface",
         // 固定速度參數
         speed: 0.4 + seededRandom(b.id + 'speed') * 0.4,
         content: b.content,

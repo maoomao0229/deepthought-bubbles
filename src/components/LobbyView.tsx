@@ -23,6 +23,8 @@ const seededRandom = (seed: string) => {
     return ((h >>> 0) / 4294967296);
 };
 
+const TOPIC_OPTIONS = ['科普', '生活', '時事', '奇想', '哲學', '議題'];
+
 const LobbyView = ({ bubbles, onSend, isUnlocked = false }: LobbyViewProps) => {
     const [activeCategory, setActiveCategory] = useState<string>("all");
     const [selectedBubble, setSelectedBubble] = useState<any | null>(null);
@@ -482,12 +484,22 @@ const LobbyView = ({ bubbles, onSend, isUnlocked = false }: LobbyViewProps) => {
                         <div className="w-full space-y-4 mb-6">
                             <div className="space-y-2">
                                 <label className="text-[10px] text-blue-400/60 font-bold uppercase tracking-widest ml-1">主題 Topic</label>
-                                <input
-                                    type="text"
-                                    id="lobby-topic"
-                                    placeholder="例如：哲學、心理、時事..."
-                                    className="w-full bg-blue-950/30 rounded-xl px-4 py-3 text-sm text-gray-50 placeholder-blue-400/20 border border-white/5 focus:outline-none focus:ring-1 focus:ring-blue-500/30 transition-all"
-                                />
+                                <div className="relative">
+                                    <select
+                                        id="lobby-topic"
+                                        className="w-full bg-blue-950/30 rounded-xl px-4 py-3 text-sm text-gray-50 border border-white/5 focus:outline-none focus:ring-1 focus:ring-blue-500/30 transition-all appearance-none cursor-pointer"
+                                        defaultValue="科普"
+                                    >
+                                        {TOPIC_OPTIONS.map((opt) => (
+                                            <option key={opt} value={opt} className="bg-blue-900 text-white">
+                                                {opt}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-blue-300/50">
+                                        <span className="text-xs">▼</span>
+                                    </div>
+                                </div>
                             </div>
 
                             <div className="space-y-2">

@@ -111,9 +111,10 @@ export default function Home() {
 
     // 計算深度等級 (Backend Logic)
     let depthLevel = "Surface";
-    const len = content.length;
-    if (len > 200) depthLevel = "Depth";
-    else if (len >= 50) depthLevel = "Midzone";
+    const t = topic || "";
+    if (["哲學", "議題"].includes(t)) depthLevel = "Depth";
+    else if (["時事", "科普"].includes(t)) depthLevel = "Midzone";
+    else depthLevel = "Surface";
 
     const { error } = await supabase.from("bubbles").insert([
       {

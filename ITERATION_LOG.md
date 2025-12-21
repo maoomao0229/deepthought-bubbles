@@ -2,6 +2,8 @@
 
 ## 修改歷史
 
+- [2025/12/21 19:18 v0.56] 檔案: `src/app/page.tsx`, `src/components/DiveView.tsx`, `src/components/LobbyView.tsx` | 內容: 重構深度判定邏輯：1. 將氣泡的主題欄位從自由輸入改為下拉選單皆選 (科普/生活/時事/奇想/哲學/議題)；2. `depth_level` 與視覺樣式改為依據「主題」決定 (如：哲學=Deep, 生活=Surface)，不再依賴文字長度 | 原因: 讓深度分類更具語意化，避免短文但具深度的內容被誤判為 Surface，並統一使用者體驗
+
 - [2025/12/21 18:55 v0.55] 檔案: `src/components/DiveView.tsx` | 內容: 優化氣泡視覺細節：微調 `BUBBLE_STYLES` 漸層為半透明 (0.4) 以保留磨砂玻璃 (Frosted Glass) 效果，並恢復標題與標籤的原始淺色文字配色 (`text-blue-50`, `text-blue-200`)，消除因不透明背景導致的視覺厚重感 | 原因: 確保在引入 Figma 複雜漸層的同時，仍維持深思氣泡原有的通透感與文字可讀性
 
 - [2025/12/21 18:50 v0.54] 檔案: `src/components/DiveView.tsx` | 內容: 視覺與互動強化：1. 定義 `BUBBLE_STYLES` 常數，導入 Figma 設計的 Surface/Midzone/Depth 漸層與混合模式；2. 更新 `TopicBubble` 組件，根據內容長度計算的 `depthLevel` 套用對應的視覺樣式，取代原有的 Tailwind 背景色，營造更細膩的深海氛圍 | 原因: 實現高度還原的 Figma 設計，透過視覺層次（光澤、顏色深度）直觀傳達思考的深度
