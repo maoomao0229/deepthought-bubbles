@@ -145,9 +145,6 @@ const TopicBubble = forwardRef<HTMLDivElement, TopicBubbleProps>(
             boxShadow: isHovered ? "0 0 40px rgba(255,255,255,0.4)" : undefined
           }}
         >
-          <span className={`block font-bold mb-1 opacity-80 uppercase tracking-widest text-[8px] text-blue-200`}>
-            {topic.topic || catConfig.name}
-          </span>
           <h3 className="font-bold leading-tight px-1 drop-shadow-md select-none line-clamp-2 text-base text-blue-50">
             {topic.title || "探索思考"}
           </h3>

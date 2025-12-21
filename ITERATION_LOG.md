@@ -2,6 +2,8 @@
 
 ## 修改歷史
 
+- [2025/12/21 19:38 v0.58] 檔案: `src/components/DiveView.tsx` | 內容: 移除 `TopicBubble` 內的分類標籤顯示 (如「科普」、「生活」字樣)，僅保留標題 | 原因: 簡化氣泡視覺元素，避免資訊過載，讓使用者專注於標題內容
+
 - [2025/12/21 19:25 v0.57] 檔案: `src/components/DiveView.tsx` | 內容: 調整 `BUBBLE_STYLES` 透明度：將 Surface 層的白色漸層不透明度從 100% 降至 10%，Midzone 層從 50% 降至 20%，以提升淺色文字 (`text-blue-50`) 在淺色氣泡上的對比度與可讀性 | 原因: 修正因 Figma 原始色票過亮導致文字難以閱讀的問題，同時維持磨砂玻璃質感
 
 - [2025/12/21 19:18 v0.56] 檔案: `src/app/page.tsx`, `src/components/DiveView.tsx`, `src/components/LobbyView.tsx` | 內容: 重構深度判定邏輯：1. 將氣泡的主題欄位從自由輸入改為下拉選單皆選 (科普/生活/時事/奇想/哲學/議題)；2. `depth_level` 與視覺樣式改為依據「主題」決定 (如：哲學=Deep, 生活=Surface)，不再依賴文字長度 | 原因: 讓深度分類更具語意化，避免短文但具深度的內容被誤判為 Surface，並統一使用者體驗
