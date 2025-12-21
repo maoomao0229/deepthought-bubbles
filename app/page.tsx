@@ -62,8 +62,10 @@ export default function Home() {
 
     if (error) {
       console.error("抓取泡泡失敗:", error.message);
-    } else {
-      setBubbles(data || []);
+    } else if (data) {
+      // 動態隨機抽取：洗牌並取出 20 筆
+      const shuffled = [...data].sort(() => Math.random() - 0.5);
+      setBubbles(shuffled.slice(0, 20));
     }
   };
 

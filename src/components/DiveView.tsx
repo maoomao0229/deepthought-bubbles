@@ -12,6 +12,7 @@ interface SeedTopic {
   id: string;
   x: number; // 畫布上的 X 座標
   y: number; // 畫布上的 Y 座標
+  zIndex: number;
   topic?: string;
   title?: string;
   category: "philosophy" | "ocean" | "thought" | "depth" | string;
@@ -94,7 +95,8 @@ const TopicBubble = forwardRef<HTMLDivElement, TopicBubbleProps>(
       <div
         ref={ref}
         data-speed={topic.speed}
-        className="relative group cursor-pointer p-2 z-10 hover:z-20 transition-transform duration-300 ease-out"
+        className="relative group cursor-pointer p-2 hover:z-50 transition-transform duration-300 ease-out"
+        style={{ zIndex: topic.zIndex }}
         onClick={(e) => {
           e.stopPropagation();
           onClick();
@@ -405,17 +407,47 @@ const DiveView = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const bubblesRef = useRef<(HTMLDivElement | null)[]>([]);
 
-  const mappedTopics: SeedTopic[] = bubbles.map((b) => ({
-    id: b.id,
-    x: (b.x_position - 50) * 8,
-    y: (b.y_position - 50) * 8,
-    topic: b.topic,
-    title: b.title,
-    category: b.category || "ocean",
-    speed: 0.4 + Math.random() * 0.4,
-    content: b.content,
-    size: b.content.length > 80 ? "lg" : b.content.length > 30 ? "md" : "sm",
-  }));
+  const mappedTopics: SeedTopic[] = [];
+
+  // 防堆疊與層級處理
+  bubbles.forEach((b, index) => {
+    // 基礎座標映射 (0-100 -> 畫布偏移)
+    let finalX = (b.x_position - 50) * 8;
+    let finalY = (b.y_position - 50) * 8;
+
+    // 簡單的碰撞檢查 (與已放置的泡泡比較)
+    const threshold = 120; // 碰撞半徑 (單位: px)
+    let collisionDetected = true;
+    let attempts = 0;
+
+    while (collisionDetected && attempts < 5) {
+      collisionDetected = mappedTopics.some(t => {
+        const dx = t.x - finalX;
+        const dy = t.y - finalY;
+        return Math.sqrt(dx * dx + dy * dy) < threshold;
+      });
+
+      if (collisionDetected) {
+        // 如果太擠，加上隨機抖動 (Jitter)
+        finalX += (Math.random() - 0.5) * 100;
+        finalY += (Math.random() - 0.5) * 100;
+      }
+      attempts++;
+    }
+
+    mappedTopics.push({
+      id: b.id,
+      x: finalX,
+      y: finalY,
+      zIndex: (index % 4) + 1, // 循環 1-4 層，確保不會太厚
+      topic: b.topic,
+      title: b.title,
+      category: b.category || "ocean",
+      speed: 0.4 + Math.random() * 0.4,
+      content: b.content,
+      size: b.content.length > 80 ? "lg" : b.content.length > 30 ? "md" : "sm",
+    });
+  });
 
   const handlePointerDown = (e: React.MouseEvent | React.TouchEvent) => {
     // 即使未解鎖也允許拖曳與瀏覽

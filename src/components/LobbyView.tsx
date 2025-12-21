@@ -20,6 +20,22 @@ const LobbyView = ({ bubbles, onSend, isUnlocked = false }: LobbyViewProps) => {
     const [replies, setReplies] = useState<any[]>([]);
     const [replyContent, setReplyContent] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isNewBubbleOpen, setIsNewBubbleOpen] = useState(false);
+
+    // 畫布位置狀態 (中心點偏移)
+    const [panPosition, setPanPosition] = useState({ x: 0, y: 0 });
+    const isPointerDown = React.useRef(false);
+    const isDragging = React.useRef(false);
+    const startDragClientPos = React.useRef({ x: 0, y: 0 });
+    const startPanOffset = React.useRef({ x: 0, y: 0 });
+    const containerRef = React.useRef<HTMLDivElement>(null);
+
+    // 初始位置居中
+    useEffect(() => {
+        // 將視角設置在 200vw/200vh 的中心
+        // 畫布中心為 (0,0)，透過 translate 偏移
+        setPanPosition({ x: 0, y: 0 });
+    }, []);
 
     // 分類清單
     const categories = [
@@ -56,17 +72,15 @@ const LobbyView = ({ bubbles, onSend, isUnlocked = false }: LobbyViewProps) => {
 
     /**
      * 發送回覆邏輯
-     * 統一使用父組件傳入的 onSend 以維持邏輯一致性（含訪客提示與同步機制）
      */
     const handleSendReply = async () => {
         if (!replyContent.trim() || !selectedBubble || isSubmitting) return;
 
         setIsSubmitting(true);
         try {
-            // 傳遞內容、父 ID 以及繼承主泡泡的分類
             await onSend(replyContent, selectedBubble.id, selectedBubble.category);
             setReplyContent("");
-            fetchReplies(selectedBubble.id); // 成功後重新整理回覆列表
+            fetchReplies(selectedBubble.id);
         } catch (err) {
             console.error("回覆發送過程出錯:", err);
         } finally {
@@ -85,42 +99,109 @@ const LobbyView = ({ bubbles, onSend, isUnlocked = false }: LobbyViewProps) => {
             return cat === activeCategory;
         });
 
-    const [isNewBubbleOpen, setIsNewBubbleOpen] = useState(false);
+    // 預處理泡泡佈局 (防重疊與座標映射)
+    const processedBubbles = React.useMemo(() => {
+        const results: any[] = [];
+        const threshold = 180; // 碰撞半徑
+
+        filteredBubbles.forEach((b, index) => {
+            // 將 0-100 座標映射到 200vw x 200vh (對應約 4000px 面積)
+            // 畫布中心為 0,0，範圍是 -100vw 到 100vw
+            let finalX = (b.x_position - 50) * 16;
+            let finalY = (b.y_position - 50) * 16;
+
+            let collision = true;
+            let attempts = 0;
+            while (collision && attempts < 5) {
+                collision = results.some(r => {
+                    const dx = r.x - finalX;
+                    const dy = r.y - finalY;
+                    return Math.sqrt(dx * dx + dy * dy) < threshold;
+                });
+                if (collision) {
+                    finalX += (Math.random() - 0.5) * 150;
+                    finalY += (Math.random() - 0.5) * 150;
+                }
+                attempts++;
+            }
+
+            results.push({
+                ...b,
+                x: finalX,
+                y: finalY,
+                zIndex: (index % 4) + 1
+            });
+        });
+        return results;
+    }, [filteredBubbles]);
+
+    const handlePointerDown = (e: React.MouseEvent | React.TouchEvent) => {
+        isPointerDown.current = true;
+        isDragging.current = false;
+        const clientX = "touches" in e ? e.touches[0].clientX : (e as React.MouseEvent).clientX;
+        const clientY = "touches" in e ? e.touches[0].clientY : (e as React.MouseEvent).clientY;
+        startDragClientPos.current = { x: clientX, y: clientY };
+        startPanOffset.current = { x: clientX - panPosition.x, y: clientY - panPosition.y };
+    };
+
+    const handlePointerMove = (e: React.MouseEvent | React.TouchEvent) => {
+        if (!isPointerDown.current) return;
+        const clientX = "touches" in e ? e.touches[0].clientX : (e as React.MouseEvent).clientX;
+        const clientY = "touches" in e ? e.touches[0].clientY : (e as React.MouseEvent).clientY;
+
+        const moveDist = Math.sqrt(
+            Math.pow(clientX - startDragClientPos.current.x, 2) +
+            Math.pow(clientY - startDragClientPos.current.y, 2)
+        );
+        if (moveDist > 5) isDragging.current = true;
+
+        setPanPosition({
+            x: clientX - startPanOffset.current.x,
+            y: clientY - startPanOffset.current.y
+        });
+    };
+
+    const handlePointerUp = () => {
+        isPointerDown.current = false;
+        setTimeout(() => { isDragging.current = false; }, 50);
+    };
+
+    useEffect(() => {
+        const handleGlobalUp = () => { isPointerDown.current = false; };
+        window.addEventListener("mouseup", handleGlobalUp);
+        window.addEventListener("touchend", handleGlobalUp);
+        return () => {
+            window.removeEventListener("mouseup", handleGlobalUp);
+            window.removeEventListener("touchend", handleGlobalUp);
+        };
+    }, []);
 
     return (
-        <div className="w-full h-full bg-blue-900/40 backdrop-blur-sm overflow-hidden relative">
+        <div className="w-full h-full bg-[#050B1A] overflow-hidden relative font-sans">
             <div className={`w-full h-full flex flex-col transition-all duration-700 ${!isUnlocked ? "blur-2xl scale-105 opacity-30 select-none pointer-events-none" : "blur-0 scale-100 opacity-100"}`}>
-                {/* Header */}
-                <div className="sticky top-0 z-20 bg-blue-900/60 backdrop-blur-md px-6 py-6 border-b border-white/5">
-                    <div className="flex items-center justify-between mb-6">
-                        <h1 className="text-2xl font-bold text-white tracking-tight flex items-center gap-3">
-                            <Waves className="text-blue-400" />
+                {/* Header: 置頂且不隨畫布移動 */}
+                <div className="absolute top-0 left-0 right-0 z-40 bg-blue-950/40 backdrop-blur-md px-6 py-4 border-b border-white/5 pointer-events-auto">
+                    <div className="flex items-center justify-between mb-4">
+                        <h1 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
+                            <Waves className="text-blue-400" size={18} />
                             意識大廳
                         </h1>
-                        <div className="flex items-center gap-3">
-                            <button
-                                onClick={() => setIsNewBubbleOpen(true)}
-                                className="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-400 text-white rounded-full text-xs font-bold transition-all shadow-lg shadow-blue-500/20 active:scale-95"
-                            >
-                                <Plus size={14} />
-                                發起思考
-                            </button>
-                        </div>
+                        <button
+                            onClick={() => setIsNewBubbleOpen(true)}
+                            className="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-400 text-white rounded-full text-[10px] font-bold transition-all shadow-lg shadow-blue-500/20 active:scale-95"
+                        >
+                            <Plus size={12} />
+                            發起思考
+                        </button>
                     </div>
 
-                    {/* 分類切換 */}
                     <div className="flex gap-2 overflow-x-auto no-scrollbar">
                         {categories.map((cat) => (
                             <button
                                 key={cat.id}
                                 onClick={() => setActiveCategory(cat.id)}
-                                className={`
-                    px-4 py-2 rounded-full text-xs font-medium whitespace-nowrap transition-all
-                    ${activeCategory === cat.id
-                                        ? "bg-blue-500 text-white shadow-lg shadow-blue-500/20"
-                                        : "bg-white/5 text-blue-300 hover:bg-white/10"
-                                    }
-                  `}
+                                className={`px-4 py-1.5 rounded-full text-[10px] font-medium whitespace-nowrap transition-all ${activeCategory === cat.id ? "bg-blue-500 text-white shadow-lg shadow-blue-500/20" : "bg-white/5 text-blue-300 hover:bg-white/10"
+                                    }`}
                             >
                                 {cat.name}
                             </button>
@@ -128,49 +209,83 @@ const LobbyView = ({ bubbles, onSend, isUnlocked = false }: LobbyViewProps) => {
                     </div>
                 </div>
 
-                {/* Bubble Grid */}
-                <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 overflow-y-auto no-scrollbar pb-32">
-                    {filteredBubbles.length > 0 ? (
-                        filteredBubbles.map((bubble) => (
-                            <div
-                                key={bubble.id}
-                                onClick={() => setSelectedBubble(bubble)}
-                                className="group bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl p-5 transition-all hover:scale-[1.02] cursor-pointer"
-                            >
-                                <div className="flex items-start justify-between mb-4">
-                                    <span className="text-[10px] px-2 py-1 bg-blue-500/20 text-blue-300 rounded-md uppercase tracking-widest font-bold">
-                                        {bubble.topic || bubble.category || "General"}
-                                    </span>
-                                    <span className="text-[10px] text-blue-400/60">
-                                        {new Date(bubble.created_at).toLocaleDateString()}
-                                    </span>
-                                </div>
-                                <h3 className="text-white text-base font-bold mb-2 line-clamp-1">
-                                    {bubble.title || "探索標題"}
-                                </h3>
-                                <div className="h-px w-8 bg-blue-500/30 mb-4" />
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-2">
-                                        <div className="w-6 h-6 rounded-full bg-blue-700 border border-blue-900 flex items-center justify-center text-[10px] text-white">
-                                            鯨
+                {/* 大畫布容器 */}
+                <div
+                    ref={containerRef}
+                    className="w-full h-full cursor-grab active:cursor-grabbing touch-none relative z-10"
+                    onMouseDown={handlePointerDown}
+                    onMouseMove={handlePointerMove}
+                    onMouseUp={handlePointerUp}
+                    onMouseLeave={handlePointerUp}
+                    onTouchStart={handlePointerDown}
+                    onTouchMove={handlePointerMove}
+                    onTouchEnd={handlePointerUp}
+                >
+                    {/* 背景網格或裝飾 */}
+                    <div className="absolute inset-0 pointer-events-none opacity-20"
+                        style={{
+                            backgroundImage: `radial-gradient(circle at 2px 2px, rgba(255,255,255,0.05) 1px, transparent 0)`,
+                            backgroundSize: '40px 40px',
+                            transform: `translate(${panPosition.x % 40}px, ${panPosition.y % 40}px)`
+                        }}
+                    />
+
+                    {/* 泡泡內容層：根據 panPosition 移動 */}
+                    <div
+                        className="absolute top-1/2 left-1/2 w-0 h-0 transition-transform duration-75 ease-out"
+                        style={{ transform: `translate(${panPosition.x}px, ${panPosition.y}px)` }}
+                    >
+                        {processedBubbles.length > 0 ? (
+                            processedBubbles.map((bubble) => (
+                                <div
+                                    key={bubble.id}
+                                    style={{
+                                        left: `${bubble.x}px`,
+                                        top: `${bubble.y}px`,
+                                        zIndex: bubble.zIndex,
+                                        transform: 'translate(-50%, -50%)'
+                                    }}
+                                    onClick={(e) => {
+                                        if (isDragging.current) return;
+                                        e.stopPropagation();
+                                        setSelectedBubble(bubble);
+                                    }}
+                                    className="absolute group bg-blue-900/40 backdrop-blur-xl hover:bg-blue-800/60 border border-white/10 rounded-2xl p-5 transition-all hover:scale-105 cursor-pointer min-w-[180px] max-w-[240px] shadow-2xl"
+                                >
+                                    <div className="flex items-start justify-between mb-3">
+                                        <span className="text-[8px] px-1.5 py-0.5 bg-blue-500/20 text-blue-300 rounded border border-blue-500/30 uppercase tracking-widest font-bold">
+                                            {bubble.topic || bubble.category || "General"}
+                                        </span>
+                                    </div>
+                                    <h3 className="text-white text-sm font-bold mb-3 line-clamp-2 leading-snug">
+                                        {bubble.title || "探索標題"}
+                                    </h3>
+                                    <div className="h-px w-6 bg-blue-500/40 mb-3" />
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-1.5 opacity-60">
+                                            <div className="w-5 h-5 rounded-full bg-blue-700 border border-blue-900 flex items-center justify-center text-[8px] text-white">
+                                                鯨
+                                            </div>
+                                            <span className="text-[8px] text-blue-300">潛者</span>
                                         </div>
-                                        <span className="text-[10px] text-blue-300/60">獵手</span>
-                                    </div>
-                                    <div className="flex items-center gap-1.5 text-[10px] text-blue-400/40">
-                                        <MessageSquare size={10} />
-                                        <span>深度對話</span>
+                                        <div className="flex items-center gap-1 text-[8px] text-blue-400/40 font-bold uppercase tracking-wider">
+                                            <MessageSquare size={8} />
+                                            <span>對話</span>
+                                        </div>
                                     </div>
                                 </div>
+                            ))
+                        ) : (
+                            <div className="absolute transform -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none">
+                                <Search className="text-blue-300/10 mx-auto mb-4" size={48} />
+                                <p className="text-blue-300/30 text-xs tracking-widest uppercase">此海域尚無意識浮起</p>
                             </div>
-                        ))
-                    ) : (
-                        <div className="col-span-full py-20 text-center">
-                            <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4 border border-white/10">
-                                <Search className="text-blue-300/30" size={24} />
-                            </div>
-                            <p className="text-blue-300/50 text-sm">目前該海域尚無氣泡浮起</p>
-                        </div>
-                    )}
+                        )}
+
+                        {/* 隨機背景裝飾點 */}
+                        <div className="absolute top-[-500px] left-[-400px] w-[800px] h-[800px] bg-blue-600/5 rounded-full blur-[120px] pointer-events-none -z-10" />
+                        <div className="absolute top-[200px] left-[300px] w-[600px] h-[600px] bg-indigo-600/5 rounded-full blur-[100px] pointer-events-none -z-10" />
+                    </div>
                 </div>
             </div>
 
