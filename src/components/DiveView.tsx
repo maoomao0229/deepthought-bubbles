@@ -428,6 +428,7 @@ const DiveView = ({
 
   const containerRef = useRef<HTMLDivElement>(null);
   const bubblesRef = useRef<(HTMLDivElement | null)[]>([]);
+  const rafId = useRef<number | null>(null);
 
 
   // 使用 useMemo 鎖定計算結果，避免拖曳時重算導致閃爍
@@ -495,9 +496,21 @@ const DiveView = ({
     const clientY = "touches" in e ? e.touches[0].clientY : (e as React.MouseEvent).clientY;
 
     if (isPointerDown.current) {
-      const moveDist = Math.sqrt(Math.pow(clientX - startDragClientPos.current.x, 2) + Math.pow(clientY - startDragClientPos.current.y, 2));
-      if (moveDist > 5) isDragging.current = true;
-      setPanPosition({ x: clientX - startPanOffset.current.x, y: clientY - startPanOffset.current.y });
+      if (rafId.current) cancelAnimationFrame(rafId.current);
+
+      rafId.current = requestAnimationFrame(() => {
+        const moveDist = Math.sqrt(
+          Math.pow(clientX - startDragClientPos.current.x, 2) +
+          Math.pow(clientY - startDragClientPos.current.y, 2)
+        );
+
+        // [FIX] 將閾值從 5 提高到 15，避免點擊微動被誤判為拖曳
+        if (moveDist > 15) isDragging.current = true;
+
+        if (isDragging.current) {
+          setPanPosition({ x: clientX - startPanOffset.current.x, y: clientY - startPanOffset.current.y });
+        }
+      });
       return;
     }
     if ("touches" in e) return;
@@ -519,6 +532,7 @@ const DiveView = ({
 
   const handlePointerUp = () => {
     isPointerDown.current = false;
+    if (rafId.current) cancelAnimationFrame(rafId.current);
     setTimeout(() => { isDragging.current = false; }, 50);
   };
 
@@ -529,7 +543,11 @@ const DiveView = ({
   };
 
   useEffect(() => {
-    const handleGlobalUp = () => { isPointerDown.current = false; setTimeout(() => (isDragging.current = false), 50); };
+    const handleGlobalUp = () => {
+      isPointerDown.current = false;
+      if (rafId.current) cancelAnimationFrame(rafId.current);
+      setTimeout(() => (isDragging.current = false), 50);
+    };
     window.addEventListener("mouseup", handleGlobalUp);
     window.addEventListener("touchend", handleGlobalUp);
     return () => { window.removeEventListener("mouseup", handleGlobalUp); window.removeEventListener("touchend", handleGlobalUp); };
@@ -602,11 +620,18 @@ const DiveView = ({
                   e.stopPropagation(); // 阻止背景 Click
                   if (isDragging.current) return;
 
-                  // 點擊兩段式：首下浮起，次下打開
-                  if (hoveredId !== topic.id) {
-                    setHoveredId(topic.id);
-                  } else {
+                  // [FIX] 點擊優化：若是滑鼠(Desktop)直接打開；手機端保持兩段式確認
+                  const isMouse = (e.nativeEvent as PointerEvent).pointerType === 'mouse';
+
+                  if (isMouse) {
                     setSelectedTopic(topic);
+                  } else {
+                    // Mobile 點擊兩段式：首下浮起，次下打開
+                    if (hoveredId !== topic.id) {
+                      setHoveredId(topic.id);
+                    } else {
+                      setSelectedTopic(topic);
+                    }
                   }
                 }}
               >

@@ -2,6 +2,8 @@
 
 ## 修改歷史
  
+- [2025/12/21 15:52 v0.48] 檔案: `src/components/DiveView.tsx` | 內容: 互動體驗優化：1. 將拖曳判定閾值從 `5px` 提高至 `15px` 並引入 `requestAnimationFrame` 提高流暢度；2. 點擊邏輯區分裝置：滑鼠點擊 (Desktop) 總是直接開啟內容，觸控點擊 (Mobile) 維持兩段式確認 | 原因: 減少因手抖或微小移動導致的點擊誤判，並為不同裝置提供更直覺的操作邏輯
+
 - [2025/12/21 15:42 v0.47] 檔案: `src/components/DiveView.tsx`, `src/components/LobbyView.tsx`, `app/globals.css` | 內容: 實作 Mobile-First 互動適配：1. 在拖曳畫布層加入 `touch-none` 禁止瀏覽器原生捲動；2. `DiveView` 實作點擊兩段式邏輯（首下浮起、次下打開），並支援點擊背景重置狀態；3. 全域加入 `overscroll-behavior: none` 防止 iOS 橡皮筋效果 | 原因: 優化手機版操作體驗，解決行動裝置無法正常拖曳畫布與選取底層氣泡的問題
 
 - [2025/12/21 15:38 v0.46] 檔案: `src/components/DiveView.tsx` | 內容: 元件微調優化：`TopicBubble` 的縮放 (`scale-1.2`) 與陰影 (`boxShadow`) 改由 `isHovered` 屬性透過 inline style 控制，移除 CSS `hover:` 類別，避免與父層邏輯衝突並確保過渡平滑 | 原因: 提升程式碼的可控性，確保視覺狀態與 JS 邏輯狀態（如 Parallax 的 z-index 變化）完全同步
