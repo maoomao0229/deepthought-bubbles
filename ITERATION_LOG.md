@@ -1,7 +1,9 @@
 # 迭代紀錄 (Iteration Log)
 
 ## 修改歷史
- 
+
+- [2025/12/21 16:59 v0.50] 檔案: `src/components/DiveView.tsx` | 內容: 修復氣泡無法點擊的 Bug：移除 TopicBubble 組件中阻擋事件冒泡的 onClick 處理器，讓點擊事件能正確傳遞至父層包裝器以觸發開啟 Modal 邏輯，同時保留拖曳偵測功能 | 原因: 解決使用者無法點擊氣泡查看詳情的問題，確保互動邏輯與拖曳行為共存
+
 - [2025/12/21 16:11 v0.49] 檔案: `app/layout.tsx` | 內容: 修復 Hydration Mismatch 錯誤：在 `html` 與 `body` 標籤加入 `suppressHydrationWarning` 屬性 | 原因: 防止行動端或電腦端瀏覽器外掛（如 Grammarly）注入自訂屬性導致伺服器渲染 HTML 與用戶端不一致的報錯
 
 - [2025/12/21 15:52 v0.48] 檔案: `src/components/DiveView.tsx` | 內容: 互動體驗優化：1. 將拖曳判定閾值從 `5px` 提高至 `15px` 並引入 `requestAnimationFrame` 提高流暢度；2. 點擊邏輯區分裝置：滑鼠點擊 (Desktop) 總是直接開啟內容，觸控點擊 (Mobile) 維持兩段式確認 | 原因: 減少因手抖或微小移動導致的點擊誤判，並為不同裝置提供更直覺的操作邏輯

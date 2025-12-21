@@ -111,10 +111,7 @@ const TopicBubble = forwardRef<HTMLDivElement, TopicBubbleProps>(
           zIndex: topic.zIndex,
           transform: isHovered ? "scale(1.2)" : "scale(1)",
         }}
-        onClick={(e) => {
-          e.stopPropagation();
-          onClick();
-        }}
+
       >
         <div className={`
           ${sizeClasses[topic.size]}
