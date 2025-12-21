@@ -2,6 +2,8 @@
 
 ## 修改歷史
 
+- [2025/12/22 03:00 v0.74] 檔案: `src/components/LobbyView.tsx` | 內容: 重構為 Netflix 風格佈局：1. 移除無限畫布邏輯 (`panPosition`, `bubbleLayouts`)；2. 新增 `DraggableRow` 元件實現可拖曳水平滾動 (含慣性動量)；3. 氣泡按主題分組，以垂直區塊呈現；4. 簡化卡片樣式 (`BubbleCard`) | 原因: 提升內容密度與組織性，減少空白區域，改善瀏覽體驗
+
 - [2025/12/22 02:30 v0.73] 檔案: `src/components/DiveView.tsx` | 內容: 為氣泡新增多層次複雜陰影 (`COMPLEX_BUBBLE_SHADOW`)，並使用條件式套用邏輯：非懸停時顯示深層陰影，懸停時切換為原有的發光效果 | 原因: 提升氣泡視覺的立體感與層次感，同時保留互動回饋
 
 - [2025/12/22 02:15 v0.72] 檔案: `src/components/LiquidTabBar.tsx` | 內容: 修正邊緣標籤的 SVG 路徑裁切錯誤：在 `getPath` 函數中加入座標安全裁切邏輯 (`Math.max`/`Math.min`)，確保液態凹洞的控制點不會越界進入圓角區域 | 原因: 解決第一個或最後一個標籤啟用時導航列消失/閃爍的問題
