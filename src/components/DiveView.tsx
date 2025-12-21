@@ -35,19 +35,16 @@ interface DepthConfig {
 
 const BUBBLE_STYLES = {
   Surface: {
-    background: "linear-gradient(0deg, #FFFBF6, #FFFBF6), radial-gradient(85.64% 85.64% at 20.51% 15.33%, rgba(101, 113, 188, 0.5) 0%, rgba(91, 139, 180, 0) 64.68%), linear-gradient(291.42deg, rgba(159, 193, 221, 0.1) 14%, rgba(0, 0, 0, 0) 73.01%), radial-gradient(47.37% 47.37% at 41.8% 41.02%, rgba(0, 0, 0, 0) 54.81%, rgba(155, 221, 206, 0.1) 100%), #5B8BB4",
+    background: "linear-gradient(0deg, #FFFBF6, #FFFBF6), radial-gradient(85.64% 85.64% at 20.51% 15.33%, rgba(101, 113, 188, 0.5) 0%, rgba(91, 139, 180, 0) 64.68%), linear-gradient(291.42deg, rgba(159, 193, 221, 0.1) 14%, rgba(0, 0, 0, 0) 73.01%), radial-gradient(47.37% 47.37% at 41.8% 41.02%, rgba(0, 0, 0, 0) 54.81%, rgba(155, 221, 206, 0.1) 100%), rgba(91, 139, 180, 0.4)",
     backgroundBlendMode: "soft-light, plus-lighter, normal, plus-lighter, normal",
-    color: "#161819", // Dark Text
   },
   Midzone: {
-    background: "linear-gradient(0deg, rgba(255, 251, 246, 0.5), rgba(255, 251, 246, 0.5)), radial-gradient(85.64% 85.64% at 20.51% 15.33%, rgba(101, 113, 188, 0.5) 0%, rgba(91, 139, 180, 0) 64.68%), radial-gradient(47.37% 47.37% at 41.8% 41.02%, rgba(0, 0, 0, 0) 54.81%, rgba(155, 221, 206, 0.1) 100%), #4376A0",
+    background: "linear-gradient(0deg, rgba(255, 251, 246, 0.5), rgba(255, 251, 246, 0.5)), radial-gradient(85.64% 85.64% at 20.51% 15.33%, rgba(101, 113, 188, 0.5) 0%, rgba(91, 139, 180, 0) 64.68%), radial-gradient(47.37% 47.37% at 41.8% 41.02%, rgba(0, 0, 0, 0) 54.81%, rgba(155, 221, 206, 0.1) 100%), rgba(67, 118, 160, 0.4)",
     backgroundBlendMode: "soft-light, plus-lighter, plus-lighter, normal",
-    color: "#161819",
   },
   Depth: {
-    background: "radial-gradient(85.64% 85.64% at 20.51% 15.33%, rgba(101, 113, 188, 0.5) 0%, rgba(91, 139, 180, 0) 64.68%), linear-gradient(291.42deg, rgba(159, 193, 221, 0.1) 14%, rgba(0, 0, 0, 0) 73.01%), radial-gradient(47.37% 47.37% at 41.8% 41.02%, rgba(0, 0, 0, 0) 54.81%, rgba(155, 221, 206, 0.1) 100%), #316794",
+    background: "radial-gradient(85.64% 85.64% at 20.51% 15.33%, rgba(101, 113, 188, 0.5) 0%, rgba(91, 139, 180, 0) 64.68%), linear-gradient(291.42deg, rgba(159, 193, 221, 0.1) 14%, rgba(0, 0, 0, 0) 73.01%), radial-gradient(47.37% 47.37% at 41.8% 41.02%, rgba(0, 0, 0, 0) 54.81%, rgba(155, 221, 206, 0.1) 100%), rgba(49, 103, 148, 0.4)",
     backgroundBlendMode: "plus-lighter, normal, plus-lighter, normal",
-    color: "#161819",
   }
 };
 
@@ -135,6 +132,7 @@ const TopicBubble = forwardRef<HTMLDivElement, TopicBubbleProps>(
         <div className={`
           ${sizeClasses[topic.size]}
           rounded-full flex flex-col items-center justify-center text-center p-4
+          backdrop-blur-xl
           shadow-lg 
           transition-all duration-300 animate-float
         `}
@@ -143,10 +141,10 @@ const TopicBubble = forwardRef<HTMLDivElement, TopicBubbleProps>(
             boxShadow: isHovered ? "0 0 40px rgba(255,255,255,0.4)" : undefined
           }}
         >
-          <span className={`block font-bold mb-1 opacity-80 uppercase tracking-widest text-[8px]`} style={{ color: visualStyle.color }}>
+          <span className={`block font-bold mb-1 opacity-80 uppercase tracking-widest text-[8px] text-blue-200`}>
             {topic.topic || catConfig.name}
           </span>
-          <h3 className="font-bold leading-tight px-1 drop-shadow-md select-none line-clamp-2 text-base" style={{ color: visualStyle.color }}>
+          <h3 className="font-bold leading-tight px-1 drop-shadow-md select-none line-clamp-2 text-base text-blue-50">
             {topic.title || "探索思考"}
           </h3>
         </div>

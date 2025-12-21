@@ -2,6 +2,8 @@
 
 ## 修改歷史
 
+- [2025/12/21 18:55 v0.55] 檔案: `src/components/DiveView.tsx` | 內容: 優化氣泡視覺細節：微調 `BUBBLE_STYLES` 漸層為半透明 (0.4) 以保留磨砂玻璃 (Frosted Glass) 效果，並恢復標題與標籤的原始淺色文字配色 (`text-blue-50`, `text-blue-200`)，消除因不透明背景導致的視覺厚重感 | 原因: 確保在引入 Figma 複雜漸層的同時，仍維持深思氣泡原有的通透感與文字可讀性
+
 - [2025/12/21 18:50 v0.54] 檔案: `src/components/DiveView.tsx` | 內容: 視覺與互動強化：1. 定義 `BUBBLE_STYLES` 常數，導入 Figma 設計的 Surface/Midzone/Depth 漸層與混合模式；2. 更新 `TopicBubble` 組件，根據內容長度計算的 `depthLevel` 套用對應的視覺樣式，取代原有的 Tailwind 背景色，營造更細膩的深海氛圍 | 原因: 實現高度還原的 Figma 設計，透過視覺層次（光澤、顏色深度）直觀傳達思考的深度
 
 - [2025/12/21 18:35 v0.53] 檔案: `src/app/page.tsx`, `src/components/DiveView.tsx` | 內容: 實作「海域深度系統」：1. 後端 `handleSend` 新增自動計算深度等級 (Surface/Midzone/Depth) 並寫入資料庫；2. 前端 `DiveView` 更新深度顯示邏輯，採用新的 3 層分級標準 (<50, 50-200, >200) 並套用 Cyan (上層), Blue (中層), Indigo (深層) 色票 | 原因: 將內容長度量化為深度概念，透過視覺化的層級區分 (顏色/標籤) 強化深海世界觀的沈浸感
