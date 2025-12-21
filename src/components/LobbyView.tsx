@@ -101,7 +101,7 @@ const BubbleCard: React.FC<BubbleCardProps> = ({ bubble, onClick }) => {
     return (
         <div
             onClick={onClick}
-            className="flex-shrink-0 w-64 bg-blue-900/40 backdrop-blur-xl hover:bg-blue-800/60 border border-white/10 rounded-2xl p-5 transition-all hover:scale-105 cursor-pointer shadow-2xl"
+            className="shrink-0 w-64 bg-blue-900/40 backdrop-blur-xl hover:bg-blue-800/60 border border-white/10 rounded-2xl p-5 transition-all hover:scale-105 cursor-pointer shadow-2xl"
         >
             <div className="flex items-start justify-between mb-3">
                 <span className="text-[8px] px-1.5 py-0.5 bg-blue-500/20 text-blue-300 rounded border border-blue-500/30 uppercase tracking-widest font-bold">
