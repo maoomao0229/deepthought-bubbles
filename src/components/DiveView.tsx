@@ -105,7 +105,7 @@ const TopicBubble = forwardRef<HTMLDivElement, TopicBubbleProps>(
       <div
         ref={ref}
         data-speed={topic.speed}
-        className="relative group cursor-pointer p-2 hover:z-50 transition-transform duration-300 ease-out"
+        className="relative group cursor-pointer p-2 hover:z-100! transition-transform duration-300 ease-out"
         style={{ zIndex: topic.zIndex }}
         onClick={(e) => {
           e.stopPropagation();
@@ -117,8 +117,8 @@ const TopicBubble = forwardRef<HTMLDivElement, TopicBubbleProps>(
           rounded-full flex flex-col items-center justify-center text-center p-4
           backdrop-blur-xl bg-linear-to-br ${catConfig.bg}
           border ${catConfig.color.replace("text-", "border-").replace("200", "500")}/30
-          shadow-lg hover:shadow-[0_0_20px_rgba(255,255,255,0.2)]
-          transition-all duration-500 hover:scale-105 animate-float
+          shadow-lg hover:shadow-[0_0_30px_rgba(255,255,255,0.3)]
+          transition-all duration-300 hover:scale-110 animate-float
         `}>
           <span className={`block font-bold mb-1 ${catConfig.color} opacity-80 uppercase tracking-widest text-[8px]`}>
             {topic.topic || catConfig.name}

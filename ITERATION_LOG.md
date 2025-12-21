@@ -2,6 +2,8 @@
 
 ## 修改歷史
  
+- [2025/12/21 15:08 v0.44] 檔案: `src/components/DiveView.tsx` | 內容: 優化 `TopicBubble` 互動體驗，使用 `hover:!z-[100]` 強制將懸停氣泡提升至最頂層，解決被 inline style `zIndex` 覆蓋的問題；增強懸停放大效果至 `scale-110`，並加強陰影擴散半徑 | 原因: 提升氣泡互動的視覺回饋與層級清晰度，確保使用者關注的內容始終位於最上方
+
 - [2025/12/21 14:48 v0.43] 檔案: `src/components/DiveView.tsx` | 內容: 優化 DiveView 渲染邏輯，引入 `seededRandom` 確保氣泡位置計算的確定性；使用 `useMemo` 鎖定氣泡佈局計算，防止拖曳時因重繪導致的隨機跳動與閃爍；修正 Parallax 速度參數的隨機計算方式 | 原因: 解決使用者在拖曳畫布時遇到的視覺干擾問題，提升操作流暢度與穩定性
 
 - [2025/12/21 00:55 v0.42] 檔案: `src/components/DiveView.tsx`, `app/page.tsx` | 內容: 落實「精密解鎖」邏輯，將 `checkDailyDive` 更名為 `checkUnlockStatus` 並包含回覆判定；將「登出」按鈕提升至全域最頂層 (`z-50`)，確保跨視圖可見；移除 DiveView 內部冗餘 Header；更新 DiveModal 隔離提示文字為：「貢獻你的思考氣泡後，即可看見他人回聲。」 | 原因: 確保逃生路徑不受介面鎖定影響，並提供更精確的解鎖引導與一致的導航體驗
