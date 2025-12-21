@@ -218,9 +218,9 @@ export default function Home() {
             axesHelper="off"
             brightness={1.2}
             cAzimuthAngle={180}
-            cDistance={0}
+            cDistance={3.2}
             cPolarAngle={90}
-            cameraZoom={2}
+            cameraZoom={2.8}
             color1="#5B8BB4"
             color2="#54B39E"
             color3="#FFDFB3"

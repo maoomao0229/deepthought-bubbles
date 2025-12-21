@@ -2,6 +2,8 @@
 
 ## 修改歷史
 
+- [2025/12/22 01:50 v0.70] 檔案: `src/app/page.tsx`, `src/components/LiquidTabBar.tsx` | 內容: 1. 修正 ShaderGradient 不可見問題 (`cDistance=3.2`, `cameraZoom=2.8`)；2. 優化導航列 SVG Path 曲線，改用 Cubic Bezier (`C` 指令) 實現更平滑的凹陷過渡 | 原因: 恢復動態海洋背景的正確渲染，並改善導航列視覺品質
+
 - [2025/12/22 01:45 v0.69] 檔案: `src/app/globals.css`, `src/components/LiquidTabBar.tsx` | 內容: 1. 修正白畫面問題，為 `body` 新增深色背景備援 (`#050B1A`)；2. 重構導航列為 SVG 實作，使用 `<path>` 繪製圓滑凹陷曲線，搭配 `requestAnimationFrame` 實現緩慢黏滯的有機動畫效果 | 原因: 消除背景閃白問題，並提升導航列視覺品質與動畫流暢度
 
 - [2025/12/22 01:35 v0.68] 檔案: `src/app/layout.tsx`, `src/app/page.tsx` | 內容: 1. 移除 `layout.tsx` 中 `body` 的 `bg-blue-900`，改為全透明以顯示全域 Shader 背景；2. 將 `page.tsx` 中 Shader 容器的 Z-index 降至 `-z-50` 確保其位於最底層 | 原因: 解決背景被顏色遮擋的問題，使動態海洋背景能正確顯示於所有頁面

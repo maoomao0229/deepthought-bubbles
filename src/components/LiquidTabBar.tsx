@@ -89,28 +89,23 @@ const LiquidTabBar: React.FC<LiquidTabBarProps> = ({ currentView, onChange, isUn
     onChange(viewId);
   };
 
-  // SVG Path 生成器：圓角凹陷
+  // SVG Path 生成器：使用 Cubic Bezier 實現圓滑凹陷
   const getPath = useCallback((w: number, x: number) => {
-    const r = 32; // 凹洞半徑
-    const c = 18; // 圓角 fillet 大小
+    const r = 38; // 凹洞半徑
+    const c = 20; // 圓角 fillet 大小
     const h = 70; // Bar 高度
 
-    // 起點左上角，順時針繪製
-    // 左側平面 -> 圓角下滑 -> 圓弧底部 -> 圓角上升 -> 右側平面 -> 底部 -> 回到起點
+    // 使用 Cubic Bezier (C 指令) 創造更平滑的曲線過渡
+    // Q 用於頂部圓角，C 用於凹陷曲線
     return `
-      M 0,${c}
-      Q 0,0 ${c},0
-      L ${x - r - c},0
-      Q ${x - r},0 ${x - r},${c}
-      Q ${x - r},${r} ${x},${r}
-      Q ${x + r},${r} ${x + r},${c}
-      Q ${x + r},0 ${x + r + c},0
-      L ${w - c},0
-      Q ${w},0 ${w},${c}
-      L ${w},${h - c}
-      Q ${w},${h} ${w - c},${h}
-      L ${c},${h}
-      Q 0,${h} 0,${h - c}
+      M 0,0 
+      L ${x - r - c},0 
+      Q ${x - r},0 ${x - r},${c * 0.8} 
+      C ${x - r},${r + c * 0.5} ${x + r},${r + c * 0.5} ${x + r},${c * 0.8}
+      Q ${x + r},0 ${x + r + c},0 
+      L ${w},0 
+      L ${w},${h} 
+      L 0,${h} 
       Z
     `;
   }, []);
@@ -168,8 +163,8 @@ const LiquidTabBar: React.FC<LiquidTabBarProps> = ({ currentView, onChange, isUn
                 {/* Icon Container */}
                 <div
                   className={`relative flex items-center justify-center transition-all duration-500 ease-out ${isActive
-                      ? "-translate-y-[34px] scale-110"
-                      : "translate-y-0 text-white/40 hover:text-white/70"
+                    ? "-translate-y-[34px] scale-110"
+                    : "translate-y-0 text-white/40 hover:text-white/70"
                     }`}
                 >
                   <IconComponent
@@ -186,8 +181,8 @@ const LiquidTabBar: React.FC<LiquidTabBarProps> = ({ currentView, onChange, isUn
                 {/* Label */}
                 <span
                   className={`absolute bottom-2 text-[10px] font-bold tracking-widest transition-all duration-300 ${isActive
-                      ? "opacity-100 translate-y-0 text-white"
-                      : "opacity-0 translate-y-2"
+                    ? "opacity-100 translate-y-0 text-white"
+                    : "opacity-0 translate-y-2"
                     }`}
                 >
                   {menu.label}
