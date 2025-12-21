@@ -63,6 +63,12 @@
 }
 
 /* 全域字體設定 - 確保自訂字體套用到整個頁面 */
+html,
+body {
+  overscroll-behavior: none;
+  /* 禁止過度捲動的彈性效果 */
+}
+
 body {
   font-family: var(--font-deepthought), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }

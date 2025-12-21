@@ -2,6 +2,10 @@
 
 ## 修改歷史
  
+- [2025/12/21 15:42 v0.47] 檔案: `src/components/DiveView.tsx`, `src/components/LobbyView.tsx`, `app/globals.css` | 內容: 實作 Mobile-First 互動適配：1. 在拖曳畫布層加入 `touch-none` 禁止瀏覽器原生捲動；2. `DiveView` 實作點擊兩段式邏輯（首下浮起、次下打開），並支援點擊背景重置狀態；3. 全域加入 `overscroll-behavior: none` 防止 iOS 橡皮筋效果 | 原因: 優化手機版操作體驗，解決行動裝置無法正常拖曳畫布與選取底層氣泡的問題
+
+- [2025/12/21 15:38 v0.46] 檔案: `src/components/DiveView.tsx` | 內容: 元件微調優化：`TopicBubble` 的縮放 (`scale-1.2`) 與陰影 (`boxShadow`) 改由 `isHovered` 屬性透過 inline style 控制，移除 CSS `hover:` 類別，避免與父層邏輯衝突並確保過渡平滑 | 原因: 提升程式碼的可控性，確保視覺狀態與 JS 邏輯狀態（如 Parallax 的 z-index 變化）完全同步
+
 - [2025/12/21 15:08 v0.44] 檔案: `src/components/DiveView.tsx` | 內容: 優化 `TopicBubble` 互動體驗，使用 `hover:!z-[100]` 強制將懸停氣泡提升至最頂層，解決被 inline style `zIndex` 覆蓋的問題；增強懸停放大效果至 `scale-110`，並加強陰影擴散半徑 | 原因: 提升氣泡互動的視覺回饋與層級清晰度，確保使用者關注的內容始終位於最上方
 
 - [2025/12/21 14:48 v0.43] 檔案: `src/components/DiveView.tsx` | 內容: 優化 DiveView 渲染邏輯，引入 `seededRandom` 確保氣泡位置計算的確定性；使用 `useMemo` 鎖定氣泡佈局計算，防止拖曳時因重繪導致的隨機跳動與閃爍；修正 Parallax 速度參數的隨機計算方式 | 原因: 解決使用者在拖曳畫布時遇到的視覺干擾問題，提升操作流暢度與穩定性

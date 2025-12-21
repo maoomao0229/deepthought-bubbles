@@ -90,10 +90,11 @@ const seededRandom = (seed: string) => {
 interface TopicBubbleProps {
   topic: SeedTopic;
   onClick: () => void;
+  isHovered?: boolean;
 }
 
 const TopicBubble = forwardRef<HTMLDivElement, TopicBubbleProps>(
-  ({ topic, onClick }, ref) => {
+  ({ topic, onClick, isHovered }, ref) => {
     const catConfig = getCategoryConfig(topic.category);
     const sizeClasses = {
       sm: "w-24 h-24 text-[10px]",
@@ -105,8 +106,11 @@ const TopicBubble = forwardRef<HTMLDivElement, TopicBubbleProps>(
       <div
         ref={ref}
         data-speed={topic.speed}
-        className="relative group cursor-pointer p-2 hover:z-100! transition-transform duration-300 ease-out"
-        style={{ zIndex: topic.zIndex }}
+        className="relative group cursor-pointer p-2 transition-transform duration-300 ease-out"
+        style={{
+          zIndex: topic.zIndex,
+          transform: isHovered ? "scale(1.2)" : "scale(1)",
+        }}
         onClick={(e) => {
           e.stopPropagation();
           onClick();
@@ -117,9 +121,13 @@ const TopicBubble = forwardRef<HTMLDivElement, TopicBubbleProps>(
           rounded-full flex flex-col items-center justify-center text-center p-4
           backdrop-blur-xl bg-linear-to-br ${catConfig.bg}
           border ${catConfig.color.replace("text-", "border-").replace("200", "500")}/30
-          shadow-lg hover:shadow-[0_0_30px_rgba(255,255,255,0.3)]
-          transition-all duration-300 hover:scale-110 animate-float
-        `}>
+          shadow-lg 
+          transition-all duration-300 animate-float
+        `}
+          style={{
+            boxShadow: isHovered ? "0 0 40px rgba(255,255,255,0.4)" : undefined
+          }}
+        >
           <span className={`block font-bold mb-1 ${catConfig.color} opacity-80 uppercase tracking-widest text-[8px]`}>
             {topic.topic || catConfig.name}
           </span>
@@ -411,6 +419,7 @@ const DiveView = ({
   const [showWelcome, setShowWelcome] = useState(true);
   const [isFading, setIsFading] = useState(false);
   const [panPosition, setPanPosition] = useState({ x: 0, y: 0 });
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
 
   const isPointerDown = useRef(false);
   const isDragging = useRef(false);
@@ -556,32 +565,77 @@ const DiveView = ({
           onTouchStart={handlePointerDown}
           onTouchMove={handlePointerMove}
           onTouchEnd={handlePointerUp}
+          onClick={() => setHoveredId(null)} // 點擊背景重置狀態
         >
           {/* 背景模糊層：未解鎖時增加氛圍感 */}
           {!isUnlocked && !showWelcome && (
             <div className="absolute inset-0 z-0 bg-blue-900/10 backdrop-blur-[1px] pointer-events-none" />
           )}
 
-          <div className="absolute top-1/2 left-1/2 w-0 h-0 transition-transform duration-75 ease-out" style={{ transform: `translate(${panPosition.x}px, ${panPosition.y}px)` }}>
-            {/* 顯示所有泡泡 (不論是否解鎖) */}
-            {mappedTopics.map((topic, index) => (
-              <div key={topic.id} className="absolute" style={{ left: `${topic.x}px`, top: `${topic.y}px`, transform: "translate(-50%, -50%)" }}>
-                <TopicBubble
-                  ref={(el) => { bubblesRef.current[index] = el; }}
-                  topic={topic}
-                  onClick={() => !isDragging.current && setSelectedTopic(topic)}
-                />
+          {/* 視差圖層渲染 (Deep Parallax Rendering) */}
+          {mappedTopics.map((topic, index) => {
+            // 視差計算：Z-Index 越大 (越上層)，移動係數越大
+            // zIndex 範圍約 1~4
+            const parallaxFactor = 0.2 + (topic.zIndex * 0.3); // 0.5x ~ 1.4x 速度差
+
+            // 計算最終顯示位置 (使用 translate3d 啟用 GPU 加速)
+            const displayX = topic.x + (panPosition.x * parallaxFactor);
+            const displayY = topic.y + (panPosition.y * parallaxFactor);
+
+            // 智慧層級：懸停時強制置頂
+            const isHovered = hoveredId === topic.id;
+            const currentZIndex = isHovered ? 1000 : topic.zIndex;
+
+            return (
+              <div
+                key={topic.id}
+                className="absolute transition-transform duration-75 ease-out will-change-transform"
+                style={{
+                  transform: `translate3d(${displayX}px, ${displayY}px, 0)`,
+                  left: "50%",
+                  top: "50%",
+                  zIndex: currentZIndex
+                }}
+                onMouseEnter={() => setHoveredId(topic.id)}
+                onMouseLeave={() => setHoveredId(null)}
+                onClick={(e) => {
+                  e.stopPropagation(); // 阻止背景 Click
+                  if (isDragging.current) return;
+
+                  // 點擊兩段式：首下浮起，次下打開
+                  if (hoveredId !== topic.id) {
+                    setHoveredId(topic.id);
+                  } else {
+                    setSelectedTopic(topic);
+                  }
+                }}
+              >
+                <div style={{ transform: "translate(-50%, -50%)" }}>
+                  <TopicBubble
+                    ref={(el) => { bubblesRef.current[index] = el; }}
+                    topic={topic}
+                    onClick={() => { }} // 點擊邏輯已移至外層 div
+                    isHovered={isHovered}
+                  />
+                </div>
                 {!isUnlocked && (
                   <div className="absolute top-0 left-0 w-full h-full pointer-events-none flex items-center justify-center">
-                    {/* 可以在這裡加一個鎖定圖標或微弱的光暈 */}
+                    {/* 鎖定狀態遮罩 */}
                   </div>
                 )}
               </div>
-            ))}
-            {/* 背景裝飾 */}
-            <div className="absolute top-[-304px] left-[-200px] w-[500px] h-[500px] bg-blue-500/5 rounded-full blur-[100px] pointer-events-none -z-10" />
-            <div className="absolute top-[100px] left-[200px] w-[300px] h-[300px] bg-indigo-500/5 rounded-full blur-[80px] pointer-events-none -z-10" />
-          </div>
+            );
+          })}
+
+          {/* 背景裝飾 (同樣可以套用簡單視差) */}
+          <div
+            className="absolute top-[-304px] left-[-200px] w-[500px] h-[500px] bg-blue-500/5 rounded-full blur-[100px] pointer-events-none -z-10 transition-transform duration-100 ease-out"
+            style={{ transform: `translate3d(${panPosition.x * 0.1}px, ${panPosition.y * 0.1}px, 0)` }}
+          />
+          <div
+            className="absolute top-[100px] left-[200px] w-[300px] h-[300px] bg-indigo-500/5 rounded-full blur-[80px] pointer-events-none -z-10 transition-transform duration-100 ease-out"
+            style={{ transform: `translate3d(${panPosition.x * 0.15}px, ${panPosition.y * 0.15}px, 0)` }}
+          />
         </div>
       </div>
 
