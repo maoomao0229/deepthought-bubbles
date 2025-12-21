@@ -109,7 +109,7 @@ const LiquidTabBar: React.FC<LiquidTabBarProps> = ({ currentView, onChange, isUn
           }}
         >
           {/* 這裡是球體內部的裝飾光暈，讓它看起來更有立體感 */}
-          <div className="absolute inset-0 rounded-full bg-gradient-to-b from-white/10 to-transparent pointer-events-none" />
+          <div className="absolute inset-0 rounded-full bg-linear-to-b from-white/10 to-transparent pointer-events-none" />
         </div>
 
         {/* 3. Icons Layer (圖示層) */}
@@ -131,8 +131,8 @@ const LiquidTabBar: React.FC<LiquidTabBarProps> = ({ currentView, onChange, isUn
                 {/* 未啟用時：Icon 留在 Bar 裡面 */}
                 <div
                   className={`relative flex items-center justify-center transition-all duration-500 cubic-bezier(0.23, 1, 0.32, 1) ${isActive
-                      ? "-translate-y-[38px] scale-110" // 往上移動對齊懸浮球
-                      : "translate-y-0 text-white/40 hover:text-white/70"
+                    ? "-translate-y-[38px] scale-110" // 往上移動對齊懸浮球
+                    : "translate-y-0 text-white/40 hover:text-white/70"
                     }`}
                 >
                   <IconComponent
@@ -149,8 +149,8 @@ const LiquidTabBar: React.FC<LiquidTabBarProps> = ({ currentView, onChange, isUn
                 {/* Label */}
                 <span
                   className={`absolute bottom-2 text-[10px] font-bold tracking-widest transition-all duration-300 ${isActive
-                      ? "opacity-100 translate-y-0 text-white"
-                      : "opacity-0 translate-y-2"
+                    ? "opacity-100 translate-y-0 text-white"
+                    : "opacity-0 translate-y-2"
                     }`}
                 >
                   {menu.label}

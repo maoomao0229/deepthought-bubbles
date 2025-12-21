@@ -2,6 +2,8 @@
 
 ## 修改歷史
 
+- [2025/12/22 01:35 v0.68] 檔案: `src/app/layout.tsx`, `src/app/page.tsx` | 內容: 1. 移除 `layout.tsx` 中 `body` 的 `bg-blue-900`，改為全透明以顯示全域 Shader 背景；2. 將 `page.tsx` 中 Shader 容器的 Z-index 降至 `-z-50` 確保其位於最底層 | 原因: 解決背景被顏色遮擋的問題，使動態海洋背景能正確顯示於所有頁面
+
 - [2025/12/22 01:25 v0.67] 檔案: `src/components/LiquidTabBar.tsx` | 內容: 重構導航列動畫機制，改用 CSS Mask (`radial-gradient`) 實作凹陷效果與懸浮球體，取代原先的 SVG Gooey Filter | 原因: 提供更精確的「球體懸浮」與「凹陷背景」視覺效果，並改善不同瀏覽器的相容性與效能
 
 - [2025/12/21 22:50 v0.66] 檔案: `src/components/LiquidTabBar.tsx` | 內容: 實作 "Gooey" 液態動畫效果：1. 加入 SVG Filter (`feGaussianBlur` + `feColorMatrix`)；2. 重構 DOM 分層 (液態層與內容層分離)；3. 應用 cubic-bezier 動畫曲線 | 原因: 提升 UI 互動質感，實現類原生應用的流暢液態回饋

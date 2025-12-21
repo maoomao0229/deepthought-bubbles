@@ -52,7 +52,7 @@ export default function RootLayout({
   return (
     <html lang="zh-TW" suppressHydrationWarning>
       <body
-        className={`${deepThoughtFont.variable} antialiased bg-blue-900 text-gray-50`}
+        className={`${deepThoughtFont.variable} antialiased w-full h-full min-h-screen overflow-hidden bg-transparent text-slate-200`}
         suppressHydrationWarning
       >
         <div className="w-full h-full min-h-screen overflow-hidden">
