@@ -55,15 +55,8 @@ export default function RootLayout({
         className={`${deepThoughtFont.variable} antialiased bg-blue-900 text-gray-50`}
         suppressHydrationWarning
       >
-        {/* 外層容器：全螢幕背景，Desktop 時加上模糊效果或深色遮罩 */}
-        <div className="min-h-screen bg-blue-900 md:bg-blue-900/80 md:backdrop-blur-md">
-          {/* Desktop 深色遮罩層，讓中間容器更突出 */}
-          <div className="hidden md:block fixed inset-0 bg-black/20 pointer-events-none" />
-
-          {/* 內層主容器：RWD 響應式設計 */}
-          <div className="min-h-screen bg-blue-900 md:max-w-[430px] md:mx-auto md:shadow-2xl">
-            {children}
-          </div>
+        <div className="w-full h-full min-h-screen overflow-hidden bg-black">
+          {children}
         </div>
       </body>
     </html>

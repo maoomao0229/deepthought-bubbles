@@ -2,6 +2,8 @@
 
 ## 修改歷史
 
+- [2025/12/21 21:45 v0.64] 檔案: `src/app/layout.tsx`, `src/app/page.tsx` | 內容: 1. 移除 `layout.tsx` 中的手機框架 (mobile frame) 樣式，啟用全螢幕沈浸式佈局；2. 調整 `ShaderGradient` 參數 (`cDistance=0`, `cameraZoom=2`) 消弭邊界，創造無限延伸的海洋視覺效果 | 原因: 解決 Desktop 版面被截斷問題，提升整體沈浸感
+
 - [2025/12/21 21:35 v0.63] 檔案: `src/app/page.tsx` | 內容: 更新 `ShaderGradient` 設定為 "Shallow Sea" 風格 (淺藍綠色調)，並將背景容器定位改為 `fixed` 以避免捲動問題 | 原因: 優化視覺效果，符合使用者對淺海氛圍的預期
 
 - [2025/12/21 21:25 v0.62] 檔案: `src/app/page.tsx`, `src/components/DiveView.tsx`, `src/components/LobbyView.tsx` | 內容: 1. 導入 `ShaderGradient` 作為全域動態背景 (Water Plane 效果)；2. 將 `DiveView` 與 `LobbyView` 的背景改為 `bg-transparent` 以透出 Shader 效果；3. 安裝 `@react-spring/three` 依賴 | 原因: 提升整體視覺沈浸感，創造統一的深海氛圍

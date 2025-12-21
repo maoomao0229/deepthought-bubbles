@@ -199,6 +199,10 @@ export default function Home() {
     return <AuthView />;
   }
 
+  // Cast to any to avoid prop type errors (library types mismatch)
+  // @ts-ignore
+  const ShaderGradientAny = ShaderGradient as any;
+
   // 已登入：顯示主要內容
   return (
     <div className="relative w-full h-screen overflow-hidden">
@@ -209,15 +213,14 @@ export default function Home() {
           importedFiber={{ ...fiber, ...drei, ...reactSpring }}
           style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", pointerEvents: "none" }}
         >
-          <ShaderGradient
-            // @ts-ignore
+          <ShaderGradientAny
             animate="on"
             axesHelper="off"
             brightness={1.2}
             cAzimuthAngle={180}
-            cDistance={3.6}
+            cDistance={0}
             cPolarAngle={90}
-            cameraZoom={1}
+            cameraZoom={2}
             color1="#5B8BB4"
             color2="#54B39E"
             color3="#FFDFB3"
