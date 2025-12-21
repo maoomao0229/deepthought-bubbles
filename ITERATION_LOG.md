@@ -2,6 +2,8 @@
 
 ## 修改歷史
 
+- [2025/12/22 03:05 v0.75] 檔案: `src/components/DiveView.tsx` | 內容: 修正氣泡陰影設定：更新 `COMPLEX_BUBBLE_SHADOW` 為向下投影 (Positive Y)，並大幅降低透明度至 0.05-0.1，消除原先過深且方向錯誤的黑色陰影 | 原因: 使氣泡陰影更符合深海漂浮的自然物理感，避免視覺過重
+
 - [2025/12/22 03:00 v0.74] 檔案: `src/components/LobbyView.tsx` | 內容: 重構為 Netflix 風格佈局：1. 移除無限畫布邏輯 (`panPosition`, `bubbleLayouts`)；2. 新增 `DraggableRow` 元件實現可拖曳水平滾動 (含慣性動量)；3. 氣泡按主題分組，以垂直區塊呈現；4. 簡化卡片樣式 (`BubbleCard`) | 原因: 提升內容密度與組織性，減少空白區域，改善瀏覽體驗
 
 - [2025/12/22 02:30 v0.73] 檔案: `src/components/DiveView.tsx` | 內容: 為氣泡新增多層次複雜陰影 (`COMPLEX_BUBBLE_SHADOW`)，並使用條件式套用邏輯：非懸停時顯示深層陰影，懸停時切換為原有的發光效果 | 原因: 提升氣泡視覺的立體感與層次感，同時保留互動回饋

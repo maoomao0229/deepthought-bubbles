@@ -80,8 +80,8 @@ const seededRandom = (seed: string) => {
 // 子元件 (Sub-Components)
 // ==========================================
 
-// 多層次複雜陰影 (Flutter 轉換)
-const COMPLEX_BUBBLE_SHADOW = "0px -23px 25px 0px rgba(0, 0, 0, 0.17), 0px -36px 30px 0px rgba(0, 0, 0, 0.15), 0px -79px 40px 0px rgba(0, 0, 0, 0.1), 0px 2px 1px 0px rgba(0, 0, 0, 0.06), 0px 4px 2px 0px rgba(0, 0, 0, 0.15), 8px 4px 10px 0px rgba(0, 0, 0, 0.1), 0px 0px 20px 8px rgba(91, 139, 180, 0.15)";
+// 多層次複雜陰影 (Flutter 轉換 - 向下投影柔和版)
+const COMPLEX_BUBBLE_SHADOW = "0px 23px 25px 0px rgba(0, 0, 0, 0.1), 0px 36px 30px 0px rgba(0, 0, 0, 0.05), 0px 79px 40px 0px rgba(0, 0, 0, 0.02), 0px 2px 1px 0px rgba(0, 0, 0, 0.05)";
 
 interface TopicBubbleProps {
   topic: SeedTopic;
