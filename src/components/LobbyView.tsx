@@ -29,13 +29,56 @@ const LobbyView = ({ bubbles, onSend, isUnlocked = false }: LobbyViewProps) => {
     const startDragClientPos = React.useRef({ x: 0, y: 0 });
     const startPanOffset = React.useRef({ x: 0, y: 0 });
     const containerRef = React.useRef<HTMLDivElement>(null);
+    const rafId = React.useRef<number | null>(null);
+
+    // 泡泡佈局快取，解決閃爍問題
+    const [bubbleLayouts, setBubbleLayouts] = useState<Map<string, { x: number, y: number, zIndex: number }>>(new Map());
 
     // 初始位置居中
     useEffect(() => {
-        // 將視角設置在 200vw/200vh 的中心
-        // 畫布中心為 (0,0)，透過 translate 偏移
         setPanPosition({ x: 0, y: 0 });
     }, []);
+
+    // 當 bubbles 資料變動時，更新佈局快取 (一次性計算)
+    useEffect(() => {
+        if (!bubbles || bubbles.length === 0) return;
+
+        const newLayouts = new Map();
+        const results: any[] = [];
+        const threshold = 180;
+
+        bubbles.forEach((b, index) => {
+            // 固定座標轉換邏輯
+            let finalX = (b.x_position - 50) * 16;
+            let finalY = (b.y_position - 50) * 16;
+
+            // 簡化的碰撞隨機偏移，只跑一次
+            let collision = true;
+            let attempts = 0;
+            while (collision && attempts < 3) {
+                collision = results.some(r => {
+                    const dx = r.x - finalX;
+                    const dy = r.y - finalY;
+                    return Math.sqrt(dx * dx + dy * dy) < threshold;
+                });
+                if (collision) {
+                    finalX += (Math.random() - 0.5) * 120;
+                    finalY += (Math.random() - 0.5) * 120;
+                }
+                attempts++;
+            }
+
+            const layout = {
+                x: finalX,
+                y: finalY,
+                zIndex: (index % 4) + 1
+            };
+            newLayouts.set(b.id, layout);
+            results.push(layout);
+        });
+
+        setBubbleLayouts(newLayouts);
+    }, [bubbles]);
 
     // 分類清單
     const categories = [
@@ -88,52 +131,23 @@ const LobbyView = ({ bubbles, onSend, isUnlocked = false }: LobbyViewProps) => {
         }
     };
 
-    // 根據分類過濾主泡泡
-    const filteredBubbles = activeCategory === "all"
-        ? bubbles
-        : bubbles.filter(b => {
-            const cat = b.category?.toLowerCase();
-            if (activeCategory === "blue") return cat === "blue" || cat === "時事";
-            if (activeCategory === "philosophy") return cat === "philosophy" || cat === "心理";
-            if (activeCategory === "culture") return cat === "culture" || cat === "文化";
-            return cat === activeCategory;
-        });
-
-    // 預處理泡泡佈局 (防重疊與座標映射)
+    // 根據分類過濾主泡泡，並配對已鎖定的座標
     const processedBubbles = React.useMemo(() => {
-        const results: any[] = [];
-        const threshold = 180; // 碰撞半徑
-
-        filteredBubbles.forEach((b, index) => {
-            // 將 0-100 座標映射到 200vw x 200vh (對應約 4000px 面積)
-            // 畫布中心為 0,0，範圍是 -100vw 到 100vw
-            let finalX = (b.x_position - 50) * 16;
-            let finalY = (b.y_position - 50) * 16;
-
-            let collision = true;
-            let attempts = 0;
-            while (collision && attempts < 5) {
-                collision = results.some(r => {
-                    const dx = r.x - finalX;
-                    const dy = r.y - finalY;
-                    return Math.sqrt(dx * dx + dy * dy) < threshold;
-                });
-                if (collision) {
-                    finalX += (Math.random() - 0.5) * 150;
-                    finalY += (Math.random() - 0.5) * 150;
-                }
-                attempts++;
-            }
-
-            results.push({
-                ...b,
-                x: finalX,
-                y: finalY,
-                zIndex: (index % 4) + 1
+        const filtered = activeCategory === "all"
+            ? bubbles
+            : bubbles.filter(b => {
+                const cat = b.category?.toLowerCase();
+                if (activeCategory === "blue") return cat === "blue" || cat === "時事";
+                if (activeCategory === "philosophy") return cat === "philosophy" || cat === "心理";
+                if (activeCategory === "culture") return cat === "culture" || cat === "文化";
+                return cat === activeCategory;
             });
+
+        return filtered.map(b => {
+            const layout = bubbleLayouts.get(b.id) || { x: 0, y: 0, zIndex: 1 };
+            return { ...b, ...layout };
         });
-        return results;
-    }, [filteredBubbles]);
+    }, [activeCategory, bubbles, bubbleLayouts]);
 
     const handlePointerDown = (e: React.MouseEvent | React.TouchEvent) => {
         isPointerDown.current = true;
@@ -146,28 +160,38 @@ const LobbyView = ({ bubbles, onSend, isUnlocked = false }: LobbyViewProps) => {
 
     const handlePointerMove = (e: React.MouseEvent | React.TouchEvent) => {
         if (!isPointerDown.current) return;
+
         const clientX = "touches" in e ? e.touches[0].clientX : (e as React.MouseEvent).clientX;
         const clientY = "touches" in e ? e.touches[0].clientY : (e as React.MouseEvent).clientY;
 
-        const moveDist = Math.sqrt(
-            Math.pow(clientX - startDragClientPos.current.x, 2) +
-            Math.pow(clientY - startDragClientPos.current.y, 2)
-        );
-        if (moveDist > 5) isDragging.current = true;
+        // 使用 RAF 節流，確保更新與螢幕刷新同步
+        if (rafId.current) cancelAnimationFrame(rafId.current);
 
-        setPanPosition({
-            x: clientX - startPanOffset.current.x,
-            y: clientY - startPanOffset.current.y
+        rafId.current = requestAnimationFrame(() => {
+            const moveDist = Math.sqrt(
+                Math.pow(clientX - startDragClientPos.current.x, 2) +
+                Math.pow(clientY - startDragClientPos.current.y, 2)
+            );
+            if (moveDist > 5) isDragging.current = true;
+
+            setPanPosition({
+                x: clientX - startPanOffset.current.x,
+                y: clientY - startPanOffset.current.y
+            });
         });
     };
 
     const handlePointerUp = () => {
         isPointerDown.current = false;
+        if (rafId.current) cancelAnimationFrame(rafId.current);
         setTimeout(() => { isDragging.current = false; }, 50);
     };
 
     useEffect(() => {
-        const handleGlobalUp = () => { isPointerDown.current = false; };
+        const handleGlobalUp = () => {
+            isPointerDown.current = false;
+            if (rafId.current) cancelAnimationFrame(rafId.current);
+        };
         window.addEventListener("mouseup", handleGlobalUp);
         window.addEventListener("touchend", handleGlobalUp);
         return () => {
@@ -226,14 +250,18 @@ const LobbyView = ({ bubbles, onSend, isUnlocked = false }: LobbyViewProps) => {
                         style={{
                             backgroundImage: `radial-gradient(circle at 2px 2px, rgba(255,255,255,0.05) 1px, transparent 0)`,
                             backgroundSize: '40px 40px',
-                            transform: `translate(${panPosition.x % 40}px, ${panPosition.y % 40}px)`
+                            transform: `translate3d(${panPosition.x % 40}px, ${panPosition.y % 40}px, 0)`,
+                            willChange: 'transform'
                         }}
                     />
 
                     {/* 泡泡內容層：根據 panPosition 移動 */}
                     <div
-                        className="absolute top-1/2 left-1/2 w-0 h-0 transition-transform duration-75 ease-out"
-                        style={{ transform: `translate(${panPosition.x}px, ${panPosition.y}px)` }}
+                        className={`absolute top-1/2 left-1/2 w-0 h-0 transition-transform ${isPointerDown.current ? 'duration-0' : 'duration-75 ease-out'}`}
+                        style={{
+                            transform: `translate3d(${panPosition.x}px, ${panPosition.y}px, 0)`,
+                            willChange: 'transform'
+                        }}
                     >
                         {processedBubbles.length > 0 ? (
                             processedBubbles.map((bubble) => (
@@ -243,7 +271,8 @@ const LobbyView = ({ bubbles, onSend, isUnlocked = false }: LobbyViewProps) => {
                                         left: `${bubble.x}px`,
                                         top: `${bubble.y}px`,
                                         zIndex: bubble.zIndex,
-                                        transform: 'translate(-50%, -50%)'
+                                        transform: 'translate3d(-50%, -50%, 0)',
+                                        willChange: 'transform'
                                     }}
                                     onClick={(e) => {
                                         if (isDragging.current) return;
@@ -380,14 +409,20 @@ const LobbyView = ({ bubbles, onSend, isUnlocked = false }: LobbyViewProps) => {
                                         )}
                                     </>
                                 ) : (
-                                    <div className="py-8 flex flex-col items-center justify-center space-y-4">
-                                        <div className="h-px w-full bg-white/5 mb-4" />
-                                        <div className="w-12 h-12 bg-white/5 rounded-full flex items-center justify-center border border-white/10 text-white/20">
-                                            <MessageSquare size={20} />
+                                    <div className="py-8 flex flex-col items-center justify-center space-y-6">
+                                        <div className="h-px w-full bg-white/5" />
+                                        <div className="text-center space-y-2">
+                                            <h3 className="text-white font-medium">觀測點已鎖定</h3>
+                                            <p className="text-xs text-blue-300/40 leading-relaxed max-w-[240px]">
+                                                參與這場跨越時空的意識共振，<br />解鎖更多回聲。
+                                            </p>
                                         </div>
-                                        <p className="text-[10px] text-blue-400/30 font-bold uppercase tracking-[0.2em] text-center px-8 leading-relaxed">
-                                            回應此觀點以解鎖更多回聲
-                                        </p>
+                                        <button
+                                            onClick={() => document.querySelector('textarea')?.focus()}
+                                            className="px-8 py-3 bg-indigo-500/20 hover:bg-indigo-500/30 border border-indigo-500/30 text-indigo-300 rounded-full text-xs font-bold transition-all animate-bounce"
+                                        >
+                                            發表回覆以解鎖
+                                        </button>
                                     </div>
                                 )}
                             </div>

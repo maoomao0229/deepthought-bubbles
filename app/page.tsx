@@ -54,18 +54,14 @@ export default function Home() {
    * 抓取所有主泡泡 (parent_id 為空)
    */
   const fetchBubbles = async () => {
-    const { data, error } = await supabase
-      .from("bubbles")
-      .select("*")
-      .is("parent_id", null) // 只讀取主泡泡
-      .order("created_at", { ascending: false });
+    const { data, error } = await supabase.rpc("get_random_bubbles", {
+      limit_num: 20,
+    });
 
     if (error) {
-      console.error("抓取泡泡失敗:", error.message);
+      console.error("抓取隨機泡泡失敗:", error.message);
     } else if (data) {
-      // 動態隨機抽取：洗牌並取出 20 筆
-      const shuffled = [...data].sort(() => Math.random() - 0.5);
-      setBubbles(shuffled.slice(0, 20));
+      setBubbles(data);
     }
   };
 

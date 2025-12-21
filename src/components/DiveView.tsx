@@ -114,7 +114,7 @@ const TopicBubble = forwardRef<HTMLDivElement, TopicBubbleProps>(
             {topic.topic || catConfig.name}
           </span>
           <h3 className="font-bold text-blue-50 leading-tight px-1 drop-shadow-md select-none line-clamp-2 text-base">
-            {topic.title || (topic.content.length > 15 ? topic.content.substring(0, 15) + "..." : topic.content)}
+            {topic.title || "探索思考"}
           </h3>
         </div>
       </div>
@@ -246,16 +246,19 @@ const DiveModal = ({
           ) : (
             <div className="py-8 flex flex-col items-center justify-center space-y-6">
               <div className="h-px w-full bg-white/5" />
-              <div className="flex flex-col items-center space-y-4">
-                <div className="w-14 h-14 bg-indigo-500/10 rounded-full flex items-center justify-center border border-indigo-500/20 text-indigo-400 animate-pulse">
-                  <MessageSquare size={24} />
-                </div>
+              <div className="flex flex-col items-center space-y-6 w-full">
                 <div className="text-center space-y-2">
                   <h3 className="text-white font-medium">觀測點已鎖定</h3>
                   <p className="text-xs text-blue-300/40 leading-relaxed max-w-[240px]">
-                    回應此觀點以解鎖更多回聲，<br />參與這場跨越時空的意識共振。
+                    參與這場跨越時空的意識共振，<br />解鎖更多回聲。
                   </p>
                 </div>
+                <button
+                  onClick={() => document.querySelector('textarea')?.focus()}
+                  className="px-8 py-3 bg-indigo-500/20 hover:bg-indigo-500/30 border border-indigo-500/30 text-indigo-300 rounded-full text-xs font-bold transition-all animate-bounce"
+                >
+                  發表回覆以解鎖
+                </button>
               </div>
             </div>
           )}
