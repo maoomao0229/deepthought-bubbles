@@ -192,7 +192,7 @@ const DiveModal = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+    <div className="fixed inset-0 z-2000 flex items-center justify-center px-4">
       <div className="absolute inset-0 bg-blue-950/80 backdrop-blur-xl animate-fade-in" onClick={onClose} />
       <div className="relative w-full max-w-xl bg-blue-900/90 backdrop-blur-2xl border border-white/10 shadow-2xl rounded-4xl flex flex-col overflow-hidden animate-scale-up max-h-[85vh]">
 
@@ -330,7 +330,7 @@ const NewBubbleModal = ({ onClose, onSend }: { onClose: () => void; onSend: (con
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+    <div className="fixed inset-0 z-2000 flex items-center justify-center px-4">
       <div className="absolute inset-0 bg-blue-950/80 backdrop-blur-xl animate-fade-in" onClick={onClose} />
       <div className="relative w-full max-w-lg bg-blue-900/90 backdrop-blur-2xl border border-white/10 shadow-2xl rounded-4xl p-8 flex flex-col items-center animate-scale-up">
         <button onClick={onClose} className="absolute top-6 right-6 p-2 rounded-full hover:bg-white/10 text-blue-200">

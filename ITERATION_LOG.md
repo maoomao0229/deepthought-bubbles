@@ -2,6 +2,10 @@
 
 ## 修改歷史
 
+- [2025/12/21 17:18 v0.52] 檔案: `src/components/DiveView.tsx` | 內容: 程式碼風格優化：依據 IDE 建議，將 JIT 語法的 `z-[2000]` 改寫為 `z-2000` | 原因: 消除 IDE 警告 (The class can be written as...)，保持程式碼簡潔
+
+- [2025/12/21 17:15 v0.51] 檔案: `src/components/DiveView.tsx` | 內容: 修復 Mobile 版氣泡穿透 Modal 問題：將 `DiveModal` 與 `NewBubbleModal` 的層級從 `z-50` 大幅提升至 `z-[2000]` | 原因: 解決氣泡懸停時 (`zIndex: 1000`) 遮擋 Modal 的視覺 Bug，確保對話框始終位於最上層
+
 - [2025/12/21 16:59 v0.50] 檔案: `src/components/DiveView.tsx` | 內容: 修復氣泡無法點擊的 Bug：移除 TopicBubble 組件中阻擋事件冒泡的 onClick 處理器，讓點擊事件能正確傳遞至父層包裝器以觸發開啟 Modal 邏輯，同時保留拖曳偵測功能 | 原因: 解決使用者無法點擊氣泡查看詳情的問題，確保互動邏輯與拖曳行為共存
 
 - [2025/12/21 16:11 v0.49] 檔案: `app/layout.tsx` | 內容: 修復 Hydration Mismatch 錯誤：在 `html` 與 `body` 標籤加入 `suppressHydrationWarning` 屬性 | 原因: 防止行動端或電腦端瀏覽器外掛（如 Grammarly）注入自訂屬性導致伺服器渲染 HTML 與用戶端不一致的報錯
