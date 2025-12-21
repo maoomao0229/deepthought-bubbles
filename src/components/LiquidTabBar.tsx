@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useRef, useEffect, useState } from "react";
+import React, { useMemo, useRef, useEffect, useState, useCallback } from "react";
 import { Waves, LayoutGrid, Activity, Fish } from "lucide-react";
 
 export type ViewState = "dive" | "lobby" | "sonar" | "pantry";
@@ -32,11 +32,15 @@ const LiquidTabBar: React.FC<LiquidTabBarProps> = ({ currentView, onChange, isUn
   const activeIndex = menus.findIndex((m) => m.id === currentView);
   const menuRefs = useRef<(HTMLLIElement | null)[]>([]);
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const [indicatorLeft, setIndicatorLeft] = useState(0);
 
-  // 重新計算指示器位置
+  // 目標位置與動畫位置
+  const [targetX, setTargetX] = useState(0);
+  const [displayX, setDisplayX] = useState(0);
+  const [containerWidth, setContainerWidth] = useState(0);
+
+  // 計算目標位置
   useEffect(() => {
-    const updateIndicatorPosition = () => {
+    const updateTargetPosition = () => {
       if (menuRefs.current[activeIndex] && containerRef.current) {
         const activeItem = menuRefs.current[activeIndex];
         const container = containerRef.current;
@@ -44,26 +48,38 @@ const LiquidTabBar: React.FC<LiquidTabBarProps> = ({ currentView, onChange, isUn
         if (activeItem) {
           const itemRect = activeItem.getBoundingClientRect();
           const containerRect = container.getBoundingClientRect();
-          // 計算相對於容器的左邊距
           const itemLeftRelative = itemRect.left - containerRect.left;
-          // 計算該 Item 的中心點
           const itemCenter = itemLeftRelative + itemRect.width / 2;
-
-          // 設定球體左邊界 (球寬 56px，所以減去 28)
-          setIndicatorLeft(itemCenter - 28);
+          setTargetX(itemCenter);
+          setContainerWidth(containerRect.width);
         }
       }
     };
 
-    updateIndicatorPosition();
-    window.addEventListener("resize", updateIndicatorPosition);
-    // 使用 setTimeout 確保渲染後計算
-    const timeoutId = setTimeout(updateIndicatorPosition, 50);
+    updateTargetPosition();
+    window.addEventListener("resize", updateTargetPosition);
+    const timeoutId = setTimeout(updateTargetPosition, 50);
     return () => {
-      window.removeEventListener("resize", updateIndicatorPosition);
+      window.removeEventListener("resize", updateTargetPosition);
       clearTimeout(timeoutId);
     };
   }, [activeIndex]);
+
+  // 有機動畫 (慢速插值)
+  useEffect(() => {
+    let animationFrameId: number;
+    const animate = () => {
+      setDisplayX((prev) => {
+        const diff = targetX - prev;
+        // 0.06 factor 讓動畫非常緩慢且有機
+        if (Math.abs(diff) < 0.5) return targetX;
+        return prev + diff * 0.06;
+      });
+      animationFrameId = requestAnimationFrame(animate);
+    };
+    animate();
+    return () => cancelAnimationFrame(animationFrameId);
+  }, [targetX]);
 
   const handleTabClick = (viewId: ViewState) => {
     if (!isUnlocked && viewId !== "dive") {
@@ -73,46 +89,69 @@ const LiquidTabBar: React.FC<LiquidTabBarProps> = ({ currentView, onChange, isUn
     onChange(viewId);
   };
 
-  // 計算凹陷遮罩的中心點 (球體左側 + 半徑)
-  const maskCenter = indicatorLeft + 28;
+  // SVG Path 生成器：圓角凹陷
+  const getPath = useCallback((w: number, x: number) => {
+    const r = 32; // 凹洞半徑
+    const c = 18; // 圓角 fillet 大小
+    const h = 70; // Bar 高度
+
+    // 起點左上角，順時針繪製
+    // 左側平面 -> 圓角下滑 -> 圓弧底部 -> 圓角上升 -> 右側平面 -> 底部 -> 回到起點
+    return `
+      M 0,${c}
+      Q 0,0 ${c},0
+      L ${x - r - c},0
+      Q ${x - r},0 ${x - r},${c}
+      Q ${x - r},${r} ${x},${r}
+      Q ${x + r},${r} ${x + r},${c}
+      Q ${x + r},0 ${x + r + c},0
+      L ${w - c},0
+      Q ${w},0 ${w},${c}
+      L ${w},${h - c}
+      Q ${w},${h} ${w - c},${h}
+      L ${c},${h}
+      Q 0,${h} 0,${h - c}
+      Z
+    `;
+  }, []);
+
+  // 球體左邊界 (寬度 56px，半徑 28px)
+  const ballLeft = displayX - 28;
 
   return (
     <div className="fixed bottom-6 left-1/2 -translate-x-1/2 w-full max-w-md px-4 z-50">
 
-      {/* 導航列容器：高度降為 70px */}
+      {/* 導航列容器 */}
       <div
         ref={containerRef}
         id="main-nav-bar"
         className="relative h-[70px] w-full"
       >
 
-        {/* 1. Bar Background with Indentation (凹陷背景) */}
-        {/* 我們使用 CSS Mask 來動態挖洞 */}
-        <div
-          className="absolute inset-0 w-full h-full bg-[#204a6e] rounded-3xl shadow-2xl transition-all duration-500 ease-out"
-          style={{
-            // 定義遮罩：背景是黑色(不透明)，中間挖一個透明圓孔
-            // 圓孔半徑 38px，稍微比球體大一點點，創造呼吸感
-            maskImage: `radial-gradient(circle 38px at ${maskCenter}px 0px, transparent 98%, black 100%)`,
-            WebkitMaskImage: `radial-gradient(circle 38px at ${maskCenter}px 0px, transparent 98%, black 100%)`,
-          }}
-        />
+        {/* 1. SVG Bar Background with Smooth Indentation */}
+        <svg
+          className="absolute inset-0 w-full h-full drop-shadow-2xl"
+          viewBox={`0 0 ${containerWidth || 400} 70`}
+          preserveAspectRatio="none"
+        >
+          <path
+            d={getPath(containerWidth || 400, displayX)}
+            fill="#204a6e"
+          />
+        </svg>
 
-        {/* 2. Floating Active Ball (懸浮球體) */}
-        {/* 這顆球代表「跳出來」的 Bar 區塊 */}
+        {/* 2. Floating Active Ball */}
         <div
           className="absolute w-[56px] h-[56px] bg-[#204a6e] rounded-full flex items-center justify-center shadow-[0_4px_12px_rgba(0,0,0,0.3)] border-[3px] border-[#1a3b59]"
           style={{
-            left: `${indicatorLeft}px`,
-            top: "-28px", // 讓球體浮在 Bar 上方一半的位置
-            transition: "left 0.5s cubic-bezier(0.23, 1, 0.32, 1)", // 彈跳物理質感
+            left: `${ballLeft}px`,
+            top: "-24px",
           }}
         >
-          {/* 這裡是球體內部的裝飾光暈，讓它看起來更有立體感 */}
           <div className="absolute inset-0 rounded-full bg-linear-to-b from-white/10 to-transparent pointer-events-none" />
         </div>
 
-        {/* 3. Icons Layer (圖示層) */}
+        {/* 3. Icons Layer */}
         <ul className="absolute inset-0 grid grid-cols-4 w-full h-full z-20">
           {menus.map((menu, i) => {
             const isActive = i === activeIndex;
@@ -127,12 +166,10 @@ const LiquidTabBar: React.FC<LiquidTabBarProps> = ({ currentView, onChange, isUn
                 onClick={() => handleTabClick(menu.id)}
               >
                 {/* Icon Container */}
-                {/* 啟用時：Icon 會往上飛進懸浮球體內 (translate-y-[-28px]) */}
-                {/* 未啟用時：Icon 留在 Bar 裡面 */}
                 <div
-                  className={`relative flex items-center justify-center transition-all duration-500 cubic-bezier(0.23, 1, 0.32, 1) ${isActive
-                    ? "-translate-y-[38px] scale-110" // 往上移動對齊懸浮球
-                    : "translate-y-0 text-white/40 hover:text-white/70"
+                  className={`relative flex items-center justify-center transition-all duration-500 ease-out ${isActive
+                      ? "-translate-y-[34px] scale-110"
+                      : "translate-y-0 text-white/40 hover:text-white/70"
                     }`}
                 >
                   <IconComponent
@@ -149,8 +186,8 @@ const LiquidTabBar: React.FC<LiquidTabBarProps> = ({ currentView, onChange, isUn
                 {/* Label */}
                 <span
                   className={`absolute bottom-2 text-[10px] font-bold tracking-widest transition-all duration-300 ${isActive
-                    ? "opacity-100 translate-y-0 text-white"
-                    : "opacity-0 translate-y-2"
+                      ? "opacity-100 translate-y-0 text-white"
+                      : "opacity-0 translate-y-2"
                     }`}
                 >
                   {menu.label}

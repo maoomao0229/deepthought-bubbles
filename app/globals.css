@@ -70,6 +70,8 @@ body {
 }
 
 body {
+  background-color: #050B1A;
+  color: rgb(226, 232, 240);
   font-family: var(--font-deepthought), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 

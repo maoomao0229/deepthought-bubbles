@@ -2,6 +2,8 @@
 
 ## 修改歷史
 
+- [2025/12/22 01:45 v0.69] 檔案: `src/app/globals.css`, `src/components/LiquidTabBar.tsx` | 內容: 1. 修正白畫面問題，為 `body` 新增深色背景備援 (`#050B1A`)；2. 重構導航列為 SVG 實作，使用 `<path>` 繪製圓滑凹陷曲線，搭配 `requestAnimationFrame` 實現緩慢黏滯的有機動畫效果 | 原因: 消除背景閃白問題，並提升導航列視覺品質與動畫流暢度
+
 - [2025/12/22 01:35 v0.68] 檔案: `src/app/layout.tsx`, `src/app/page.tsx` | 內容: 1. 移除 `layout.tsx` 中 `body` 的 `bg-blue-900`，改為全透明以顯示全域 Shader 背景；2. 將 `page.tsx` 中 Shader 容器的 Z-index 降至 `-z-50` 確保其位於最底層 | 原因: 解決背景被顏色遮擋的問題，使動態海洋背景能正確顯示於所有頁面
 
 - [2025/12/22 01:25 v0.67] 檔案: `src/components/LiquidTabBar.tsx` | 內容: 重構導航列動畫機制，改用 CSS Mask (`radial-gradient`) 實作凹陷效果與懸浮球體，取代原先的 SVG Gooey Filter | 原因: 提供更精確的「球體懸浮」與「凹陷背景」視覺效果，並改善不同瀏覽器的相容性與效能
