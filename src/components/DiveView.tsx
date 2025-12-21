@@ -15,17 +15,10 @@ interface SeedTopic {
   zIndex: number;
   topic?: string;
   title?: string;
-  category: "philosophy" | "ocean" | "thought" | "depth" | string;
   depthLevel: "Surface" | "Midzone" | "Depth";
   speed: number;
   content: string;
   size: "sm" | "md" | "lg";
-}
-
-interface CategoryConfig {
-  name: string;
-  color: string;
-  bg: string;
 }
 
 interface DepthConfig {
@@ -54,23 +47,6 @@ const BUBBLE_STYLES = {
 // ==========================================
 // Helper Functions
 // ==========================================
-
-const getCategoryConfig = (category: string): CategoryConfig => {
-  const cat = category.toLowerCase();
-  switch (cat) {
-    case "philosophy":
-    case "心理":
-      return { name: "心理", color: "text-indigo-200", bg: "from-indigo-500/20 to-indigo-700/30" };
-    case "blue":
-    case "時事":
-      return { name: "時事", color: "text-blue-200", bg: "from-blue-500/20 to-blue-700/30" };
-    case "culture":
-    case "文化":
-      return { name: "文化", color: "text-green-200", bg: "from-green-500/20 to-green-700/30" };
-    default:
-      return { name: "探索", color: "text-blue-200", bg: "from-blue-500/20 to-blue-700/30" };
-  }
-};
 
 const TOPIC_OPTIONS = ['科普', '生活', '時事', '奇想', '哲學', '議題'];
 
@@ -112,7 +88,6 @@ interface TopicBubbleProps {
 
 const TopicBubble = forwardRef<HTMLDivElement, TopicBubbleProps>(
   ({ topic, onClick, isHovered }, ref) => {
-    const catConfig = getCategoryConfig(topic.category);
     // @ts-ignore
     const visualStyle = BUBBLE_STYLES[topic.depthLevel] || BUBBLE_STYLES.Surface;
 
@@ -170,14 +145,13 @@ const DiveModal = ({
 }: {
   topic: SeedTopic;
   onClose: () => void;
-  onSend: (content: string, parentId?: string | null, category?: string, topic?: string | null, title?: string | null) => Promise<void>;
+  onSend: (content: string, parentId?: string | null, topic?: string | null, title?: string | null) => Promise<void>;
   isUnlocked: boolean;
 }) => {
   const [inputValue, setInputValue] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [replies, setReplies] = useState<any[]>([]);
 
-  const catConfig = getCategoryConfig(topic.category);
   const depth = calculateDepth(topic.topic || "");
   const depthConfig = getDepthConfig(depth);
 
@@ -201,7 +175,7 @@ const DiveModal = ({
     if (!inputValue.trim() || isSubmitting) return;
     setIsSubmitting(true);
     try {
-      await onSend(inputValue, topic.id, topic.category);
+      await onSend(inputValue, topic.id, topic.topic);
       setInputValue("");
       fetchReplies(); // 刷新回覆清單
     } catch (err) {
@@ -218,7 +192,7 @@ const DiveModal = ({
 
         {/* Modal Header */}
         <div className="p-6 border-b border-white/5 flex items-center justify-between">
-          <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 bg-white/5 ${catConfig.color}`}>
+          <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 bg-white/5 text-blue-200`}>
             <Feather size={12} />
             <span className="text-[10px] font-bold tracking-widest uppercase">{topic.topic}</span>
           </div>
@@ -232,7 +206,7 @@ const DiveModal = ({
           {/* Main Content */}
           <div className="space-y-4">
             <div className="space-y-1">
-              <span className={`text-[10px] font-bold tracking-widest uppercase ${catConfig.color} opacity-60`}>
+              <span className={`text-[10px] font-bold tracking-widest uppercase text-blue-200 opacity-60`}>
                 {topic.topic}
               </span>
               <h2 className="text-3xl font-bold text-white tracking-tight leading-tight">
@@ -333,7 +307,7 @@ const DiveModal = ({
 /**
  * 建立新氣泡 Modal
  */
-const NewBubbleModal = ({ onClose, onSend }: { onClose: () => void; onSend: (content: string, parentId?: string | null, category?: string, topic?: string | null, title?: string | null) => Promise<void>; }) => {
+const NewBubbleModal = ({ onClose, onSend }: { onClose: () => void; onSend: (content: string, parentId?: string | null, topic?: string | null, title?: string | null) => Promise<void>; }) => {
   const [content, setContent] = useState("");
   const [topic, setTopic] = useState("科普");
   const [title, setTitle] = useState("");
@@ -344,7 +318,7 @@ const NewBubbleModal = ({ onClose, onSend }: { onClose: () => void; onSend: (con
   const handleSubmit = async () => {
     if (!content.trim() || !topic.trim() || !title.trim() || isSubmitting) return;
     setIsSubmitting(true);
-    await onSend(content, null, "Blue", topic, title);
+    await onSend(content, null, topic, title);
     setIsSubmitting(false);
     onClose();
   };
@@ -438,7 +412,7 @@ const DiveView = ({
   isUnlocked = false,
 }: {
   bubbles?: any[],
-  onSend: (content: string, parentId?: string | null, category?: string, topic?: string | null, title?: string | null) => Promise<void>,
+  onSend: (content: string, parentId?: string | null, topic?: string | null, title?: string | null) => Promise<void>,
   isUnlocked?: boolean,
 }) => {
   const [selectedTopic, setSelectedTopic] = useState<SeedTopic | null>(null);
@@ -509,7 +483,6 @@ const DiveView = ({
         zIndex: (index % 4) + 1,
         topic: b.topic,
         title: b.title,
-        category: b.category || "ocean",
         depthLevel: ["哲學", "議題"].includes(b.topic) ? "Depth" : ["時事", "科普"].includes(b.topic) ? "Midzone" : "Surface",
         // 固定速度參數
         speed: 0.4 + seededRandom(b.id + 'speed') * 0.4,

@@ -6,7 +6,7 @@ import { supabase } from "@/lib/supabaseClient";
 
 interface LobbyViewProps {
     bubbles: any[];
-    onSend: (content: string, parentId?: string | null, category?: string, topic?: string | null, title?: string | null) => Promise<void>;
+    onSend: (content: string, parentId?: string | null, topic?: string | null, title?: string | null) => Promise<void>;
     isUnlocked?: boolean;
 }
 
@@ -135,7 +135,7 @@ const LobbyView = ({ bubbles, onSend, isUnlocked = false }: LobbyViewProps) => {
 
         setIsSubmitting(true);
         try {
-            await onSend(replyContent, selectedBubble.id, selectedBubble.category);
+            await onSend(replyContent, selectedBubble.id, selectedBubble.topic);
             setReplyContent("");
             fetchReplies(selectedBubble.id);
         } catch (err) {
@@ -149,11 +149,8 @@ const LobbyView = ({ bubbles, onSend, isUnlocked = false }: LobbyViewProps) => {
         const filtered = activeCategory === "all"
             ? bubbles
             : bubbles.filter(b => {
-                const cat = b.category?.toLowerCase();
-                if (activeCategory === "blue") return cat === "blue" || cat === "時事";
-                if (activeCategory === "philosophy") return cat === "philosophy" || cat === "心理";
-                if (activeCategory === "culture") return cat === "culture" || cat === "文化";
-                return cat === activeCategory;
+                // 暫時移除分類過濾，避免錯誤
+                return true;
             });
 
         return filtered.map(b => {
@@ -301,7 +298,7 @@ const LobbyView = ({ bubbles, onSend, isUnlocked = false }: LobbyViewProps) => {
                                     >
                                         <div className="flex items-start justify-between mb-3">
                                             <span className="text-[8px] px-1.5 py-0.5 bg-blue-500/20 text-blue-300 rounded border border-blue-500/30 uppercase tracking-widest font-bold">
-                                                {bubble.topic || bubble.category || "General"}
+                                                {bubble.topic || "General"}
                                             </span>
                                         </div>
                                         <h3 className="text-white text-sm font-bold mb-3 line-clamp-2 leading-snug">
@@ -530,7 +527,7 @@ const LobbyView = ({ bubbles, onSend, isUnlocked = false }: LobbyViewProps) => {
 
                                     if (!replyContent.trim() || !topicValue.trim() || !titleValue.trim() || isSubmitting) return;
                                     setIsSubmitting(true);
-                                    await onSend(replyContent, null, "Blue", topicValue, titleValue);
+                                    await onSend(replyContent, null, topicValue, titleValue);
                                     setReplyContent("");
                                     setIsSubmitting(false);
                                     setIsNewBubbleOpen(false);

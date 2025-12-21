@@ -2,6 +2,8 @@
 
 ## 修改歷史
 
+- [2025/12/21 20:00 v0.61] 檔案: `src/app/page.tsx`, `src/components/DiveView.tsx`, `src/components/LobbyView.tsx` | 內容: 全面移除前端程式碼對 `category` 欄位的依賴，包括 `handleSend` 寫入資料庫的 payload、介面定義與過濾邏輯，改為完全依賴 `topic` 與 `depth_level` | 原因: 配合 Supabase 資料庫欄位變更 (已刪除 category 欄位)，解決 "Column not found: category" 錯誤，防止寫入失敗
+
 - [2025/12/21 19:55 v0.60] 檔案: `src/components/DiveView.tsx` | 內容: 1. 恢復氣泡上的分類標籤 (Topic Label)，並放大字體與增加字距以提升辨識度；2. 修正 `DiveModal` 內的標籤顯示邏輯，確保其顯示具體的「主題名稱」(如：哲學) 而非通用的類別配置名稱 (如：心理) 或預設文字 (探索主題) | 原因: 提高資訊的精確度，讓使用者能直觀識別氣泡的具體主題
 
 - [2025/12/21 19:48 v0.59] 檔案: `src/components/LiquidTabBar.tsx`, `src/app/globals.css`, `src/components/DiveView.tsx` | 內容: 實作導航列自動隱藏功能：當使用者打開氣泡 (`DiveView`) 或點擊發布新氣泡時，底部導航列會自動下滑隱藏 (`translateY(150%)`)，關閉後自動復原，提供更沈浸的閱讀與創作體驗 | 原因: 減少畫面干擾，最大化用戶在沈浸模式下的視覺空間

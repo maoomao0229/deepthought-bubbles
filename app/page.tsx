@@ -100,7 +100,6 @@ export default function Home() {
   const handleSend = async (
     content: string,
     parentId: string | null = null,
-    category: string = "Blue",
     topic: string | null = null,
     title: string | null = null
   ) => {
@@ -119,7 +118,6 @@ export default function Home() {
     const { error } = await supabase.from("bubbles").insert([
       {
         content: content,
-        category: category,
         topic: topic,
         title: title,
         x_position: xPosition,
