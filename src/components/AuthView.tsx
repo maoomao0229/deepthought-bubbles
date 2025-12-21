@@ -2,8 +2,8 @@
 
 import React, { useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
-import { Mail, Lock, LogIn, UserPlus, Globe, Ghost } from "lucide-react";
-import DeepSeaBackground from "./DeepSeaBackground";
+import { Mail, Lock, LogIn, UserPlus, Globe, Ghost, AlertCircle } from "lucide-react"; // 新增 AlertCircle
+import DeepSeaBackground from "./DeepSeaBackground"; // 引入 3D 深海背景
 
 /**
  * 身分驗證視圖元件
@@ -96,41 +96,43 @@ const AuthView = () => {
     };
 
     return (
-        <div className="min-h-screen w-full relative flex items-center justify-center px-4 overflow-hidden bg-black">
+        <div className="min-h-screen w-full relative flex items-center justify-center px-4 overflow-hidden font-sans bg-blue-900"> {/* 設定一個 fallback 背景色 */}
 
-            {/*  深海 3D 漸層背景 (z-index: 0) */}
-            <div className="absolute inset-0 z-0">
-                <DeepSeaBackground />
-            </div>
+            {/* 🌊 3D 深海背景 (z-index: 0) */}
+            <DeepSeaBackground />
 
-            {/* 登入/註冊卡片 (z-index: 10) */}
-            <div className="relative z-10 w-full max-w-[400px] bg-blue-950/30 backdrop-blur-xl rounded-3xl border border-white/10 shadow-2xl p-8 overflow-y-auto max-h-[90vh] animate-fade-in">
+            {/* 登入/註冊卡片 (z-index: 10) - 磨砂玻璃氣泡風格 */}
+            <div className="relative z-10 w-full max-w-[380px] bg-blue-900/20 backdrop-blur-xl rounded-4xl border border-blue-300/20 shadow-[0_8px_32px_rgba(49,103,148,0.25)] p-8 overflow-hidden animate-fade-in">
+                {/* 卡片內部光暈裝飾 */}
+                <div className="absolute -top-20 -left-20 w-40 h-40 bg-blue-500/20 rounded-full blur-[80px] pointer-events-none"></div>
+                <div className="absolute -bottom-20 -right-20 w-40 h-40 bg-indigo-500/20 rounded-full blur-[80px] pointer-events-none"></div>
+
                 {/* 標題區 */}
-                <div className="text-center mb-8">
-                    <h1 className="text-3xl font-bold text-white mb-2 tracking-tight drop-shadow-lg">
+                <div className="text-center mb-8 relative">
+                    <h1 className="text-3xl font-bold text-gray-50 mb-2 tracking-tight drop-shadow-md">
                         {isSignUp ? "加入深海" : "潛入深海"}
                     </h1>
-                    <p className="text-blue-200/80 text-sm font-light tracking-wide">
+                    <p className="text-blue-300/80 text-sm font-medium tracking-wide">
                         {isSignUp ? "創建你的座頭鯨帳號" : "歡迎回來，探索者"}
                     </p>
                 </div>
 
                 {/* 主要登入表單 */}
-                <form onSubmit={handleSubmit} className="space-y-4 mb-6">
+                <form onSubmit={handleSubmit} className="space-y-5 mb-6 relative">
                     <div className="relative group">
-                        <Mail size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-blue-300 group-focus-within:text-blue-100 transition-colors" />
+                        <Mail size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-blue-300/70 group-focus-within:text-blue-300 transition-colors" />
                         <input
                             type="email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             placeholder="電子郵件"
                             required
-                            className="w-full bg-blue-900/40 hover:bg-blue-900/60 text-white placeholder-blue-300/50 rounded-xl py-3.5 pl-12 pr-4 border border-blue-500/20 focus:border-blue-400/50 focus:outline-none focus:ring-1 focus:ring-blue-400/50 transition-all font-light text-sm"
+                            className="w-full bg-blue-900/30 hover:bg-blue-900/40 text-gray-50 placeholder-blue-300/50 rounded-2xl py-3.5 pl-12 pr-4 border border-blue-300/10 focus:border-blue-500/50 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all font-medium text-sm shadow-inner"
                         />
                     </div>
 
                     <div className="relative group">
-                        <Lock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-blue-300 group-focus-within:text-blue-100 transition-colors" />
+                        <Lock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-blue-300/70 group-focus-within:text-blue-300 transition-colors" />
                         <input
                             type="password"
                             value={password}
@@ -138,18 +140,21 @@ const AuthView = () => {
                             placeholder="密碼"
                             required
                             minLength={6}
-                            className="w-full bg-blue-900/40 hover:bg-blue-900/60 text-white placeholder-blue-300/50 rounded-xl py-3.5 pl-12 pr-4 border border-blue-500/20 focus:border-blue-400/50 focus:outline-none focus:ring-1 focus:ring-blue-400/50 transition-all font-light text-sm"
+                            className="w-full bg-blue-900/30 hover:bg-blue-900/40 text-gray-50 placeholder-blue-300/50 rounded-2xl py-3.5 pl-12 pr-4 border border-blue-300/10 focus:border-blue-500/50 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all font-medium text-sm shadow-inner"
                         />
                     </div>
 
+                    {/* 錯誤訊息 - 使用 Yellow 色系 */}
                     {errorMessage && (
-                        <div className="text-red-300 text-xs text-center py-2 bg-red-500/10 rounded-lg border border-red-500/20 px-3">
-                            {errorMessage}
+                        <div className="flex items-center gap-2 text-yellow-500 text-xs py-2 px-3 bg-yellow-500/10 rounded-xl border border-yellow-500/20 animate-fade-in font-medium">
+                            <AlertCircle size={14} className="shrink-0" />
+                            <p>{errorMessage}</p>
                         </div>
                     )}
 
+                    {/* 成功訊息 - 使用 Green 色系 */}
                     {successMessage && (
-                        <div className="text-green-300 text-xs text-center py-2 bg-green-500/10 rounded-lg border border-green-500/20 px-3">
+                        <div className="text-green-300 text-xs text-center py-2 px-3 bg-green-500/10 rounded-xl border border-green-500/20 animate-fade-in font-medium">
                             {successMessage}
                         </div>
                     )}
@@ -157,10 +162,10 @@ const AuthView = () => {
                     <button
                         type="submit"
                         disabled={isLoading}
-                        className="w-full bg-linear-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold py-3.5 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-blue-900/50 active:scale-[0.98]"
+                        className="w-full bg-linear-to-r from-blue-500 to-indigo-500 hover:from-blue-400 hover:to-indigo-400 text-gray-50 font-bold py-3.5 rounded-2xl transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-blue-500/20 active:scale-[0.98]"
                     >
                         {isLoading ? (
-                            <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                            <div className="w-5 h-5 border-2 border-gray-50/30 border-t-gray-50 rounded-full animate-spin" />
                         ) : isSignUp ? (
                             <><UserPlus size={18} /><span>建立帳號</span></>
                         ) : (
@@ -171,20 +176,20 @@ const AuthView = () => {
 
                 {/* 分隔線 */}
                 <div className="relative flex items-center py-2 mb-6">
-                    <div className="grow border-t border-white/10"></div>
-                    <span className="shrink mx-4 text-blue-300/40 text-[10px] tracking-widest uppercase">或者透過</span>
-                    <div className="grow border-t border-white/10"></div>
+                    <div className="grow border-t border-blue-300/10"></div>
+                    <span className="shrink mx-4 text-blue-300/50 text-[10px] tracking-widest uppercase font-medium">或者透過</span>
+                    <div className="grow border-t border-blue-300/10"></div>
                 </div>
 
                 {/* 第三方登入按鈕區 */}
-                <div className="space-y-3">
+                <div className="space-y-3 relative">
                     <button
                         type="button"
                         onClick={handleGoogleLogin}
                         disabled={isLoading}
-                        className="w-full bg-white/5 hover:bg-white/10 text-white py-3 rounded-xl border border-white/10 transition-all flex items-center justify-center gap-3 text-sm font-medium disabled:opacity-50 hover:border-white/20 active:bg-white/15"
+                        className="w-full bg-gray-50/5 hover:bg-gray-50/10 text-gray-50 py-3 rounded-2xl border border-gray-50/10 transition-all flex items-center justify-center gap-3 text-sm font-medium disabled:opacity-50 hover:border-gray-50/20 active:bg-gray-50/15 shadow-sm"
                     >
-                        <Globe size={16} className="text-blue-200" />
+                        <Globe size={16} className="text-blue-300" />
                         Google 登入探索
                     </button>
 
@@ -192,7 +197,7 @@ const AuthView = () => {
                         type="button"
                         onClick={handleAnonymousLogin}
                         disabled={isLoading}
-                        className="w-full bg-transparent hover:bg-white/5 text-blue-200/80 py-3 rounded-xl border border-dashed border-blue-400/20 transition-all flex items-center justify-center gap-3 text-xs font-light disabled:opacity-50"
+                        className="w-full bg-transparent hover:bg-blue-300/5 text-blue-300/80 py-3 rounded-2xl border border-dashed border-blue-300/20 transition-all flex items-center justify-center gap-3 text-xs font-medium disabled:opacity-50"
                     >
                         <Ghost size={16} className="text-blue-300/60" />
                         先以訪客身分逛逛
@@ -200,7 +205,7 @@ const AuthView = () => {
                 </div>
 
                 {/* 切換模式連結 */}
-                <div className="mt-8 text-center">
+                <div className="mt-8 text-center relative">
                     <button
                         type="button"
                         onClick={() => {
@@ -208,7 +213,7 @@ const AuthView = () => {
                             setErrorMessage("");
                             setSuccessMessage("");
                         }}
-                        className="text-blue-300/60 hover:text-white text-xs transition-colors tracking-wide border-b border-transparent hover:border-blue-300/50 pb-0.5"
+                        className="text-blue-300/70 hover:text-gray-50 text-xs transition-colors tracking-wide font-medium border-b border-transparent hover:border-blue-300/50 pb-0.5"
                     >
                         {isSignUp ? "已有帳號？點此潛入" : "還渴望新的身分？點此加入"}
                     </button>
