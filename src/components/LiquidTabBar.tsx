@@ -71,7 +71,6 @@ const LiquidTabBar: React.FC<LiquidTabBarProps> = ({ currentView, onChange, isUn
     const animate = () => {
       setDisplayX((prev) => {
         const diff = targetX - prev;
-        // 0.06 factor 讓動畫非常緩慢且有機
         if (Math.abs(diff) < 0.5) return targetX;
         return prev + diff * 0.06;
       });
@@ -89,28 +88,32 @@ const LiquidTabBar: React.FC<LiquidTabBarProps> = ({ currentView, onChange, isUn
     onChange(viewId);
   };
 
-  // SVG Path 生成器：使用 Cubic Bezier 實現圓滑凹陷
-  const getPath = useCallback((w: number, x: number) => {
-    const r = 38; // 凹洞半徑
-    const c = 20; // 圓角 fillet 大小
-    const h = 70; // Bar 高度
+  // SVG Path 生成器：Glassmorphism 圓角矩形 + 液態凹陷
+  const getPath = useCallback((w: number, h: number, x: number) => {
+    const r = 24; // 圓角半徑
+    const holeW = 35; // 凹洞半寬
+    const holeD = 32; // 凹洞深度
 
-    // 使用 Cubic Bezier (C 指令) 創造更平滑的曲線過渡
-    // Q 用於頂部圓角，C 用於凹陷曲線
+    // 路徑：左上圓角 -> 上邊到凹洞 -> 凹洞曲線 -> 上邊繼續 -> 右上圓角 -> 右邊 -> 右下圓角 -> 下邊 -> 左下圓角 -> 左邊 -> 閉合
     return `
-      M 0,0 
-      L ${x - r - c},0 
-      Q ${x - r},0 ${x - r},${c * 0.8} 
-      C ${x - r},${r + c * 0.5} ${x + r},${r + c * 0.5} ${x + r},${c * 0.8}
-      Q ${x + r},0 ${x + r + c},0 
-      L ${w},0 
-      L ${w},${h} 
-      L 0,${h} 
+      M ${r} 0 
+      L ${x - holeW - 15} 0 
+      C ${x - holeW} 0, ${x - holeW + 8} ${holeD}, ${x} ${holeD} 
+      C ${x + holeW - 8} ${holeD}, ${x + holeW} 0, ${x + holeW + 15} 0 
+      L ${w - r} 0 
+      A ${r} ${r} 0 0 1 ${w} ${r} 
+      L ${w} ${h - r} 
+      A ${r} ${r} 0 0 1 ${w - r} ${h} 
+      L ${r} ${h} 
+      A ${r} ${r} 0 0 1 0 ${h - r} 
+      L 0 ${r} 
+      A ${r} ${r} 0 0 1 ${r} 0 
       Z
     `;
   }, []);
 
-  // 球體左邊界 (寬度 56px，半徑 28px)
+  const h = 70; // Bar 高度
+  const pathString = getPath(containerWidth || 400, h, displayX);
   const ballLeft = displayX - 28;
 
   return (
@@ -123,30 +126,40 @@ const LiquidTabBar: React.FC<LiquidTabBarProps> = ({ currentView, onChange, isUn
         className="relative h-[70px] w-full"
       >
 
-        {/* 1. SVG Bar Background with Smooth Indentation */}
+        {/* 1. Glassmorphism Layer (Frosted Glass with clip-path) */}
+        <div
+          className="absolute inset-0 w-full h-full bg-blue-900/40 backdrop-blur-xl"
+          style={{
+            clipPath: `path('${pathString.replace(/\s+/g, ' ').trim()}')`,
+          }}
+        />
+
+        {/* 2. Border Overlay (SVG Stroke) */}
         <svg
-          className="absolute inset-0 w-full h-full drop-shadow-2xl"
-          viewBox={`0 0 ${containerWidth || 400} 70`}
+          className="absolute inset-0 w-full h-full pointer-events-none"
+          viewBox={`0 0 ${containerWidth || 400} ${h}`}
           preserveAspectRatio="none"
         >
           <path
-            d={getPath(containerWidth || 400, displayX)}
-            fill="#204a6e"
+            d={pathString}
+            fill="none"
+            stroke="rgba(255,255,255,0.15)"
+            strokeWidth="1"
           />
         </svg>
 
-        {/* 2. Floating Active Ball */}
+        {/* 3. Floating Active Ball (Glowing) */}
         <div
-          className="absolute w-[56px] h-[56px] bg-[#204a6e] rounded-full flex items-center justify-center shadow-[0_4px_12px_rgba(0,0,0,0.3)] border-[3px] border-[#1a3b59]"
+          className="absolute w-[56px] h-[56px] bg-blue-500/80 backdrop-blur-md rounded-full flex items-center justify-center shadow-[0_0_25px_rgba(59,130,246,0.5)] border border-white/20"
           style={{
             left: `${ballLeft}px`,
             top: "-24px",
           }}
         >
-          <div className="absolute inset-0 rounded-full bg-linear-to-b from-white/10 to-transparent pointer-events-none" />
+          <div className="absolute inset-0 rounded-full bg-linear-to-b from-white/20 to-transparent pointer-events-none" />
         </div>
 
-        {/* 3. Icons Layer */}
+        {/* 4. Icons Layer */}
         <ul className="absolute inset-0 grid grid-cols-4 w-full h-full z-20">
           {menus.map((menu, i) => {
             const isActive = i === activeIndex;
@@ -163,13 +176,13 @@ const LiquidTabBar: React.FC<LiquidTabBarProps> = ({ currentView, onChange, isUn
                 {/* Icon Container */}
                 <div
                   className={`relative flex items-center justify-center transition-all duration-500 ease-out ${isActive
-                    ? "-translate-y-[34px] scale-110"
-                    : "translate-y-0 text-white/40 hover:text-white/70"
+                      ? "-translate-y-[34px] scale-110"
+                      : "translate-y-0 text-white/50 hover:text-white/80"
                     }`}
                 >
                   <IconComponent
                     size={24}
-                    className={`transition-colors duration-300 ${isActive ? menu.color : "text-inherit"}`}
+                    className={`transition-colors duration-300 drop-shadow-lg ${isActive ? menu.color : "text-inherit"}`}
                     strokeWidth={isActive ? 2.5 : 2}
                   />
 
@@ -181,8 +194,8 @@ const LiquidTabBar: React.FC<LiquidTabBarProps> = ({ currentView, onChange, isUn
                 {/* Label */}
                 <span
                   className={`absolute bottom-2 text-[10px] font-bold tracking-widest transition-all duration-300 ${isActive
-                    ? "opacity-100 translate-y-0 text-white"
-                    : "opacity-0 translate-y-2"
+                      ? "opacity-100 translate-y-0 text-white"
+                      : "opacity-0 translate-y-2"
                     }`}
                 >
                   {menu.label}

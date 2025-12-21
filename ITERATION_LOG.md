@@ -2,6 +2,8 @@
 
 ## 修改歷史
 
+- [2025/12/22 02:00 v0.71] 檔案: `src/components/LiquidTabBar.tsx` | 內容: 實作毛玻璃風格 (Glassmorphism) 導航列：1. 使用 `clip-path: path()` 搭配 `backdrop-blur-xl` 創造磨砂玻璃效果；2. 加入 SVG 描邊以強化玻璃邊框視覺；3. 懸浮球改為發光效果 (`shadow-[0_0_25px]`)；4. 保留 `requestAnimationFrame` 有機動畫 | 原因: 統一整體 UI 風格，與登入頁面的毛玻璃設計語言保持一致
+
 - [2025/12/22 01:50 v0.70] 檔案: `src/app/page.tsx`, `src/components/LiquidTabBar.tsx` | 內容: 1. 修正 ShaderGradient 不可見問題 (`cDistance=3.2`, `cameraZoom=2.8`)；2. 優化導航列 SVG Path 曲線，改用 Cubic Bezier (`C` 指令) 實現更平滑的凹陷過渡 | 原因: 恢復動態海洋背景的正確渲染，並改善導航列視覺品質
 
 - [2025/12/22 01:45 v0.69] 檔案: `src/app/globals.css`, `src/components/LiquidTabBar.tsx` | 內容: 1. 修正白畫面問題，為 `body` 新增深色背景備援 (`#050B1A`)；2. 重構導航列為 SVG 實作，使用 `<path>` 繪製圓滑凹陷曲線，搭配 `requestAnimationFrame` 實現緩慢黏滯的有機動畫效果 | 原因: 消除背景閃白問題，並提升導航列視覺品質與動畫流暢度
