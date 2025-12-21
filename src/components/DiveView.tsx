@@ -16,6 +16,7 @@ interface SeedTopic {
   topic?: string;
   title?: string;
   category: "philosophy" | "ocean" | "thought" | "depth" | string;
+  depthLevel: "Surface" | "Midzone" | "Depth";
   speed: number;
   content: string;
   size: "sm" | "md" | "lg";
@@ -31,6 +32,24 @@ interface DepthConfig {
   label: string;
   color: string;
 }
+
+const BUBBLE_STYLES = {
+  Surface: {
+    background: "linear-gradient(0deg, #FFFBF6, #FFFBF6), radial-gradient(85.64% 85.64% at 20.51% 15.33%, rgba(101, 113, 188, 0.5) 0%, rgba(91, 139, 180, 0) 64.68%), linear-gradient(291.42deg, rgba(159, 193, 221, 0.1) 14%, rgba(0, 0, 0, 0) 73.01%), radial-gradient(47.37% 47.37% at 41.8% 41.02%, rgba(0, 0, 0, 0) 54.81%, rgba(155, 221, 206, 0.1) 100%), #5B8BB4",
+    backgroundBlendMode: "soft-light, plus-lighter, normal, plus-lighter, normal",
+    color: "#161819", // Dark Text
+  },
+  Midzone: {
+    background: "linear-gradient(0deg, rgba(255, 251, 246, 0.5), rgba(255, 251, 246, 0.5)), radial-gradient(85.64% 85.64% at 20.51% 15.33%, rgba(101, 113, 188, 0.5) 0%, rgba(91, 139, 180, 0) 64.68%), radial-gradient(47.37% 47.37% at 41.8% 41.02%, rgba(0, 0, 0, 0) 54.81%, rgba(155, 221, 206, 0.1) 100%), #4376A0",
+    backgroundBlendMode: "soft-light, plus-lighter, plus-lighter, normal",
+    color: "#161819",
+  },
+  Depth: {
+    background: "radial-gradient(85.64% 85.64% at 20.51% 15.33%, rgba(101, 113, 188, 0.5) 0%, rgba(91, 139, 180, 0) 64.68%), linear-gradient(291.42deg, rgba(159, 193, 221, 0.1) 14%, rgba(0, 0, 0, 0) 73.01%), radial-gradient(47.37% 47.37% at 41.8% 41.02%, rgba(0, 0, 0, 0) 54.81%, rgba(155, 221, 206, 0.1) 100%), #316794",
+    backgroundBlendMode: "plus-lighter, normal, plus-lighter, normal",
+    color: "#161819",
+  }
+};
 
 // ==========================================
 // Helper Functions
@@ -93,6 +112,9 @@ interface TopicBubbleProps {
 const TopicBubble = forwardRef<HTMLDivElement, TopicBubbleProps>(
   ({ topic, onClick, isHovered }, ref) => {
     const catConfig = getCategoryConfig(topic.category);
+    // @ts-ignore
+    const visualStyle = BUBBLE_STYLES[topic.depthLevel] || BUBBLE_STYLES.Surface;
+
     const sizeClasses = {
       sm: "w-24 h-24 text-[10px]",
       md: "w-32 h-32 text-xs",
@@ -113,19 +135,18 @@ const TopicBubble = forwardRef<HTMLDivElement, TopicBubbleProps>(
         <div className={`
           ${sizeClasses[topic.size]}
           rounded-full flex flex-col items-center justify-center text-center p-4
-          backdrop-blur-xl bg-linear-to-br ${catConfig.bg}
-          border ${catConfig.color.replace("text-", "border-").replace("200", "500")}/30
           shadow-lg 
           transition-all duration-300 animate-float
         `}
           style={{
+            ...visualStyle,
             boxShadow: isHovered ? "0 0 40px rgba(255,255,255,0.4)" : undefined
           }}
         >
-          <span className={`block font-bold mb-1 ${catConfig.color} opacity-80 uppercase tracking-widest text-[8px]`}>
+          <span className={`block font-bold mb-1 opacity-80 uppercase tracking-widest text-[8px]`} style={{ color: visualStyle.color }}>
             {topic.topic || catConfig.name}
           </span>
-          <h3 className="font-bold text-blue-50 leading-tight px-1 drop-shadow-md select-none line-clamp-2 text-base">
+          <h3 className="font-bold leading-tight px-1 drop-shadow-md select-none line-clamp-2 text-base" style={{ color: visualStyle.color }}>
             {topic.title || "探索思考"}
           </h3>
         </div>
@@ -465,6 +486,7 @@ const DiveView = ({
         topic: b.topic,
         title: b.title,
         category: b.category || "ocean",
+        depthLevel: b.content.length > 200 ? "Depth" : b.content.length > 50 ? "Midzone" : "Surface",
         // 固定速度參數
         speed: 0.4 + seededRandom(b.id + 'speed') * 0.4,
         content: b.content,

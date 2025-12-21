@@ -2,6 +2,8 @@
 
 ## 修改歷史
 
+- [2025/12/21 18:50 v0.54] 檔案: `src/components/DiveView.tsx` | 內容: 視覺與互動強化：1. 定義 `BUBBLE_STYLES` 常數，導入 Figma 設計的 Surface/Midzone/Depth 漸層與混合模式；2. 更新 `TopicBubble` 組件，根據內容長度計算的 `depthLevel` 套用對應的視覺樣式，取代原有的 Tailwind 背景色，營造更細膩的深海氛圍 | 原因: 實現高度還原的 Figma 設計，透過視覺層次（光澤、顏色深度）直觀傳達思考的深度
+
 - [2025/12/21 18:35 v0.53] 檔案: `src/app/page.tsx`, `src/components/DiveView.tsx` | 內容: 實作「海域深度系統」：1. 後端 `handleSend` 新增自動計算深度等級 (Surface/Midzone/Depth) 並寫入資料庫；2. 前端 `DiveView` 更新深度顯示邏輯，採用新的 3 層分級標準 (<50, 50-200, >200) 並套用 Cyan (上層), Blue (中層), Indigo (深層) 色票 | 原因: 將內容長度量化為深度概念，透過視覺化的層級區分 (顏色/標籤) 強化深海世界觀的沈浸感
 
 - [2025/12/21 17:18 v0.52] 檔案: `src/components/DiveView.tsx` | 內容: 程式碼風格優化：依據 IDE 建議，將 JIT 語法的 `z-[2000]` 改寫為 `z-2000` | 原因: 消除 IDE 警告 (The class can be written as...)，保持程式碼簡潔
