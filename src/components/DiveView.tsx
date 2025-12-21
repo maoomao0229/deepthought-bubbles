@@ -35,14 +35,17 @@ interface DepthConfig {
 
 const BUBBLE_STYLES = {
   Surface: {
-    background: "linear-gradient(0deg, #FFFBF6, #FFFBF6), radial-gradient(85.64% 85.64% at 20.51% 15.33%, rgba(101, 113, 188, 0.5) 0%, rgba(91, 139, 180, 0) 64.68%), linear-gradient(291.42deg, rgba(159, 193, 221, 0.1) 14%, rgba(0, 0, 0, 0) 73.01%), radial-gradient(47.37% 47.37% at 41.8% 41.02%, rgba(0, 0, 0, 0) 54.81%, rgba(155, 221, 206, 0.1) 100%), rgba(91, 139, 180, 0.4)",
+    // Modified first gradient to 0.1 opacity
+    background: "linear-gradient(0deg, rgba(255, 251, 246, 0.1), rgba(255, 251, 246, 0.1)), radial-gradient(85.64% 85.64% at 20.51% 15.33%, rgba(101, 113, 188, 0.5) 0%, rgba(91, 139, 180, 0) 64.68%), linear-gradient(291.42deg, rgba(159, 193, 221, 0.1) 14%, rgba(0, 0, 0, 0) 73.01%), radial-gradient(47.37% 47.37% at 41.8% 41.02%, rgba(0, 0, 0, 0) 54.81%, rgba(155, 221, 206, 0.1) 100%), rgba(91, 139, 180, 0.4)",
     backgroundBlendMode: "soft-light, plus-lighter, normal, plus-lighter, normal",
   },
   Midzone: {
-    background: "linear-gradient(0deg, rgba(255, 251, 246, 0.5), rgba(255, 251, 246, 0.5)), radial-gradient(85.64% 85.64% at 20.51% 15.33%, rgba(101, 113, 188, 0.5) 0%, rgba(91, 139, 180, 0) 64.68%), radial-gradient(47.37% 47.37% at 41.8% 41.02%, rgba(0, 0, 0, 0) 54.81%, rgba(155, 221, 206, 0.1) 100%), rgba(67, 118, 160, 0.4)",
+    // Modified first gradient to 0.2 opacity
+    background: "linear-gradient(0deg, rgba(255, 251, 246, 0.2), rgba(255, 251, 246, 0.2)), radial-gradient(85.64% 85.64% at 20.51% 15.33%, rgba(101, 113, 188, 0.5) 0%, rgba(91, 139, 180, 0) 64.68%), radial-gradient(47.37% 47.37% at 41.8% 41.02%, rgba(0, 0, 0, 0) 54.81%, rgba(155, 221, 206, 0.1) 100%), rgba(67, 118, 160, 0.4)",
     backgroundBlendMode: "soft-light, plus-lighter, plus-lighter, normal",
   },
   Depth: {
+    // Keep original (Already dark enough)
     background: "radial-gradient(85.64% 85.64% at 20.51% 15.33%, rgba(101, 113, 188, 0.5) 0%, rgba(91, 139, 180, 0) 64.68%), linear-gradient(291.42deg, rgba(159, 193, 221, 0.1) 14%, rgba(0, 0, 0, 0) 73.01%), radial-gradient(47.37% 47.37% at 41.8% 41.02%, rgba(0, 0, 0, 0) 54.81%, rgba(155, 221, 206, 0.1) 100%), rgba(49, 103, 148, 0.4)",
     backgroundBlendMode: "plus-lighter, normal, plus-lighter, normal",
   }
