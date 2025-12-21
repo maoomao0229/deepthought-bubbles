@@ -88,19 +88,40 @@ const LiquidTabBar: React.FC<LiquidTabBarProps> = ({ currentView, onChange, isUn
 
   return (
     <div className="fixed bottom-6 left-1/2 -translate-x-1/2 w-full max-w-md px-4 z-50">
-      {/* 導航列容器：使用深藍色背景，圓角設計，加上陰影效果 */}
-      <div ref={containerRef} id="main-nav-bar" className="relative h-20 bg-[#204a6e] rounded-3xl flex items-center shadow-2xl px-6 transition-transform duration-500 ease-in-out">
-        {/* 液態指示器：使用動態計算的實際 DOM 位置確保完美置中 */}
-        <div
-          className="magic-indicator absolute w-[65px] h-[65px] bg-blue-900 rounded-full border-4 border-[#204a6e] transition-all duration-500 ease-out shadow-[0_4px_12px_0_rgba(0,0,0,0.15)]"
-          style={{
-            left: `${indicatorLeft}px`,
-            top: "-32px",
-          }}
-        ></div>
+      {/* 1. SVG Filter Definition (Hidden) */}
+      <svg className="absolute w-0 h-0">
+        <defs>
+          <filter id="goo">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="12" result="blur" />
+            <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 19 -9" result="goo" />
+            <feComposite in="SourceGraphic" in2="goo" operator="atop" />
+          </filter>
+        </defs>
+      </svg>
 
-        {/* 選單列表：使用 Grid 布局，平均分配四個選項 */}
-        <ul className="grid grid-cols-4 w-full h-full relative z-10">
+      {/* 導航列容器 */}
+      <div ref={containerRef} id="main-nav-bar" className="relative h-20 w-full transition-transform duration-500 ease-in-out">
+
+        {/* Layer A: Liquid Visuals (Background + Ball) - Apply Filter Here */}
+        <div
+          className="absolute inset-0 w-full h-full"
+          style={{ filter: "url(#goo)" }}
+        >
+          {/* The Bar Shape */}
+          <div className="w-full h-full bg-[#204a6e] rounded-3xl" />
+
+          {/* The Moving Ball */}
+          <div
+            className="absolute w-[65px] h-[65px] bg-[#204a6e] rounded-full transition-all duration-700 ease-[cubic-bezier(0.23,1,0.32,1)]"
+            style={{
+              left: `${indicatorLeft}px`,
+              top: "-20px", // 調整此值讓球體與本體融合
+            }}
+          />
+        </div>
+
+        {/* Layer B: Content (Icons) - NO FILTER */}
+        <ul className="absolute inset-0 grid grid-cols-4 w-full h-full z-10">
           {menus.map((menu, i) => {
             const isActive = i === activeIndex;
             const isLocked = !isUnlocked && menu.id !== "dive";
@@ -115,9 +136,9 @@ const LiquidTabBar: React.FC<LiquidTabBarProps> = ({ currentView, onChange, isUn
                 className={`relative h-full flex flex-col items-center justify-center cursor-pointer group ${isLocked ? "opacity-40" : ""}`}
                 onClick={() => handleTabClick(menu.id)}
               >
-                {/* 圖標容器：啟用時會向上移動並放大，確保在圓圈內置中 */}
+                {/* 圖標容器：啟用時會向上移動並放大 */}
                 <div
-                  className={`relative flex items-center justify-center z-20 transition-all duration-500 ease-out ${isActive ? "-translate-y-[32px] scale-110" : "translate-y-0 text-white/50"
+                  className={`relative flex items-center justify-center z-20 transition-all duration-500 ease-out ${isActive ? "-translate-y-[28px] scale-110" : "translate-y-0 text-white/50"
                     }`}
                 >
                   <IconComponent

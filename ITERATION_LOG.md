@@ -2,6 +2,8 @@
 
 ## 修改歷史
 
+- [2025/12/21 22:50 v0.66] 檔案: `src/components/LiquidTabBar.tsx` | 內容: 實作 "Gooey" 液態動畫效果：1. 加入 SVG Filter (`feGaussianBlur` + `feColorMatrix`)；2. 重構 DOM 分層 (液態層與內容層分離)；3. 應用 cubic-bezier 動畫曲線 | 原因: 提升 UI 互動質感，實現類原生應用的流暢液態回饋
+
 - [2025/12/21 22:20 v0.65] 檔案: `src/components/LiquidTabBar.tsx`, `src/app/layout.tsx` | 內容: 1. `LiquidTabBar` 改為懸浮膠囊樣式 (Floating Capsule)，限制寬度並置中，提供更輕盈的視覺感；2. 修正 `layout.tsx` 黑畫面問題 (移除遮擋背景的 `bg-black`)，確保 ShaderGradient 正確顯示 | 原因: 優化導航列視覺體驗，並修復背景顯示異常
 
 - [2025/12/21 21:45 v0.64] 檔案: `src/app/layout.tsx`, `src/app/page.tsx` | 內容: 1. 移除 `layout.tsx` 中的手機框架 (mobile frame) 樣式，啟用全螢幕沈浸式佈局；2. 調整 `ShaderGradient` 參數 (`cDistance=0`, `cameraZoom=2`) 消弭邊界，創造無限延伸的海洋視覺效果 | 原因: 解決 Desktop 版面被截斷問題，提升整體沈浸感
