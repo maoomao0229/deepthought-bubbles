@@ -2,6 +2,8 @@
 
 ## 修改歷史
 
+- [2025/12/21 19:48 v0.59] 檔案: `src/components/LiquidTabBar.tsx`, `src/app/globals.css`, `src/components/DiveView.tsx` | 內容: 實作導航列自動隱藏功能：當使用者打開氣泡 (`DiveView`) 或點擊發布新氣泡時，底部導航列會自動下滑隱藏 (`translateY(150%)`)，關閉後自動復原，提供更沈浸的閱讀與創作體驗 | 原因: 減少畫面干擾，最大化用戶在沈浸模式下的視覺空間
+
 - [2025/12/21 19:38 v0.58] 檔案: `src/components/DiveView.tsx` | 內容: 移除 `TopicBubble` 內的分類標籤顯示 (如「科普」、「生活」字樣)，僅保留標題 | 原因: 簡化氣泡視覺元素，避免資訊過載，讓使用者專注於標題內容
 
 - [2025/12/21 19:25 v0.57] 檔案: `src/components/DiveView.tsx` | 內容: 調整 `BUBBLE_STYLES` 透明度：將 Surface 層的白色漸層不透明度從 100% 降至 10%，Midzone 層從 50% 降至 20%，以提升淺色文字 (`text-blue-50`) 在淺色氣泡上的對比度與可讀性 | 原因: 修正因 Figma 原始色票過亮導致文字難以閱讀的問題，同時維持磨砂玻璃質感

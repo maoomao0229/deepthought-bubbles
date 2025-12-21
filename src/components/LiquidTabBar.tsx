@@ -89,7 +89,7 @@ const LiquidTabBar: React.FC<LiquidTabBarProps> = ({ currentView, onChange, isUn
   return (
     <div className="absolute bottom-0 w-full px-4 pb-6 z-40">
       {/* 導航列容器：使用深藍色背景，圓角設計，加上陰影效果 */}
-      <div ref={containerRef} className="relative h-20 bg-[#204a6e] rounded-t-2xl rounded-b-3xl flex items-center shadow-2xl px-6">
+      <div ref={containerRef} id="main-nav-bar" className="relative h-20 bg-[#204a6e] rounded-t-2xl rounded-b-3xl flex items-center shadow-2xl px-6 transition-transform duration-500 ease-in-out">
         {/* 液態指示器：使用動態計算的實際 DOM 位置確保完美置中 */}
         <div
           className="magic-indicator absolute w-[65px] h-[65px] bg-blue-900 rounded-full border-4 border-[#204a6e] transition-all duration-500 ease-out shadow-[0_4px_12px_0_rgba(0,0,0,0.15)]"

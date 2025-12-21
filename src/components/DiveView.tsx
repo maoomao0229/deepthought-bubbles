@@ -454,6 +454,18 @@ const DiveView = ({
   const bubblesRef = useRef<(HTMLDivElement | null)[]>([]);
   const rafId = useRef<number | null>(null);
 
+  useEffect(() => {
+    // If a topic is selected (modal open), add the class to hide nav
+    if (selectedTopic || isNewBubbleOpen) {
+      document.body.classList.add('nav-hidden');
+    } else {
+      document.body.classList.remove('nav-hidden');
+    }
+
+    // Cleanup on unmount
+    return () => document.body.classList.remove('nav-hidden');
+  }, [selectedTopic, isNewBubbleOpen]);
+
 
   // 使用 useMemo 鎖定計算結果，避免拖曳時重算導致閃爍
   const mappedTopics = React.useMemo(() => {
