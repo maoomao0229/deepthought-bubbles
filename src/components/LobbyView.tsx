@@ -101,7 +101,8 @@ const BubbleCard: React.FC<BubbleCardProps> = ({ bubble, onClick }) => {
     // 產生穩定的隨機寬度 (240px - 360px)，避免 Hydration 不一致
     const cardWidth = React.useMemo(() => {
         if (!bubble.id) return 260;
-        const seed = bubble.id.charCodeAt(0) + (bubble.id.length > 5 ? bubble.id.charCodeAt(5) : 0);
+        const idStr = String(bubble.id); // 確保 ID 是字串
+        const seed = idStr.charCodeAt(0) + (idStr.length > 5 ? idStr.charCodeAt(5) : 0);
         return 240 + (seed % 120);
     }, [bubble.id]);
 
