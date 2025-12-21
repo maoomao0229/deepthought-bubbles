@@ -607,7 +607,7 @@ const DiveView = ({
             return (
               <div
                 key={topic.id}
-                className="absolute transition-transform duration-75 ease-out will-change-transform"
+                className="absolute transition-transform duration-75 ease-out will-change-transform cursor-pointer"
                 style={{
                   transform: `translate3d(${displayX}px, ${displayY}px, 0)`,
                   left: "50%",
@@ -620,18 +620,13 @@ const DiveView = ({
                   e.stopPropagation(); // 阻止背景 Click
                   if (isDragging.current) return;
 
-                  // [FIX] 點擊優化：若是滑鼠(Desktop)直接打開；手機端保持兩段式確認
+                  // [FIX] 設備邏輯分流：滑鼠直接開啟，手機端首下浮起、次下開啟
                   const isMouse = (e.nativeEvent as PointerEvent).pointerType === 'mouse';
 
-                  if (isMouse) {
+                  if (isMouse || hoveredId === topic.id) {
                     setSelectedTopic(topic);
                   } else {
-                    // Mobile 點擊兩段式：首下浮起，次下打開
-                    if (hoveredId !== topic.id) {
-                      setHoveredId(topic.id);
-                    } else {
-                      setSelectedTopic(topic);
-                    }
+                    setHoveredId(topic.id);
                   }
                 }}
               >
