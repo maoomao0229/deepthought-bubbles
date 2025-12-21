@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Waves, Search, Filter, X, Send, MessageSquare, Plus } from "lucide-react";
+import { Waves, Search, X, Send, MessageSquare, Plus } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 
 interface LobbyViewProps {
@@ -11,9 +11,18 @@ interface LobbyViewProps {
 }
 
 /**
- * 泡泡大廳視圖
- * 顯示所有海域的主泡泡，支援分類過濾與深度回覆
+ * 偽隨機函數：根據字串種子產生固定的 0~1 小數
+ * 確保同一個泡泡 ID 永遠產生相同的隨機位置，解決拖曳閃爍問題
  */
+const seededRandom = (seed: string) => {
+    let h = 0x811c9dc5;
+    for (let i = 0; i < seed.length; i++) {
+        h ^= seed.charCodeAt(i);
+        h = Math.imul(h, 0x01000193);
+    }
+    return ((h >>> 0) / 4294967296);
+};
+
 const LobbyView = ({ bubbles, onSend, isUnlocked = false }: LobbyViewProps) => {
     const [activeCategory, setActiveCategory] = useState<string>("all");
     const [selectedBubble, setSelectedBubble] = useState<any | null>(null);
@@ -22,7 +31,7 @@ const LobbyView = ({ bubbles, onSend, isUnlocked = false }: LobbyViewProps) => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isNewBubbleOpen, setIsNewBubbleOpen] = useState(false);
 
-    // 畫布位置狀態 (中心點偏移)
+    // 畫布位置狀態
     const [panPosition, setPanPosition] = useState({ x: 0, y: 0 });
     const isPointerDown = React.useRef(false);
     const isDragging = React.useRef(false);
@@ -31,15 +40,15 @@ const LobbyView = ({ bubbles, onSend, isUnlocked = false }: LobbyViewProps) => {
     const containerRef = React.useRef<HTMLDivElement>(null);
     const rafId = React.useRef<number | null>(null);
 
-    // 泡泡佈局快取，解決閃爍問題
-    const [bubbleLayouts, setBubbleLayouts] = useState<Map<string, { x: number, y: number, zIndex: number }>>(new Map());
+    // 泡泡佈局快取
+    const [bubbleLayouts, setBubbleLayouts] = useState<Map<string, { x: number, y: number, zIndex: number, floatDelay: number, floatDuration: number }>>(new Map());
 
     // 初始位置居中
     useEffect(() => {
         setPanPosition({ x: 0, y: 0 });
     }, []);
 
-    // 當 bubbles 資料變動時，更新佈局快取 (一次性計算)
+    // 計算固定佈局 (使用偽隨機確保位置鎖定)
     useEffect(() => {
         if (!bubbles || bubbles.length === 0) return;
 
@@ -52,26 +61,35 @@ const LobbyView = ({ bubbles, onSend, isUnlocked = false }: LobbyViewProps) => {
             let finalX = (b.x_position - 50) * 16;
             let finalY = (b.y_position - 50) * 16;
 
-            // 簡化的碰撞隨機偏移，只跑一次
+            // 碰撞偵測與偏移 (改用 seededRandom)
             let collision = true;
             let attempts = 0;
-            while (collision && attempts < 3) {
+            // 每個嘗試使用不同的種子後綴 'c1', 'c2'... 確保隨機性不同但固定
+            while (collision && attempts < 5) {
                 collision = results.some(r => {
                     const dx = r.x - finalX;
                     const dy = r.y - finalY;
                     return Math.sqrt(dx * dx + dy * dy) < threshold;
                 });
                 if (collision) {
-                    finalX += (Math.random() - 0.5) * 120;
-                    finalY += (Math.random() - 0.5) * 120;
+                    const rngX = seededRandom(b.id + 'x' + attempts);
+                    const rngY = seededRandom(b.id + 'y' + attempts);
+                    finalX += (rngX - 0.5) * 150;
+                    finalY += (rngY - 0.5) * 150;
                 }
                 attempts++;
             }
 
+            // 計算懸浮動畫參數
+            const floatDelay = seededRandom(b.id + 'delay') * 5; // 0-5s 延遲
+            const floatDuration = 6 + seededRandom(b.id + 'dur') * 4; // 6-10s 週期
+
             const layout = {
                 x: finalX,
                 y: finalY,
-                zIndex: (index % 4) + 1
+                zIndex: (index % 4) + 1,
+                floatDelay,
+                floatDuration
             };
             newLayouts.set(b.id, layout);
             results.push(layout);
@@ -88,9 +106,6 @@ const LobbyView = ({ bubbles, onSend, isUnlocked = false }: LobbyViewProps) => {
         { id: "culture", name: "文化海域" },
     ];
 
-    /**
-     * 抓取選中氣泡的所有回覆
-     */
     useEffect(() => {
         if (selectedBubble) {
             fetchReplies(selectedBubble.id);
@@ -113,9 +128,6 @@ const LobbyView = ({ bubbles, onSend, isUnlocked = false }: LobbyViewProps) => {
         }
     };
 
-    /**
-     * 發送回覆邏輯
-     */
     const handleSendReply = async () => {
         if (!replyContent.trim() || !selectedBubble || isSubmitting) return;
 
@@ -131,7 +143,6 @@ const LobbyView = ({ bubbles, onSend, isUnlocked = false }: LobbyViewProps) => {
         }
     };
 
-    // 根據分類過濾主泡泡，並配對已鎖定的座標
     const processedBubbles = React.useMemo(() => {
         const filtered = activeCategory === "all"
             ? bubbles
@@ -144,7 +155,7 @@ const LobbyView = ({ bubbles, onSend, isUnlocked = false }: LobbyViewProps) => {
             });
 
         return filtered.map(b => {
-            const layout = bubbleLayouts.get(b.id) || { x: 0, y: 0, zIndex: 1 };
+            const layout = bubbleLayouts.get(b.id) || { x: 0, y: 0, zIndex: 1, floatDelay: 0, floatDuration: 6 };
             return { ...b, ...layout };
         });
     }, [activeCategory, bubbles, bubbleLayouts]);
@@ -164,7 +175,6 @@ const LobbyView = ({ bubbles, onSend, isUnlocked = false }: LobbyViewProps) => {
         const clientX = "touches" in e ? e.touches[0].clientX : (e as React.MouseEvent).clientX;
         const clientY = "touches" in e ? e.touches[0].clientY : (e as React.MouseEvent).clientY;
 
-        // 使用 RAF 節流，確保更新與螢幕刷新同步
         if (rafId.current) cancelAnimationFrame(rafId.current);
 
         rafId.current = requestAnimationFrame(() => {
@@ -203,7 +213,6 @@ const LobbyView = ({ bubbles, onSend, isUnlocked = false }: LobbyViewProps) => {
     return (
         <div className="w-full h-full bg-[#050B1A] overflow-hidden relative font-sans">
             <div className={`w-full h-full flex flex-col transition-all duration-700 ${!isUnlocked ? "blur-2xl scale-105 opacity-30 select-none pointer-events-none" : "blur-0 scale-100 opacity-100"}`}>
-                {/* Header: 置頂且不隨畫布移動 */}
                 <div className="absolute top-0 left-0 right-0 z-40 bg-blue-950/40 backdrop-blur-md px-6 py-4 border-b border-white/5 pointer-events-auto">
                     <div className="flex items-center justify-between mb-4">
                         <h1 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
@@ -233,7 +242,6 @@ const LobbyView = ({ bubbles, onSend, isUnlocked = false }: LobbyViewProps) => {
                     </div>
                 </div>
 
-                {/* 大畫布容器 */}
                 <div
                     ref={containerRef}
                     className="w-full h-full cursor-grab active:cursor-grabbing touch-none relative z-10"
@@ -245,7 +253,6 @@ const LobbyView = ({ bubbles, onSend, isUnlocked = false }: LobbyViewProps) => {
                     onTouchMove={handlePointerMove}
                     onTouchEnd={handlePointerUp}
                 >
-                    {/* 背景網格或裝飾 */}
                     <div className="absolute inset-0 pointer-events-none opacity-20"
                         style={{
                             backgroundImage: `radial-gradient(circle at 2px 2px, rgba(255,255,255,0.05) 1px, transparent 0)`,
@@ -255,7 +262,6 @@ const LobbyView = ({ bubbles, onSend, isUnlocked = false }: LobbyViewProps) => {
                         }}
                     />
 
-                    {/* 泡泡內容層：根據 panPosition 移動 */}
                     <div
                         className={`absolute top-1/2 left-1/2 w-0 h-0 transition-transform ${isPointerDown.current ? 'duration-0' : 'duration-75 ease-out'}`}
                         style={{
@@ -265,41 +271,52 @@ const LobbyView = ({ bubbles, onSend, isUnlocked = false }: LobbyViewProps) => {
                     >
                         {processedBubbles.length > 0 ? (
                             processedBubbles.map((bubble) => (
+                                // 外層：負責絕對定位 (Positioning) - 這裡的 transform 只處理中心點偏移
                                 <div
                                     key={bubble.id}
                                     style={{
                                         left: `${bubble.x}px`,
                                         top: `${bubble.y}px`,
                                         zIndex: bubble.zIndex,
-                                        transform: 'translate3d(-50%, -50%, 0)',
-                                        willChange: 'transform'
                                     }}
-                                    onClick={(e) => {
-                                        if (isDragging.current) return;
-                                        e.stopPropagation();
-                                        setSelectedBubble(bubble);
-                                    }}
-                                    className="absolute group bg-blue-900/40 backdrop-blur-xl hover:bg-blue-800/60 border border-white/10 rounded-2xl p-5 transition-all hover:scale-105 cursor-pointer min-w-[180px] max-w-[240px] shadow-2xl"
+                                    className="absolute"
                                 >
-                                    <div className="flex items-start justify-between mb-3">
-                                        <span className="text-[8px] px-1.5 py-0.5 bg-blue-500/20 text-blue-300 rounded border border-blue-500/30 uppercase tracking-widest font-bold">
-                                            {bubble.topic || bubble.category || "General"}
-                                        </span>
-                                    </div>
-                                    <h3 className="text-white text-sm font-bold mb-3 line-clamp-2 leading-snug">
-                                        {bubble.title || "探索標題"}
-                                    </h3>
-                                    <div className="h-px w-6 bg-blue-500/40 mb-3" />
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-1.5 opacity-60">
-                                            <div className="w-5 h-5 rounded-full bg-blue-700 border border-blue-900 flex items-center justify-center text-[8px] text-white">
-                                                鯨
-                                            </div>
-                                            <span className="text-[8px] text-blue-300">潛者</span>
+                                    {/* 內層：負責外觀與懸浮動畫 (Animation & Appearance) */}
+                                    <div
+                                        onClick={(e) => {
+                                            if (isDragging.current) return;
+                                            e.stopPropagation();
+                                            setSelectedBubble(bubble);
+                                        }}
+                                        style={{
+                                            animationDuration: `${bubble.floatDuration}s`,
+                                            animationDelay: `${bubble.floatDelay}s`,
+                                            animationName: "float-centered",
+                                            animationTimingFunction: "ease-in-out",
+                                            animationIterationCount: "infinite"
+                                        }}
+                                        className="group bg-blue-900/40 backdrop-blur-xl hover:bg-blue-800/60 border border-white/10 rounded-2xl p-5 transition-colors hover:scale-105 cursor-pointer min-w-[180px] max-w-[240px] shadow-2xl"
+                                    >
+                                        <div className="flex items-start justify-between mb-3">
+                                            <span className="text-[8px] px-1.5 py-0.5 bg-blue-500/20 text-blue-300 rounded border border-blue-500/30 uppercase tracking-widest font-bold">
+                                                {bubble.topic || bubble.category || "General"}
+                                            </span>
                                         </div>
-                                        <div className="flex items-center gap-1 text-[8px] text-blue-400/40 font-bold uppercase tracking-wider">
-                                            <MessageSquare size={8} />
-                                            <span>對話</span>
+                                        <h3 className="text-white text-sm font-bold mb-3 line-clamp-2 leading-snug">
+                                            {bubble.title || "探索標題"}
+                                        </h3>
+                                        <div className="h-px w-6 bg-blue-500/40 mb-3" />
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-1.5 opacity-60">
+                                                <div className="w-5 h-5 rounded-full bg-blue-700 border border-blue-900 flex items-center justify-center text-[8px] text-white">
+                                                    鯨
+                                                </div>
+                                                <span className="text-[8px] text-blue-300">潛者</span>
+                                            </div>
+                                            <div className="flex items-center gap-1 text-[8px] text-blue-400/40 font-bold uppercase tracking-wider">
+                                                <MessageSquare size={8} />
+                                                <span>對話</span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -311,14 +328,12 @@ const LobbyView = ({ bubbles, onSend, isUnlocked = false }: LobbyViewProps) => {
                             </div>
                         )}
 
-                        {/* 隨機背景裝飾點 */}
                         <div className="absolute top-[-500px] left-[-400px] w-[800px] h-[800px] bg-blue-600/5 rounded-full blur-[120px] pointer-events-none -z-10" />
                         <div className="absolute top-[200px] left-[300px] w-[600px] h-[600px] bg-indigo-600/5 rounded-full blur-[100px] pointer-events-none -z-10" />
                     </div>
                 </div>
             </div>
 
-            {/* 鎖定遮罩層 (僅在未解鎖時顯示) */}
             {!isUnlocked && (
                 <div className="absolute inset-0 flex flex-col items-center justify-center z-30 p-6 animate-fade-in">
                     <div className="bg-blue-900/60 backdrop-blur-2xl border border-white/10 p-10 rounded-4xl max-w-sm w-full shadow-2xl space-y-6 text-center">
@@ -331,13 +346,11 @@ const LobbyView = ({ bubbles, onSend, isUnlocked = false }: LobbyViewProps) => {
                 </div>
             )}
 
-            {/* Modals (保持在遮罩外或根據選中狀態顯示) */}
             {selectedBubble && (
                 <div className="fixed inset-0 z-50 flex items-end justify-center md:items-center p-0 md:p-4 animate-fade-in">
                     <div className="absolute inset-0 bg-blue-950/80 backdrop-blur-md" onClick={() => setSelectedBubble(null)} />
 
                     <div className="relative w-full max-w-2xl bg-blue-900/90 backdrop-blur-2xl border-t md:border border-white/10 rounded-t-3xl md:rounded-3xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden animate-in slide-in-from-bottom duration-300">
-                        {/* Modal Header */}
                         <div className="flex items-center justify-between p-4 border-b border-white/5">
                             <div className="flex items-center gap-2">
                                 <div className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
@@ -351,9 +364,7 @@ const LobbyView = ({ bubbles, onSend, isUnlocked = false }: LobbyViewProps) => {
                             </button>
                         </div>
 
-                        {/* Modal Content - Scrollable Area */}
                         <div className="flex-1 overflow-y-auto p-6 space-y-8 no-scrollbar">
-                            {/* Host Bubble */}
                             <div className="space-y-4">
                                 <div className="flex items-center gap-2">
                                     <span className="text-[10px] px-2 py-0.5 bg-blue-500/20 text-blue-300 rounded border border-blue-500/30 uppercase font-bold">
@@ -373,7 +384,6 @@ const LobbyView = ({ bubbles, onSend, isUnlocked = false }: LobbyViewProps) => {
                                 </div>
                             </div>
 
-                            {/* Replies List */}
                             <div className="space-y-6">
                                 {isUnlocked ? (
                                     <>
@@ -428,7 +438,6 @@ const LobbyView = ({ bubbles, onSend, isUnlocked = false }: LobbyViewProps) => {
                             </div>
                         </div>
 
-                        {/* Reply Input Area - Fixed at Bottom */}
                         <div className="p-4 bg-blue-950/50 border-t border-white/10 backdrop-blur-md">
                             <div className="relative flex items-end gap-2 bg-white/5 rounded-2xl p-2 focus-within:bg-white/10 transition-colors border border-white/5">
                                 <textarea
@@ -460,7 +469,6 @@ const LobbyView = ({ bubbles, onSend, isUnlocked = false }: LobbyViewProps) => {
                 </div>
             )}
 
-            {/* 發布新主題 Modal */}
             {isNewBubbleOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
                     <div className="absolute inset-0 bg-blue-950/80 backdrop-blur-md" onClick={() => setIsNewBubbleOpen(false)} />
@@ -510,7 +518,7 @@ const LobbyView = ({ bubbles, onSend, isUnlocked = false }: LobbyViewProps) => {
 
                                     if (!replyContent.trim() || !topicValue.trim() || !titleValue.trim() || isSubmitting) return;
                                     setIsSubmitting(true);
-                                    await onSend(replyContent, null, "Blue", topicValue, titleValue); // 顯式發送 parent_id: null
+                                    await onSend(replyContent, null, "Blue", topicValue, titleValue);
                                     setReplyContent("");
                                     setIsSubmitting(false);
                                     setIsNewBubbleOpen(false);
