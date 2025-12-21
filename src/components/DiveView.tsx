@@ -73,6 +73,16 @@ const getDepthConfig = (depth: number): DepthConfig => {
   }
 };
 
+// 新增 Helper: 偽隨機產生器
+const seededRandom = (seed: string) => {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < seed.length; i++) {
+    h ^= seed.charCodeAt(i);
+    h = Math.imul(h, 0x01000193);
+  }
+  return ((h >>> 0) / 4294967296);
+};
+
 // ==========================================
 // 子元件 (Sub-Components)
 // ==========================================
@@ -410,47 +420,56 @@ const DiveView = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const bubblesRef = useRef<(HTMLDivElement | null)[]>([]);
 
-  const mappedTopics: SeedTopic[] = [];
 
-  // 防堆疊與層級處理
-  bubbles.forEach((b, index) => {
-    // 基礎座標映射 (0-100 -> 畫布偏移)
-    let finalX = (b.x_position - 50) * 8;
-    let finalY = (b.y_position - 50) * 8;
+  // 使用 useMemo 鎖定計算結果，避免拖曳時重算導致閃爍
+  const mappedTopics = React.useMemo(() => {
+    const topics: SeedTopic[] = [];
+    if (!bubbles) return topics;
 
-    // 簡單的碰撞檢查 (與已放置的泡泡比較)
-    const threshold = 120; // 碰撞半徑 (單位: px)
-    let collisionDetected = true;
-    let attempts = 0;
+    bubbles.forEach((b, index) => {
+      // 基礎座標映射 (0-100 -> 畫布偏移)
+      let finalX = (b.x_position - 50) * 8;
+      let finalY = (b.y_position - 50) * 8;
 
-    while (collisionDetected && attempts < 5) {
-      collisionDetected = mappedTopics.some(t => {
-        const dx = t.x - finalX;
-        const dy = t.y - finalY;
-        return Math.sqrt(dx * dx + dy * dy) < threshold;
-      });
+      // 碰撞檢查與偏移 (使用偽隨機 seededRandom)
+      const threshold = 140; // 稍微加大間距
+      let collisionDetected = true;
+      let attempts = 0;
 
-      if (collisionDetected) {
-        // 如果太擠，加上隨機抖動 (Jitter)
-        finalX += (Math.random() - 0.5) * 100;
-        finalY += (Math.random() - 0.5) * 100;
+      while (collisionDetected && attempts < 5) {
+        collisionDetected = topics.some(t => {
+          const dx = t.x - finalX;
+          const dy = t.y - finalY;
+          return Math.sqrt(dx * dx + dy * dy) < threshold;
+        });
+
+        if (collisionDetected) {
+          // 使用 b.id + attempts 作為種子，確保每次算出來的偏移量都一樣
+          const rngX = seededRandom(b.id + 'x' + attempts);
+          const rngY = seededRandom(b.id + 'y' + attempts);
+          finalX += (rngX - 0.5) * 120;
+          finalY += (rngY - 0.5) * 120;
+        }
+        attempts++;
       }
-      attempts++;
-    }
 
-    mappedTopics.push({
-      id: b.id,
-      x: finalX,
-      y: finalY,
-      zIndex: (index % 4) + 1, // 循環 1-4 層，確保不會太厚
-      topic: b.topic,
-      title: b.title,
-      category: b.category || "ocean",
-      speed: 0.4 + Math.random() * 0.4,
-      content: b.content,
-      size: b.content.length > 80 ? "lg" : b.content.length > 30 ? "md" : "sm",
+      topics.push({
+        id: b.id,
+        x: finalX,
+        y: finalY,
+        zIndex: (index % 4) + 1,
+        topic: b.topic,
+        title: b.title,
+        category: b.category || "ocean",
+        // 固定速度參數
+        speed: 0.4 + seededRandom(b.id + 'speed') * 0.4,
+        content: b.content,
+        size: b.content.length > 80 ? "lg" : b.content.length > 30 ? "md" : "sm",
+      });
     });
-  });
+
+    return topics;
+  }, [bubbles]); // 關鍵：只有 bubbles 資料變動時才重新計算
 
   const handlePointerDown = (e: React.MouseEvent | React.TouchEvent) => {
     // 即使未解鎖也允許拖曳與瀏覽
