@@ -2,6 +2,8 @@
 
 ## 修改歷史
 
+- [2025/12/22 02:30 v0.73] 檔案: `src/components/DiveView.tsx` | 內容: 為氣泡新增多層次複雜陰影 (`COMPLEX_BUBBLE_SHADOW`)，並使用條件式套用邏輯：非懸停時顯示深層陰影，懸停時切換為原有的發光效果 | 原因: 提升氣泡視覺的立體感與層次感，同時保留互動回饋
+
 - [2025/12/22 02:15 v0.72] 檔案: `src/components/LiquidTabBar.tsx` | 內容: 修正邊緣標籤的 SVG 路徑裁切錯誤：在 `getPath` 函數中加入座標安全裁切邏輯 (`Math.max`/`Math.min`)，確保液態凹洞的控制點不會越界進入圓角區域 | 原因: 解決第一個或最後一個標籤啟用時導航列消失/閃爍的問題
 
 - [2025/12/22 02:00 v0.71] 檔案: `src/components/LiquidTabBar.tsx` | 內容: 實作毛玻璃風格 (Glassmorphism) 導航列：1. 使用 `clip-path: path()` 搭配 `backdrop-blur-xl` 創造磨砂玻璃效果；2. 加入 SVG 描邊以強化玻璃邊框視覺；3. 懸浮球改為發光效果 (`shadow-[0_0_25px]`)；4. 保留 `requestAnimationFrame` 有機動畫 | 原因: 統一整體 UI 風格，與登入頁面的毛玻璃設計語言保持一致
