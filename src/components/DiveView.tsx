@@ -145,6 +145,9 @@ const TopicBubble = forwardRef<HTMLDivElement, TopicBubbleProps>(
             boxShadow: isHovered ? "0 0 40px rgba(255,255,255,0.4)" : undefined
           }}
         >
+          <span className="block font-bold mb-0.5 opacity-90 uppercase tracking-widest text-[10px] md:text-xs text-blue-100/80">
+            {topic.topic}
+          </span>
           <h3 className="font-bold leading-tight px-1 drop-shadow-md select-none line-clamp-2 text-base text-blue-50">
             {topic.title || "探索思考"}
           </h3>
@@ -217,7 +220,7 @@ const DiveModal = ({
         <div className="p-6 border-b border-white/5 flex items-center justify-between">
           <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 bg-white/5 ${catConfig.color}`}>
             <Feather size={12} />
-            <span className="text-[10px] font-bold tracking-widest uppercase">{catConfig.name}</span>
+            <span className="text-[10px] font-bold tracking-widest uppercase">{topic.topic}</span>
           </div>
           <button onClick={onClose} className="p-2 rounded-full hover:bg-white/10 text-blue-200 transition-colors">
             <X size={20} />
@@ -230,7 +233,7 @@ const DiveModal = ({
           <div className="space-y-4">
             <div className="space-y-1">
               <span className={`text-[10px] font-bold tracking-widest uppercase ${catConfig.color} opacity-60`}>
-                {topic.topic || "探索主題"}
+                {topic.topic}
               </span>
               <h2 className="text-3xl font-bold text-white tracking-tight leading-tight">
                 {topic.title || "無標題的思考"}
