@@ -210,7 +210,7 @@ const LobbyView = ({ bubbles, onSend, isUnlocked = false }: LobbyViewProps) => {
     }, []);
 
     return (
-        <div className="w-full h-full bg-[#050B1A] overflow-hidden relative font-sans">
+        <div className="w-full h-full bg-transparent overflow-hidden relative font-sans">
             <div className={`w-full h-full flex flex-col transition-all duration-700 ${!isUnlocked ? "blur-2xl scale-105 opacity-30 select-none pointer-events-none" : "blur-0 scale-100 opacity-100"}`}>
                 <div className="absolute top-0 left-0 right-0 z-40 bg-blue-950/40 backdrop-blur-md px-6 py-4 border-b border-white/5 pointer-events-auto">
                     <div className="flex items-center justify-between mb-4">

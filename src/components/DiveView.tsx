@@ -567,7 +567,7 @@ const DiveView = ({
   }, []);
 
   return (
-    <div className="h-full relative overflow-hidden bg-blue-900/50 font-sans">
+    <div className="h-full relative overflow-hidden bg-transparent font-sans">
       {/* 歡迎界面 (僅在未解鎖或初回顯示) */}
       {showWelcome && (
         <div className={`fixed inset-0 z-50 flex items-center justify-center bg-blue-900/80 backdrop-blur-xl transition-opacity duration-300 ease-out ${isFading ? "opacity-0" : "opacity-100"} cursor-pointer`} onClick={handleWelcomeClick}>

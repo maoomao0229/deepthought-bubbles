@@ -7,6 +7,10 @@ import DiveView from "@/components/DiveView";
 import LiquidTabBar, { ViewState } from "@/components/LiquidTabBar";
 import AuthView from "@/components/AuthView";
 import LobbyView from "@/components/LobbyView";
+import { ShaderGradientCanvas, ShaderGradient } from "shadergradient";
+import * as reactSpring from "@react-spring/three";
+import * as drei from "@react-three/drei";
+import * as fiber from "@react-three/fiber";
 
 /**
  * 首頁元件
@@ -198,6 +202,57 @@ export default function Home() {
   // 已登入：顯示主要內容
   return (
     <div className="relative w-full h-screen overflow-hidden">
+      {/* Global Background Shader */}
+      <div className="absolute inset-0 -z-10 pointer-events-none">
+        <ShaderGradientCanvas
+          // @ts-ignore
+          importedFiber={{ ...fiber, ...drei, ...reactSpring }}
+          style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", pointerEvents: "none" }}
+        >
+          <ShaderGradient
+            // @ts-ignore
+            animate="on"
+            axesHelper="off"
+            brightness={1.2}
+            cAzimuthAngle={180}
+            cDistance={3.6}
+            cPolarAngle={90}
+            cameraZoom={1}
+            color1="#5B8BB4"
+            color2="#54B39E"
+            color3="#FFDFB3"
+            destination="onCanvas"
+            embedMode="off"
+            envPreset="city"
+            format="gif"
+            fov={45}
+            frameRate={10}
+            gizmoHelper="hide"
+            grain="on"
+            lightType="3d"
+            pixelDensity={1}
+            positionX={-1.4}
+            positionY={0}
+            positionZ={0}
+            range="disabled"
+            rangeEnd={40}
+            rangeStart={0}
+            reflection={0.1}
+            rotationX={0}
+            rotationY={10}
+            rotationZ={50}
+            shader="defaults"
+            type="waterPlane"
+            uAmplitude={1}
+            uDensity={1}
+            uFrequency={5.5}
+            uSpeed={0.01}
+            uStrength={1.1}
+            uTime={0}
+            wireframe={false}
+          />
+        </ShaderGradientCanvas>
+      </div>
       {/* 逃生入口：全局最頂層登出按鈕 */}
       <div className="absolute top-6 left-6 z-50 pointer-events-auto">
         <button
