@@ -2,6 +2,8 @@
 
 ## 修改歷史
 
+- [2025/12/21 22:20 v0.65] 檔案: `src/components/LiquidTabBar.tsx`, `src/app/layout.tsx` | 內容: 1. `LiquidTabBar` 改為懸浮膠囊樣式 (Floating Capsule)，限制寬度並置中，提供更輕盈的視覺感；2. 修正 `layout.tsx` 黑畫面問題 (移除遮擋背景的 `bg-black`)，確保 ShaderGradient 正確顯示 | 原因: 優化導航列視覺體驗，並修復背景顯示異常
+
 - [2025/12/21 21:45 v0.64] 檔案: `src/app/layout.tsx`, `src/app/page.tsx` | 內容: 1. 移除 `layout.tsx` 中的手機框架 (mobile frame) 樣式，啟用全螢幕沈浸式佈局；2. 調整 `ShaderGradient` 參數 (`cDistance=0`, `cameraZoom=2`) 消弭邊界，創造無限延伸的海洋視覺效果 | 原因: 解決 Desktop 版面被截斷問題，提升整體沈浸感
 
 - [2025/12/21 21:35 v0.63] 檔案: `src/app/page.tsx` | 內容: 更新 `ShaderGradient` 設定為 "Shallow Sea" 風格 (淺藍綠色調)，並將背景容器定位改為 `fixed` 以避免捲動問題 | 原因: 優化視覺效果，符合使用者對淺海氛圍的預期
