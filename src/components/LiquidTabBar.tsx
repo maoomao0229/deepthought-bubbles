@@ -88,18 +88,38 @@ const LiquidTabBar: React.FC<LiquidTabBarProps> = ({ currentView, onChange, isUn
     onChange(viewId);
   };
 
-  // SVG Path 生成器：Glassmorphism 圓角矩形 + 液態凹陷
+  // SVG Path 生成器：Glassmorphism 圓角矩形 + 液態凹陷 (含邊緣安全裁切)
   const getPath = useCallback((w: number, h: number, x: number) => {
-    const r = 24; // 圓角半徑
+    const r = 24; // 圓角半徑 (降低以獲得更多邊緣空間)
     const holeW = 35; // 凹洞半寬
-    const holeD = 32; // 凹洞深度
+    const c = 12; // 曲線平滑寬度
 
-    // 路徑：左上圓角 -> 上邊到凹洞 -> 凹洞曲線 -> 上邊繼續 -> 右上圓角 -> 右邊 -> 右下圓角 -> 下邊 -> 左下圓角 -> 左邊 -> 閉合
+    // 1. 計算標準點位置
+    const rawLeftStart = x - holeW - c;
+    const rawLeftCtrl1 = x - holeW;
+    const rawLeftCtrl2 = x - holeW + 10;
+
+    const rawRightCtrl1 = x + holeW - 10;
+    const rawRightCtrl2 = x + holeW;
+    const rawRightEnd = x + holeW + c;
+
+    // 2. 安全裁切 (修正邊緣問題)
+    // 確保沒有點位進入圓角區域 (0~r 或 w-r~w)
+    // 當凹洞接近邊緣時會被「擠壓」在牆邊
+    const leftStart = Math.max(r, rawLeftStart);
+    const leftCtrl1 = Math.max(r, rawLeftCtrl1);
+    const leftCtrl2 = Math.max(r, rawLeftCtrl2);
+
+    const rightCtrl1 = Math.min(w - r, rawRightCtrl1);
+    const rightCtrl2 = Math.min(w - r, rawRightCtrl2);
+    const rightEnd = Math.min(w - r, rawRightEnd);
+
+    // 3. 構建路徑
     return `
       M ${r} 0 
-      L ${x - holeW - 15} 0 
-      C ${x - holeW} 0, ${x - holeW + 8} ${holeD}, ${x} ${holeD} 
-      C ${x + holeW - 8} ${holeD}, ${x + holeW} 0, ${x + holeW + 15} 0 
+      L ${leftStart} 0 
+      C ${leftCtrl1} 0, ${leftCtrl2} ${holeW}, ${x} ${holeW} 
+      C ${rightCtrl1} ${holeW}, ${rightCtrl2} 0, ${rightEnd} 0 
       L ${w - r} 0 
       A ${r} ${r} 0 0 1 ${w} ${r} 
       L ${w} ${h - r} 
@@ -107,8 +127,7 @@ const LiquidTabBar: React.FC<LiquidTabBarProps> = ({ currentView, onChange, isUn
       L ${r} ${h} 
       A ${r} ${r} 0 0 1 0 ${h - r} 
       L 0 ${r} 
-      A ${r} ${r} 0 0 1 ${r} 0 
-      Z
+      A ${r} ${r} 0 0 1 ${r} 0 Z
     `;
   }, []);
 
@@ -176,8 +195,8 @@ const LiquidTabBar: React.FC<LiquidTabBarProps> = ({ currentView, onChange, isUn
                 {/* Icon Container */}
                 <div
                   className={`relative flex items-center justify-center transition-all duration-500 ease-out ${isActive
-                      ? "-translate-y-[34px] scale-110"
-                      : "translate-y-0 text-white/50 hover:text-white/80"
+                    ? "-translate-y-[34px] scale-110"
+                    : "translate-y-0 text-white/50 hover:text-white/80"
                     }`}
                 >
                   <IconComponent
@@ -194,8 +213,8 @@ const LiquidTabBar: React.FC<LiquidTabBarProps> = ({ currentView, onChange, isUn
                 {/* Label */}
                 <span
                   className={`absolute bottom-2 text-[10px] font-bold tracking-widest transition-all duration-300 ${isActive
-                      ? "opacity-100 translate-y-0 text-white"
-                      : "opacity-0 translate-y-2"
+                    ? "opacity-100 translate-y-0 text-white"
+                    : "opacity-0 translate-y-2"
                     }`}
                 >
                   {menu.label}
