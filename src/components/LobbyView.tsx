@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { Waves, Search, X, Send, MessageSquare, Plus } from "lucide-react";
+import { Waves, Search, X, Send, MessageSquare, Plus, Bookmark, Fish, ToggleLeft } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 
 interface LobbyViewProps {
@@ -416,8 +416,15 @@ const LobbyView = ({ bubbles, onSend, isUnlocked = false }: LobbyViewProps) => {
                             <h2 className="text-xl font-bold text-white mb-4 leading-snug">
                                 {selectedBubble.title}
                             </h2>
-                            <div className="text-slate-300 text-sm leading-relaxed whitespace-pre-wrap mb-8">
+                            <div className="text-slate-300 text-sm leading-relaxed whitespace-pre-wrap mb-4">
                                 {selectedBubble.content}
+                            </div>
+
+                            {/* Resonance (Bookmark) Icon Placeholder */}
+                            <div className="flex justify-end mb-4">
+                                <button className="p-2 rounded-full hover:bg-white/5 text-blue-400/40 hover:text-blue-400 transition-colors">
+                                    <Bookmark size={18} />
+                                </button>
                             </div>
 
                             {/* Divider */}
@@ -425,18 +432,33 @@ const LobbyView = ({ bubbles, onSend, isUnlocked = false }: LobbyViewProps) => {
 
                             {/* Reply Section */}
                             <div className="relative z-20 space-y-3">
-                                <h4 className="text-xs text-blue-400/60 font-bold uppercase tracking-widest">
-                                    回應 ({replies.length})
-                                </h4>
-                                {replies.map((reply) => (
-                                    <div key={reply.id} className="bg-indigo-900/30 backdrop-blur-md border border-indigo-400/20 rounded-2xl p-4">
-                                        <p className="text-indigo-100/90 text-sm leading-relaxed">{reply.content}</p>
-                                        <div className="flex items-center gap-2 mt-2 opacity-50">
-                                            <div className="w-4 h-4 rounded-full bg-indigo-600 flex items-center justify-center text-[6px] text-white">潛</div>
-                                            <span className="text-[8px] text-indigo-300">潛水員</span>
-                                        </div>
+                                <div className="flex justify-between items-center mb-2">
+                                    <h4 className="text-xs text-blue-400/60 font-bold uppercase tracking-widest">
+                                        回應 ({replies.length})
+                                    </h4>
+                                    {/* Identity Toggle Placeholder */}
+                                    <div className="flex items-center gap-2 opacity-50 cursor-not-allowed">
+                                        <span className="text-[10px] text-blue-400/60">顯示身份</span>
+                                        <ToggleLeft size={20} className="text-blue-400/30" />
                                     </div>
-                                ))}
+                                </div>
+                                {replies.sort((a, b) => {
+                                    const getLevel = (content: string) => {
+                                        const len = content.length;
+                                        if (len <= 20) return 1; // Surface
+                                        if (len <= 150) return 2; // Midzone
+                                        return 3; // Depth
+                                    };
+                                    return getLevel(a.content) - getLevel(b.content);
+                                }).map((reply) => {
+                                    // Calculate depth for visual indicator if needed, currently just sorting
+                                    return (
+                                        <div key={reply.id} className="bg-indigo-900/30 backdrop-blur-md border border-indigo-400/20 rounded-2xl p-4">
+                                            <p className="text-indigo-100/90 text-sm leading-relaxed">{reply.content}</p>
+                                            {/* Anonymous UI: User info hidden by default */}
+                                        </div>
+                                    );
+                                })}
                                 {replies.length === 0 && (
                                     <p className="text-blue-400/30 text-xs text-center py-8">尚無回應，成為第一個回覆者</p>
                                 )}
@@ -446,6 +468,10 @@ const LobbyView = ({ bubbles, onSend, isUnlocked = false }: LobbyViewProps) => {
                         {/* Input Area (Fixed at bottom) */}
                         <div className="p-4 pb-[max(1rem,env(safe-area-inset-bottom))] border-t border-white/10 bg-[#0f172a]">
                             <div className="flex items-center gap-3">
+                                {/* Shrimp (Donation) Icon Placeholder */}
+                                <button className="p-2 -ml-2 rounded-full hover:bg-white/5 text-yellow-500/50 hover:text-yellow-500 transition-colors" title="給予蝦米支持">
+                                    <Fish size={20} />
+                                </button>
                                 <input
                                     value={replyContent}
                                     onChange={(e) => setReplyContent(e.target.value)}

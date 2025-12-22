@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect, forwardRef } from "react";
-import { Move, X, Feather, Waves, Send, MessageSquare, Plus } from "lucide-react";
+import { Move, X, Feather, Waves, Send, MessageSquare, Plus, Bookmark, Fish, ToggleLeft } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 
 // ==========================================
@@ -240,31 +240,50 @@ const DiveModal = ({
               </h2>
             </div>
 
-            <div className="bg-blue-950/40 rounded-3xl p-6 border border-white/5 group">
+            <div className="bg-blue-950/40 rounded-3xl p-6 border border-white/5 group relative">
               <p className="text-blue-50 text-base leading-relaxed whitespace-pre-wrap font-light">
                 {topic.content}
               </p>
+              {/* Resonance (Bookmark) Icon Placeholder */}
+              <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button className="p-2 rounded-full hover:bg-white/5 text-blue-400/40 hover:text-blue-400 transition-colors">
+                  <Bookmark size={18} />
+                </button>
+              </div>
             </div>
           </div>
 
           {/* Replies Thread: 僅在解鎖後顯示 */}
           {isUnlocked ? (
             <div className="space-y-6 animate-fade-in">
-              <div className="flex items-center gap-3">
-                <div className="h-px flex-1 bg-white/5" />
-                <span className="text-[10px] text-blue-400/40 font-bold uppercase tracking-[0.2em]">共鳴回響 ({replies.length})</span>
-                <div className="h-px flex-1 bg-white/5" />
+              <div className="flex items-center gap-3 justify-between">
+                <div className="flex items-center gap-3 flex-1">
+                  <div className="h-px flex-1 bg-white/5" />
+                  <span className="text-[10px] text-blue-400/40 font-bold uppercase tracking-[0.2em]">共鳴回響 ({replies.length})</span>
+                  <div className="h-px flex-1 bg-white/5" />
+                </div>
+                {/* Identity Toggle Placeholder */}
+                <div className="flex items-center gap-2 opacity-50 cursor-not-allowed">
+                  <ToggleLeft size={20} className="text-blue-400/30" />
+                </div>
               </div>
 
               {replies.length > 0 ? (
                 <div className="space-y-4">
-                  {replies.map((reply) => (
+                  {replies.sort((a, b) => {
+                    const getLevel = (content: string) => {
+                      const len = content.length;
+                      if (len <= 20) return 1; // Surface
+                      if (len <= 150) return 2; // Midzone
+                      return 3; // Depth
+                    };
+                    return getLevel(a.content) - getLevel(b.content);
+                  }).map((reply) => (
                     <div key={reply.id} className="flex gap-4 animate-fade-in">
-                      <div className="shrink-0 w-8 h-8 rounded-full bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
-                        <Waves size={14} />
-                      </div>
+                      {/* Anonymous UI: Hidden Icon */}
                       <div className="flex-1 bg-indigo-500/5 border border-indigo-500/10 rounded-2xl p-4">
                         <p className="text-sm text-blue-50 font-light leading-relaxed">{reply.content}</p>
+                        {/* Anonymous UI: Timestamp only */}
                         <span className="text-[9px] text-blue-400/30 mt-2 block">
                           {new Date(reply.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </span>
@@ -306,6 +325,10 @@ const DiveModal = ({
           className="p-4 bg-blue-950/90 border-t border-white/5 backdrop-blur-xl transition-all duration-300 pb-[max(1rem,env(safe-area-inset-bottom))]"
         >
           <div className="flex items-end gap-3 bg-white/5 rounded-2xl p-3 border border-white/5 focus-within:bg-white/10 transition-colors focus-within:ring-1 focus-within:ring-blue-400/30">
+            {/* Shrimp (Donation) Icon Placeholder */}
+            <button className="p-2 rounded-full hover:bg-white/5 text-yellow-500/50 hover:text-yellow-500 transition-colors mb-1" title="給予蝦米支持">
+              <Fish size={20} />
+            </button>
             <textarea
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
