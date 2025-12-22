@@ -116,7 +116,18 @@ export default function Home() {
 
   // 處理發送氣泡/回覆
   const handleSend = async (content: string, parentId?: string | null, topic?: string | null, title?: string | null) => {
-    if (!session?.user) return;
+    const user = session?.user;
+
+    // 1. [檢查點] 先印出來看看，確認 user.id 真的有值！
+    console.log("正在發送泡泡...", {
+      userId: user?.id,
+      content: content
+    });
+
+    if (!user || !user.id) {
+      alert("抓不到使用者 ID，請重新登入！");
+      return;
+    }
 
     // 隨機座標 (0-100)
     const randomX = Math.random() * 100;
@@ -127,13 +138,14 @@ export default function Home() {
       parent_id: parentId || null,
       title: title || null,
       topic: topic || "科普",
-      user_id: session.user.id,
+      user_id: user.id,
       x_position: randomX,
       y_position: randomY,
     });
 
     if (error) {
       console.error("Error sending bubble:", error);
+      console.error("Error Details:", JSON.stringify(error, null, 2));
       alert("發送失敗，請稍後再試。");
     } else {
       // 成功發送後：
