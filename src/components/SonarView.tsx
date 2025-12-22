@@ -1,9 +1,10 @@
+import React, { useMemo, useState } from 'react';
 import DailyPing from './DailyPing';
 import WeeklyWave from './WeeklyWave';
 import DeepArchive from './DeepArchive';
 import { supabase } from '../lib/supabaseClient';
-import { LogOut } from 'lucide-react';
-import React, { useMemo } from 'react';
+import { LogOut, Heart } from 'lucide-react';
+import { ShrimpCheckoutModal } from './ShrimpCheckoutModal';
 import {
     generateDailyStats,
     generateWeeklyData,
@@ -32,6 +33,12 @@ const SonarView = ({ user }: { user: any }) => {
         levelName: '座頭鯨',
         nextLevelXP: 5000,
     }), []);
+
+    // ---------------------------------------------------------------------------
+    // Calculate visual properties
+    // ---------------------------------------------------------------------------
+
+    const [isShrimpModalOpen, setIsShrimpModalOpen] = useState(false);
 
     // Calculate dynamic pressure for the overlay background
     const pressureValue = useMemo(() => calculatePressure(dailyStats), [dailyStats]);
@@ -67,6 +74,14 @@ const SonarView = ({ user }: { user: any }) => {
                 {/* --- Top Header Area with Logout --- */}
                 <div className="flex justify-end pt-4">
                     <button
+                        onClick={() => setIsShrimpModalOpen(true)}
+                        className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-yellow-500/10 border border-yellow-500/50 text-yellow-400 hover:bg-yellow-500/20 transition-all text-xs font-mono mr-2"
+                        title="給予蝦米支持"
+                    >
+                        <Heart className="w-3 h-3 fill-yellow-500/20" />
+                        <span>SUPPORT</span>
+                    </button>
+                    <button
                         onClick={handleLogout}
                         className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-900/40 border border-blue-700/50 text-blue-100 hover:bg-blue-700/60 hover:text-white transition-all text-xs font-mono shadow-lg backdrop-blur-md"
                         title="登出 / 上浮"
@@ -99,6 +114,11 @@ const SonarView = ({ user }: { user: any }) => {
                 </section>
 
             </div>
+
+            <ShrimpCheckoutModal
+                isOpen={isShrimpModalOpen}
+                onClose={() => setIsShrimpModalOpen(false)}
+            />
         </div>
     );
 };
