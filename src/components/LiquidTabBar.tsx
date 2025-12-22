@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useMemo, useRef, useEffect, useState, useCallback } from "react";
-import { Waves, LayoutGrid, Activity, Fish } from "lucide-react";
+import Image from "next/image";
 
 export type ViewState = "dive" | "lobby" | "sonar" | "pantry";
 
@@ -13,7 +13,7 @@ interface LiquidTabBarProps {
 
 interface MenuItem {
   id: ViewState;
-  icon: React.ComponentType<{ size?: number; className?: string; strokeWidth?: number }>;
+  iconSrc: string;
   color: string;
   label: string;
 }
@@ -21,10 +21,10 @@ interface MenuItem {
 const LiquidTabBar: React.FC<LiquidTabBarProps> = ({ currentView, onChange, isUnlocked = false }) => {
   const menus = useMemo<MenuItem[]>(
     () => [
-      { id: "dive", icon: Waves, color: "text-green-400", label: "每日潛入" },
-      { id: "lobby", icon: LayoutGrid, color: "text-blue-400", label: "泡泡大廳" },
-      { id: "pantry", icon: Fish, color: "text-yellow-400", label: "個人頁面" },
-      { id: "sonar", icon: Activity, color: "text-indigo-400", label: "深海聲納" },
+      { id: "dive", iconSrc: "/icons/dive.png", color: "text-green-400", label: "每日潛入" },
+      { id: "lobby", iconSrc: "/icons/lobby.png", color: "text-blue-400", label: "泡泡大廳" },
+      { id: "pantry", iconSrc: "/icons/whale.png", color: "text-yellow-400", label: "個人頁面" },
+      { id: "sonar", iconSrc: "/icons/sonar.png", color: "text-indigo-400", label: "深海聲納" },
     ],
     []
   );
@@ -183,7 +183,6 @@ const LiquidTabBar: React.FC<LiquidTabBarProps> = ({ currentView, onChange, isUn
           {menus.map((menu, i) => {
             const isActive = i === activeIndex;
             const isLocked = !isUnlocked && menu.id !== "dive";
-            const IconComponent = menu.icon;
 
             return (
               <li
@@ -196,13 +195,15 @@ const LiquidTabBar: React.FC<LiquidTabBarProps> = ({ currentView, onChange, isUn
                 <div
                   className={`relative flex items-center justify-center transition-all duration-500 ease-out ${isActive
                     ? "-translate-y-[34px] scale-110"
-                    : "translate-y-0 text-white/50 hover:text-white/80"
+                    : "translate-y-0 opacity-50 hover:opacity-80"
                     }`}
                 >
-                  <IconComponent
-                    size={24}
-                    className={`transition-colors duration-300 drop-shadow-lg ${isActive ? menu.color : "text-inherit"}`}
-                    strokeWidth={isActive ? 2.5 : 2}
+                  <Image
+                    src={menu.iconSrc}
+                    alt={menu.label}
+                    width={28}
+                    height={28}
+                    className={`transition-all duration-300 drop-shadow-lg ${isActive ? "brightness-110" : "brightness-75"}`}
                   />
 
                   {isLocked && !isActive && (
