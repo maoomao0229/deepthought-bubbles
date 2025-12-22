@@ -172,7 +172,7 @@ const TimelineTrack: React.FC<TimelineTrackProps> = ({ children }) => {
             {/* Block Content (畫布) */}
             <div
                 ref={trackRef}
-                className="absolute top-0 left-0 h-full grid grid-rows-[repeat(3,120px)] grid-flow-col gap-y-6 px-10 transition-transform duration-75 ease-out will-change-transform width-max"
+                className="absolute top-0 left-0 h-full grid grid-rows-[repeat(3,140px)] grid-flow-col gap-y-6 px-10 transition-transform duration-75 ease-out will-change-transform width-max"
                 style={{
                     transform: `translate3d(${panX}px, 0, 0)`,
                     width: 'max-content' // 自動撐開寬度
@@ -214,7 +214,7 @@ const BubbleCard = ({ bubble, onClick }: BubbleCardProps) => {
                 marginRight: `${marginRight}px`,
                 transform: `translateY(${translateY}px)`
             }}
-            className="shrink-0 h-[110px] relative bg-blue-900/30 backdrop-blur-md border border-white/10 rounded-xl p-4 hover:bg-blue-800/50 hover:scale-[1.02] transition-all shadow-lg cursor-pointer flex flex-col justify-between group overflow-hidden"
+            className="shrink-0 h-[140px] relative bg-blue-900/30 backdrop-blur-md border border-white/10 rounded-xl p-4 hover:bg-blue-800/50 hover:scale-[1.02] transition-all shadow-lg cursor-pointer flex flex-col justify-between group overflow-hidden"
         >
             {/* 裝飾：左側光條 */}
             <div className="absolute left-0 top-2 bottom-2 w-1 bg-blue-500/20 rounded-r-full" />

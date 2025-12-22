@@ -2,6 +2,8 @@
 
 ## 修改歷史
 
+- [2025/12/22 14:15 v0.95] 檔案: `src/components/PantryView.tsx` | 內容: 實作預設頭像選擇器：1. 匯入 40 款 `personal_icon` 至 public 目錄；2. PantryView 支援 `avatar_url` 資料讀寫 (整合 Supabase)；3. 編輯模式下新增更換頭像按鈕與選擇 Modal；4. UI 從 CSS 圓圈改為顯示真實圖片 | 原因: 增加個人化選項，提供更豐富的預設頭像庫
+
 - [2025/12/22 13:55 v0.94] 檔案: `src/components/PantryView.tsx` | 內容: 修復文字裁切問題：1. Profile Bio 移除 `truncate` 改為 `line-clamp-3` 與自動換行，支援多行簡介顯示；2. 增加 `TimelineTrack` 容器高度至 500px 並加大上下 Padding，防止氣泡浮動動畫溢出裁切 | 原因: 優化 UI 細節，確保內容完整呈現
 
 - [2025/12/22 13:40 v0.93] 檔案: `src/components/PantryView.tsx` | 內容: 重構個人頁面佈局：1. 實作「置中 Profile + 橫向河道 (Horizontal Timeline)」的複合式佈局；2. 移植 `TimelineTrack` 物理拖曳與慣性邏輯；3. 移植 `BubbleCard` 隨機錯落視覺；4. 模擬多樣化的 Tab 資料展示 | 原因: 統一全站的「深海流動」操作體驗，避免垂直捲動與橫向操作的割裂感

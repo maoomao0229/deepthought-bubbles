@@ -1,12 +1,18 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useMemo } from "react";
-import { Share2, Edit2, Save, X, Settings } from "lucide-react";
+import { Share2, Edit2, Save, X, Settings, Camera } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 
 interface PantryViewProps {
     user?: any;
 }
+
+// ==========================================
+// Constants
+// ==========================================
+// Generate list of 40 personal icons
+const AVATAR_LIST = Array.from({ length: 40 }, (_, i) => `/avatars/personal_icon_${i + 1}.png`);
 
 // ==========================================
 // TimelineTrack: 模擬 Plurk 河道 (無限橫向畫布)
@@ -124,7 +130,7 @@ const TimelineTrack: React.FC<TimelineTrackProps> = ({ children }) => {
         >
             <div
                 ref={trackRef}
-                className="absolute top-10 left-0 h-[500px] grid grid-rows-[repeat(3,110px)] grid-flow-col gap-y-8 px-10 transition-transform duration-75 ease-out will-change-transform"
+                className="absolute top-10 left-0 h-[500px] grid grid-rows-[repeat(3,140px)] grid-flow-col gap-y-8 px-10 transition-transform duration-75 ease-out will-change-transform"
                 style={{
                     transform: `translate3d(${panX}px, 0, 0)`,
                     width: 'max-content'
@@ -164,7 +170,7 @@ const BubbleCard = ({ bubble, onClick }: BubbleCardProps) => {
                 marginRight: `${marginRight}px`,
                 transform: `translateY(${translateY}px)`
             }}
-            className="shrink-0 h-[100px] relative bg-blue-900/30 backdrop-blur-md border border-white/10 rounded-xl p-4 hover:bg-blue-800/50 hover:scale-[1.02] transition-all shadow-lg cursor-pointer flex flex-col justify-between group overflow-hidden"
+            className="shrink-0 h-[140px] relative bg-blue-900/30 backdrop-blur-md border border-white/10 rounded-xl p-4 hover:bg-blue-800/50 hover:scale-[1.02] transition-all shadow-lg cursor-pointer flex flex-col justify-between group overflow-hidden"
         >
             <div className="absolute left-0 top-2 bottom-2 w-1 bg-blue-500/20 rounded-r-full" />
             <div className="pl-3 flex justify-between items-center opacity-70 mb-1">
@@ -192,10 +198,12 @@ const PantryView: React.FC<PantryViewProps> = ({ user }) => {
 
     // Profile State
     const [isEditing, setIsEditing] = useState(false);
+    const [showAvatarModal, setShowAvatarModal] = useState(false);
     const [profile, setProfile] = useState({
         display_name: "",
         user_id: "",
-        bio: ""
+        bio: "",
+        avatar_url: AVATAR_LIST[0]
     });
     // Removed loading state as we rely on effect
     // const [loading, setLoading] = useState(true);
@@ -216,13 +224,15 @@ const PantryView: React.FC<PantryViewProps> = ({ user }) => {
                     setProfile({
                         display_name: data.display_name || user.user_metadata?.name || "深海旅人",
                         user_id: data.user_id || user.email?.split('@')[0] || "deep_thinker",
-                        bio: data.bio || "正在尋找思想的迴響..."
+                        bio: data.bio || "正在尋找思想的迴響...",
+                        avatar_url: data.avatar_url || AVATAR_LIST[0]
                     });
                 } else {
                     setProfile({
                         display_name: user.user_metadata?.name || "深海旅人",
                         user_id: user.email?.split('@')[0] || "deep_thinker",
-                        bio: "正在尋找思想的迴響..."
+                        bio: "正在尋找思想的迴響...",
+                        avatar_url: AVATAR_LIST[0]
                     });
                 }
             } catch (error) {
@@ -230,7 +240,8 @@ const PantryView: React.FC<PantryViewProps> = ({ user }) => {
                 setProfile({
                     display_name: user.user_metadata?.name || "深海旅人",
                     user_id: user.email?.split('@')[0] || "deep_thinker",
-                    bio: "正在尋找思想的迴響..."
+                    bio: "正在尋找思想的迴響...",
+                    avatar_url: AVATAR_LIST[0]
                 });
             } finally {
                 // setLoading(false);
@@ -249,6 +260,7 @@ const PantryView: React.FC<PantryViewProps> = ({ user }) => {
                 display_name: profile.display_name,
                 user_id: profile.user_id,
                 bio: profile.bio,
+                avatar_url: profile.avatar_url,
                 updated_at: new Date().toISOString(),
             });
 
@@ -287,8 +299,21 @@ const PantryView: React.FC<PantryViewProps> = ({ user }) => {
 
                     <div className="flex items-start gap-4 relative z-10 mb-4">
                         {/* Avatar */}
-                        <div className="shrink-0 w-16 h-16 rounded-full bg-linear-to-tr from-blue-400 to-cyan-300 shadow-[0_0_20px_rgba(56,189,248,0.5)] border-2 border-white/20 flex items-center justify-center text-2xl font-bold text-white">
-                            {profile.display_name?.[0] || "?"}
+                        <div className="shrink-0 w-20 h-20 rounded-full border-2 border-white/20 shadow-[0_0_20px_rgba(56,189,248,0.5)] flex items-center justify-center bg-black/40 overflow-hidden relative group">
+                            <img
+                                src={profile.avatar_url || AVATAR_LIST[0]}
+                                alt="Avatar"
+                                className="w-full h-full object-cover"
+                            />
+                            {/* Edit Overlay */}
+                            {isEditing && (
+                                <button
+                                    onClick={() => setShowAvatarModal(true)}
+                                    className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer z-10"
+                                >
+                                    <Camera size={24} className="text-white drop-shadow-md" />
+                                </button>
+                            )}
                         </div>
 
                         {/* Info / Edit Form */}
@@ -386,6 +411,41 @@ const PantryView: React.FC<PantryViewProps> = ({ user }) => {
                     />
                 ))}
             </TimelineTrack>
+
+            {/* Avatar Selection Modal */}
+            {showAvatarModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in" onClick={() => setShowAvatarModal(false)}>
+                    <div className="bg-[#0f172a] border border-white/10 rounded-2xl p-6 w-full max-w-sm max-h-[80vh] flex flex-col shadow-2xl animate-scale-up" onClick={e => e.stopPropagation()}>
+                        <h3 className="text-white text-lg font-bold mb-4 text-center tracking-wide">選擇你的深海替身</h3>
+                        <div className="flex-1 overflow-y-auto grid grid-cols-4 gap-4 p-2 custom-scrollbar">
+                            {AVATAR_LIST.map((src, index) => (
+                                <button
+                                    key={src}
+                                    onClick={() => {
+                                        setProfile({ ...profile, avatar_url: src });
+                                        setShowAvatarModal(false);
+                                    }}
+                                    className={`relative rounded-full overflow-hidden aspect-square border-2 transition-all hover:scale-110 hover:shadow-[0_0_15px_rgba(255,255,255,0.3)] ${profile.avatar_url === src ? 'border-blue-400 ring-2 ring-blue-400/50 shadow-[0_0_15px_rgba(96,165,250,0.5)]' : 'border-white/10 hover:border-white/50'
+                                        }`}
+                                >
+                                    <img
+                                        src={src}
+                                        alt={`Avatar Option ${index + 1}`}
+                                        className="w-full h-full object-cover"
+                                        loading="lazy"
+                                    />
+                                </button>
+                            ))}
+                        </div>
+                        <button
+                            onClick={() => setShowAvatarModal(false)}
+                            className="w-full mt-6 py-3 bg-white/5 hover:bg-white/10 text-white/60 hover:text-white rounded-xl transition-colors text-sm font-bold"
+                        >
+                            取消
+                        </button>
+                    </div>
+                </div>
+            )}
 
         </div>
     );
