@@ -2,16 +2,22 @@ import { DailyStats, WeeklyWaveData, DailyXP, UserLevel } from './types';
 
 // Palette references for charts
 export const COLORS = {
-    ocean900: '#316794',
-    ocean700: '#4679A4',
-    ocean500: '#5B8BB4',
-    abyss500: '#6571BC',
-    algae500: '#54B39E',
-    amber500: '#FFC678',
-    sand50: '#FFFBF6',
+    blue900: '#316794',
+    blue700: '#4376A0',
+    blue500: '#5B8BB4',
+    blue300: '#7AA6C9',
+    blue100: '#9FC1DD',
+    indigo900: '#3B489D',
+    indigo500: '#6571BC',
+    green500: '#54B39E',
+    yellow700: '#F8B75C',
+    yellow500: '#FFC678',
+    gray900: '#161819',
+    gray500: '#898A91',
+    gray50: '#FFFBF6',
 };
 
-export const TOPICS = ['心理學', '文化', '科技', '哲學', '藝術'];
+export const TOPICS = ['哲學', '時事', '議題', '生活', '奇想', '科普'];
 
 // Mock Data Generators
 
@@ -37,7 +43,7 @@ export const generateWeeklyData = (): WeeklyWaveData => {
         topics: TOPICS.map((t, i) => ({
             name: t,
             interactionCount: Math.floor(Math.random() * 100),
-            color: [COLORS.ocean500, COLORS.abyss500, COLORS.algae500, COLORS.amber500, '#A6AEE1'][i],
+            color: [COLORS.indigo500, COLORS.blue500, COLORS.green500, COLORS.yellow500, '#A6AEE1', '#8DD3C7'][i],
         })),
     };
 };

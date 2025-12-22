@@ -44,7 +44,7 @@ const SonarView = ({ user }: { user: any }) => {
             <div
                 className="fixed inset-0 pointer-events-none z-0 transition-opacity duration-1000"
                 style={{
-                    background: 'radial-gradient(circle at center, transparent 0%, #020617 120%)',
+                    background: 'radial-gradient(circle at center, transparent 0%, #161819 120%)',
                     opacity: pressureOpacity
                 }}
             />

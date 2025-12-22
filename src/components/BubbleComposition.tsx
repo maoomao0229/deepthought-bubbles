@@ -42,9 +42,9 @@ export const BubbleComposition: React.FC<Props> = ({ originalCount, replyCount }
     const path2 = describeArc(cx, cy, radius, originalAngleSpan + 3, 180);
 
     return (
-        <div className="bg-slate-800/50 backdrop-blur rounded-xl border border-slate-500/30 w-full min-h-[160px] flex flex-col items-center justify-center relative overflow-hidden">
+        <div className="bg-blue-900/40 backdrop-blur rounded-xl border border-blue-700/30 w-full min-h-[160px] flex flex-col items-center justify-center relative overflow-hidden">
             {/* 標題 */}
-            <div className="absolute top-2 left-4 text-[10px] text-slate-300 uppercase tracking-widest font-bold">Composition</div>
+            <div className="absolute top-2 left-4 text-[10px] text-blue-100 uppercase tracking-widest font-bold">Composition</div>
 
             <svg width="100%" height="100%" viewBox={`0 0 ${width} ${height}`} className="overflow-visible max-h-[120px] pt-2">
                 {/* 原創字數弧線 (綠色) */}
@@ -67,16 +67,16 @@ export const BubbleComposition: React.FC<Props> = ({ originalCount, replyCount }
                 />
 
                 {/* 中心標籤 */}
-                <text x={cx} y={cy - 5} textAnchor="middle" className="fill-slate-400 text-[8px] uppercase">Total</text>
-                <text x={cx} y={cy - 18} textAnchor="middle" className="fill-white text-lg font-bold font-mono">{total}</text>
+                <text x={cx} y={cy - 5} textAnchor="middle" className="fill-blue-300 text-[8px] uppercase">Total</text>
+                <text x={cx} y={cy - 18} textAnchor="middle" className="fill-gray-50 text-lg font-bold font-mono">{total}</text>
 
                 <g transform={`translate(${cx - 45}, ${cy + 3})`}>
                     <circle cx="0" cy="0" r="3" fill="#54B39E" />
-                    <text x="6" y="3" className="fill-slate-400 text-[7px]">原創 {originalCount}</text>
+                    <text x="6" y="3" className="fill-blue-300 text-[7px]">原創 {originalCount}</text>
                 </g>
                 <g transform={`translate(${cx + 15}, ${cy + 3})`}>
                     <circle cx="0" cy="0" r="3" fill="#6571BC" />
-                    <text x="6" y="3" className="fill-slate-400 text-[7px]">回覆 {replyCount}</text>
+                    <text x="6" y="3" className="fill-blue-300 text-[7px]">回覆 {replyCount}</text>
                 </g>
             </svg>
         </div>

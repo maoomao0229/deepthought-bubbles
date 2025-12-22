@@ -17,10 +17,10 @@ const PressureGauge: React.FC<{ pressure: number }> = ({ pressure }) => {
     const clampedPressure = Math.min(pressure, MAX_PRESSURE);
     const rotation = -90 + (clampedPressure / MAX_PRESSURE) * 180;
 
-    // Color logic: Cyan for low pressure, Amber for high
+    // Color logic: Green for low pressure, Yellow for high
     const isHighPressure = pressure > 60;
-    const accentColor = isHighPressure ? '#F8B75C' : '#54B39E'; // Amber-700 : Algae-500
-    const needleColor = isHighPressure ? '#E59F40' : '#75C9B6'; // Amber-900 : Algae-300
+    const accentColor = isHighPressure ? '#F8B75C' : '#54B39E'; // Yellow-700 : Green-500
+    const needleColor = isHighPressure ? '#E59F40' : '#75C9B6'; // Yellow-900 : Green-300
 
     // Ticks generation
     const ticks = Array.from({ length: 11 }).map((_, i) => {
@@ -38,7 +38,7 @@ const PressureGauge: React.FC<{ pressure: number }> = ({ pressure }) => {
     });
 
     return (
-        <div className="relative w-full h-full flex flex-col items-center justify-end overflow-hidden rounded-xl bg-slate-800/40 border border-slate-700/50 shadow-inner min-h-[120px]">
+        <div className="relative w-full h-full flex flex-col items-center justify-end overflow-hidden rounded-xl bg-blue-900/40 border border-blue-700/50 shadow-inner min-h-[120px]">
             {/* Glass Reflection Gradient */}
             <div className="absolute top-0 left-0 right-0 h-1/2 bg-linear-to-b from-white/5 to-transparent z-10 pointer-events-none" />
 
@@ -59,7 +59,7 @@ const PressureGauge: React.FC<{ pressure: number }> = ({ pressure }) => {
 
             {/* Digital Readout */}
             <div className="absolute bottom-1 flex flex-col items-center z-20">
-                <span className="text-[10px] text-slate-300 font-mono tracking-widest">PRESSURE</span>
+                <span className="text-[10px] text-blue-100 font-mono tracking-widest">PRESSURE</span>
                 <span className="text-lg font-mono font-bold leading-none" style={{ color: accentColor }}>
                     {Math.round(pressure)} <span className="text-[10px] opacity-60">hPa</span>
                 </span>
@@ -85,18 +85,18 @@ export const DailyPing: React.FC<Props> = ({ stats }) => {
     const strokeDashoffset = circumference - (percentage / 100) * circumference;
 
     return (
-        <div className="relative w-full min-h-[500px] bg-slate-900 rounded-3xl overflow-hidden shadow-2xl border border-slate-700 p-6 flex flex-col justify-between">
+        <div className="relative w-full min-h-[500px] bg-gray-900 rounded-3xl overflow-hidden shadow-2xl border border-blue-700/50 p-6 flex flex-col justify-between">
             {/* 頂部標題區 */}
             <div className="flex justify-between items-start z-10">
                 <div>
-                    <h2 className="text-2xl font-bold text-slate-50 flex items-center gap-2">
-                        <Activity className="w-6 h-6 text-teal-300" />
+                    <h2 className="text-2xl font-bold text-gray-50 flex items-center gap-2">
+                        <Activity className="w-6 h-6 text-green-300" />
                         肺活量監測
                     </h2>
-                    <p className="text-slate-300 text-sm mt-1">動態氧氣瓶狀態</p>
+                    <p className="text-blue-100 text-sm mt-1">動態氧氣瓶狀態</p>
                 </div>
-                <div className="text-3xl font-mono font-bold text-teal-300">
-                    {currentXP} <span className="text-sm text-slate-300">XP</span>
+                <div className="text-3xl font-mono font-bold text-green-300">
+                    {currentXP} <span className="text-sm text-blue-100">XP</span>
                 </div>
             </div>
 
@@ -109,7 +109,7 @@ export const DailyPing: React.FC<Props> = ({ stats }) => {
                             cx="160"
                             cy="160"
                             r={radius}
-                            className="stroke-slate-800 fill-slate-900/50"
+                            className="stroke-blue-900 fill-blue-900/50"
                             strokeWidth="16"
                         />
                         {/* 進度圓環 */}
@@ -117,7 +117,7 @@ export const DailyPing: React.FC<Props> = ({ stats }) => {
                             cx="160"
                             cy="160"
                             r={radius}
-                            className="stroke-teal-500 drop-shadow-[0_0_10px_rgba(84,179,158,0.8)]"
+                            className="stroke-green-500 drop-shadow-[0_0_10px_rgba(84,179,158,0.8)]"
                             strokeWidth="16"
                             strokeLinecap="round"
                             strokeDasharray={circumference}
@@ -128,8 +128,8 @@ export const DailyPing: React.FC<Props> = ({ stats }) => {
                     </svg>
                     {/* 中心數據 */}
                     <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-                        <span className="text-6xl font-mono font-bold text-slate-50">{weightedTotal}</span>
-                        <span className="text-sm font-bold text-teal-300 uppercase tracking-widest mt-2 border-t border-teal-500/30 pt-1">
+                        <span className="text-6xl font-mono font-bold text-gray-50">{weightedTotal}</span>
+                        <span className="text-sm font-bold text-green-300 uppercase tracking-widest mt-2 border-t border-green-500/30 pt-1">
                             OXYGEN LEVEL
                         </span>
                     </div>

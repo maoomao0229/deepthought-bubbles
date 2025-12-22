@@ -13,10 +13,10 @@ export const MigrationRhythm: React.FC<Props> = ({ data }) => {
 
     // 色階映射邏輯：根據 XP 值決定泡泡樣式
     const getBubbleStyle = (xp: number) => {
-        if (xp === 0) return 'bg-slate-900/40 border border-slate-700/20';
-        if (xp <= 100) return 'bg-teal-500/40 border border-teal-500/30';
-        if (xp <= 300) return 'bg-teal-400 shadow-[0_0_8px_rgba(84,179,158,0.6)] border border-teal-300';
-        return 'bg-amber-400 shadow-[0_0_12px_rgba(255,198,120,0.9)] border border-amber-200 animate-pulse';
+        if (xp === 0) return 'bg-blue-900/40 border border-blue-700/20';
+        if (xp <= 100) return 'bg-green-500/40 border border-green-500/30';
+        if (xp <= 300) return 'bg-green-500 shadow-[0_0_8px_rgba(84,179,158,0.6)] border border-green-300';
+        return 'bg-yellow-500 shadow-[0_0_12px_rgba(255,198,120,0.9)] border border-yellow-300 animate-pulse';
     };
 
     const handleMouseEnter = (e: React.MouseEvent, day: DailyXP) => {
@@ -30,14 +30,14 @@ export const MigrationRhythm: React.FC<Props> = ({ data }) => {
     };
 
     return (
-        <div className="bg-slate-900 rounded-3xl p-6 shadow-xl border border-slate-700 relative flex flex-col h-full min-h-[300px]">
+        <div className="bg-gray-50/5 rounded-3xl p-6 shadow-xl border border-blue-700/30 relative flex flex-col h-full min-h-[300px]">
             {/* 標題區 */}
             <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-2">
-                    <Map className="w-5 h-5 text-teal-300" />
-                    <h3 className="text-lg font-bold text-slate-50">洄游節奏</h3>
+                    <Map className="w-5 h-5 text-green-300" />
+                    <h3 className="text-lg font-bold text-gray-50">洄游節奏</h3>
                 </div>
-                <div className="flex items-center gap-1 text-xs text-slate-400">
+                <div className="flex items-center gap-1 text-xs text-blue-300">
                     <Info className="w-3 h-3" />
                     <span>近 112 天活躍紀錄</span>
                 </div>
@@ -58,13 +58,13 @@ export const MigrationRhythm: React.FC<Props> = ({ data }) => {
             </div>
 
             {/* 圖例 */}
-            <div className="flex items-center justify-end gap-3 mt-4 text-[10px] text-slate-400 font-mono uppercase tracking-wider">
+            <div className="flex items-center justify-end gap-3 mt-4 text-[10px] text-blue-300 font-mono uppercase tracking-wider">
                 <span>Less</span>
                 <div className="flex gap-1.5">
-                    <div className="w-3 h-3 rounded-full bg-slate-900/40 border border-slate-700/20"></div>
-                    <div className="w-3 h-3 rounded-full bg-teal-500/40"></div>
-                    <div className="w-3 h-3 rounded-full bg-teal-400 shadow-[0_0_5px_rgba(84,179,158,0.5)]"></div>
-                    <div className="w-3 h-3 rounded-full bg-amber-400 shadow-[0_0_8px_rgba(255,198,120,0.8)]"></div>
+                    <div className="w-3 h-3 rounded-full bg-blue-900/40 border border-blue-700/20"></div>
+                    <div className="w-3 h-3 rounded-full bg-green-500/40"></div>
+                    <div className="w-3 h-3 rounded-full bg-green-500 shadow-[0_0_5px_rgba(84,179,158,0.5)]"></div>
+                    <div className="w-3 h-3 rounded-full bg-yellow-500 shadow-[0_0_8px_rgba(255,198,120,0.8)]"></div>
                 </div>
                 <span>More</span>
             </div>
@@ -72,13 +72,13 @@ export const MigrationRhythm: React.FC<Props> = ({ data }) => {
             {/* 懸浮提示框 */}
             {hoveredDay && (
                 <div
-                    className="fixed z-50 pointer-events-none transform -translate-x-1/2 -translate-y-full px-3 py-2 bg-slate-800/95 backdrop-blur border border-slate-600 rounded-lg shadow-2xl text-xs"
+                    className="fixed z-50 pointer-events-none transform -translate-x-1/2 -translate-y-full px-3 py-2 bg-gray-900/95 backdrop-blur border border-blue-700/50 rounded-lg shadow-2xl text-xs"
                     style={{ top: hoveredDay.y, left: hoveredDay.x }}
                 >
-                    <div className="text-slate-300 font-mono mb-1">{hoveredDay.date}</div>
+                    <div className="text-blue-100 font-mono mb-1">{hoveredDay.date}</div>
                     <div className="flex items-center gap-2">
-                        <div className={`w-2 h-2 rounded-full ${hoveredDay.xp > 300 ? 'bg-amber-400' : 'bg-teal-400'}`}></div>
-                        <span className="font-bold text-slate-50">{hoveredDay.xp} XP</span>
+                        <div className={`w-2 h-2 rounded-full ${hoveredDay.xp > 300 ? 'bg-yellow-500' : 'bg-green-500'}`}></div>
+                        <span className="font-bold text-gray-50">{hoveredDay.xp} XP</span>
                     </div>
                 </div>
             )}

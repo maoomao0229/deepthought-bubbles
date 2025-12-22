@@ -27,17 +27,17 @@ const DeepArchive: React.FC<DeepArchiveProps> = ({ monthlyData, userLevel, daily
             {/* 1. Evolution Path Component */}
             <EvolutionPath userLevel={userLevel} dailyStats={dailyStats} />
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="space-y-6">
                 {/* 2. Migration Rhythm (Bioluminescent Heatmap) */}
-                <div className="lg:col-span-1 min-h-[300px]">
+                <div className="w-full">
                     <MigrationRhythm data={monthlyData} />
                 </div>
 
                 {/* 3. Trench Exploration (Depth Chart) */}
-                <div className="lg:col-span-2 bg-slate-900 rounded-3xl p-6 shadow-xl border border-slate-700">
+                <div className="w-full bg-gray-50/5 rounded-3xl p-6 shadow-xl border border-blue-700/30">
                     <div className="flex items-center gap-2 mb-4">
                         <TrendingUp className="w-5 h-5 text-indigo-300" />
-                        <h3 className="text-lg font-bold text-slate-50">海溝探勘紀錄</h3>
+                        <h3 className="text-lg font-bold text-gray-50">海溝探勘紀錄</h3>
                     </div>
 
                     <div className="h-[250px] w-full">
@@ -45,20 +45,20 @@ const DeepArchive: React.FC<DeepArchiveProps> = ({ monthlyData, userLevel, daily
                             <AreaChart data={monthlyData}>
                                 <defs>
                                     <linearGradient id="colorDepth" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor={COLORS.abyss500} stopOpacity={0.8} />
+                                        <stop offset="5%" stopColor={COLORS.indigo500} stopOpacity={0.8} />
                                         <stop offset="95%" stopColor="#0f172a" stopOpacity={0} />
                                     </linearGradient>
                                 </defs>
                                 <CartesianGrid
                                     strokeDasharray="3 3"
-                                    stroke="#334155"
+                                    stroke={COLORS.blue700}
                                     vertical={false}
                                     opacity={0.3}
                                 />
                                 <XAxis dataKey="date" hide />
                                 <YAxis
                                     reversed
-                                    tick={{ fill: '#475569', fontSize: 10 }}
+                                    tick={{ fill: COLORS.blue300, fontSize: 10 }}
                                     axisLine={false}
                                     tickLine={false}
                                     domain={[0, 1200]}
@@ -67,18 +67,18 @@ const DeepArchive: React.FC<DeepArchiveProps> = ({ monthlyData, userLevel, daily
                                 />
                                 <Tooltip
                                     contentStyle={{
-                                        backgroundColor: '#0f172a',
-                                        borderColor: COLORS.abyss500,
-                                        color: '#fff',
+                                        backgroundColor: COLORS.gray900,
+                                        borderColor: COLORS.indigo500,
+                                        color: COLORS.gray50,
                                         borderRadius: '8px',
                                     }}
-                                    labelStyle={{ color: '#64748b' }}
-                                    formatter={(value: number) => [`${value}m`, '最大深度']}
+                                    labelStyle={{ color: COLORS.gray500 }}
+                                    formatter={(value: number | undefined) => value !== undefined ? [`${value}m`, '最大深度'] : ['N/A', '最大深度']}
                                 />
                                 <Area
                                     type="monotone"
                                     dataKey="maxDepth"
-                                    stroke={COLORS.abyss500}
+                                    stroke={COLORS.indigo500}
                                     strokeWidth={2}
                                     fillOpacity={1}
                                     fill="url(#colorDepth)"
