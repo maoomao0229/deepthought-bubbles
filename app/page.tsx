@@ -133,7 +133,7 @@ export default function Home() {
 
     // [Logic] 計算深度等級 (Depth Level)
     // 必須符合資料庫 check_depth_level constraint: 'Surface' | 'Midzone' | 'Depth'
-    const calculateDepthLevel = (t: string | null) => {
+    const calculateDepthLevel = (t: string | null | undefined): string => {
       const safeTopic = t || "科普";
       if (["哲學", "議題"].includes(safeTopic)) return "Depth";
       if (["時事", "科普"].includes(safeTopic)) return "Midzone";
