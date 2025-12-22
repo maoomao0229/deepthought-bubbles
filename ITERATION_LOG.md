@@ -2,6 +2,8 @@
 
 ## 修改歷史
 
+- [2025/12/22 13:00 v0.91] 檔案: `src/components/PantryView.tsx`, `src/app/page.tsx` | 內容: 實作個人頁面 (PantryView)：1. 建立具有 Profile Card (頭像/簡介/分享/聲納數據) 的個人檔案介面；2. 實作三個分頁標籤 (發布/回覆/收藏) 與切換邏輯；3. 使用 Mock Data 展示靜態氣泡清單樣式 | 原因: 取代原本的建置中 Placeholder，提供完整的個人頁面基礎架構
+
 - [2025/12/22 12:40 v0.90] 檔案: `src/components/LiquidTabBar.tsx` & `src/components/LobbyView.tsx` | 內容: 介面命名與導覽優化：1. 將 Lobby View 命名從 "意識大廳" 統一為 "泡泡大廳"；2. 將 Pantry View 命名從 "我的糧倉" 改為 "個人頁面"；3. 調整 Nav Bar 順序為：每日潛入 (Dive) -> 泡泡大廳 (Lobby) -> 個人頁面 (Pantry) -> 深海聲納 (Sonar) | 原因: 提升導航直覺性，讓核心功能排序更符合使用者習慣
 
 - [2025/12/22 12:20 v0.89] 檔案: `src/app/page.tsx` | 內容: 實作主題分批抓取 (Topic-Based Ratio Fetching)：1. 重構 `fetchBubbles` 為平行請求模式 (`Promise.all`)；2. 針對 6 大主題 (`['科普', '生活', '時事', '奇想', '哲學', '議題']`) 各別抓取最新 5 則；3. 合併結果後洗牌並取前 20 則 | 原因: 確保每日潛入的內容多樣性，避免特定單一主題佔據所有版面，並保留未來動態調整各主題比例的彈性

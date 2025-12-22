@@ -7,6 +7,7 @@ import DiveView from "@/components/DiveView";
 import LiquidTabBar, { ViewState } from "@/components/LiquidTabBar";
 import AuthView from "@/components/AuthView";
 import LobbyView from "@/components/LobbyView";
+import PantryView from "@/components/PantryView";
 import { ShaderGradientCanvas, ShaderGradient } from "shadergradient";
 import * as reactSpring from "@react-spring/three";
 import * as drei from "@react-three/drei";
@@ -235,17 +236,7 @@ export default function Home() {
           </div>
         );
       case "pantry":
-        return (
-          <div className="w-full h-full flex flex-col items-center justify-center gap-6">
-            <p className="text-blue-300 text-lg">我的糧倉 - 建置中</p>
-            <button
-              onClick={() => supabase.auth.signOut()}
-              className="px-8 py-3 bg-white/5 hover:bg-white/10 text-yellow-500/80 border border-yellow-500/20 rounded-xl transition-all active:scale-95 text-sm tracking-widest font-light"
-            >
-              終止潛行 (Logout)
-            </button>
-          </div>
-        );
+        return <PantryView user={session?.user} />;
       default:
         return <DiveView bubbles={bubbles} onSend={handleSend} />;
     }
