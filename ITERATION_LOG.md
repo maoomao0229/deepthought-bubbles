@@ -2,6 +2,8 @@
 
 ## 修改歷史
 
+- [2025/12/22 10:40 v0.79] 檔案: `src/components/LobbyView.tsx` | 內容: 全面實作 Plurk 風格河道：1. `TimelineTrack` 模擬無限橫向捲動畫布，支援拖曳阻尼與邊界限制；2. `BubbleCard` 實作隨機寬度 (260px-420px) 創造錯落感，並更新視覺樣式為側邊光條設計 | 原因: 滿足使用者對於 Plurk 風格動態河道的具體需求
+
 - [2025/12/22 10:20 v0.78] 檔案: `src/components/LobbyView.tsx` | 內容: 重構為 `MasonryTrack` 元件，使用 `transform: translateX` 取代 `scrollLeft`，實現更流暢的拖曳體驗；加入慣性動畫與邊界橡皮筋效果；維持 3 列網格佈局 (`grid-rows-[repeat(3,120px)]`) | 原因: 提升拖曳互動的效能與觸感，接近原生應用體驗
 
 - [2025/12/22 03:45 v0.77] 檔案: `src/components/LobbyView.tsx` | 內容: 實作 Plurk 風格水平瀑布流佈局：1. `DraggableRow` 改用 CSS Grid (`grid-rows-3 grid-flow-col`)，使卡片先垂直填充 3 列再水平延伸；2. `BubbleCard` 改為緊湊設計 (110px 高度，220-400px 隨機寬度)，顯示時間戳記，移除冗餘元素 | 原因: 創造更密集且有機的視覺節奏，類似 Plurk 時間軸

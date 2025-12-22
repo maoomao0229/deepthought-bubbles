@@ -13,119 +13,68 @@ interface LobbyViewProps {
 const TOPIC_OPTIONS = ['科普', '生活', '時事', '奇想', '哲學', '議題'];
 
 // ==========================================
-// MasonryTrack 可拖曳水平瀑布流軌道元件 (TranslateX)
+// TimelineTrack: 模擬 Plurk 河道 (無限橫向畫布)
 // ==========================================
-interface MasonryTrackProps {
+interface TimelineTrackProps {
     children: React.ReactNode;
 }
 
-const MasonryTrack: React.FC<MasonryTrackProps> = ({ children }) => {
-    const containerRef = useRef<HTMLDivElement>(null);
+const TimelineTrack: React.FC<TimelineTrackProps> = ({ children }) => {
     const trackRef = useRef<HTMLDivElement>(null);
-
-    const [position, setPosition] = useState(0);
-    const [isDragging, setIsDragging] = useState(false);
-
+    const [panX, setPanX] = useState(0);
+    const isDragging = useRef(false);
     const startX = useRef(0);
-    const startPosition = useRef(0);
-    const velocity = useRef(0);
-    const lastX = useRef(0);
+    const startPan = useRef(0);
     const rafId = useRef<number | null>(null);
 
-    const handleDragStart = (clientX: number) => {
-        setIsDragging(true);
+    // 阻尼係數 (讓拖曳更有重量感，像在撥水)
+    const DAMPING = 1.0;
+
+    const handleStart = (clientX: number) => {
+        isDragging.current = true;
         startX.current = clientX;
-        startPosition.current = position;
-        lastX.current = clientX;
-        velocity.current = 0;
+        startPan.current = panX;
+        if (trackRef.current) trackRef.current.style.cursor = 'grabbing';
+    };
+
+    const handleMove = (clientX: number) => {
+        if (!isDragging.current) return;
+        const delta = (clientX - startX.current) * DAMPING;
+        // 限制往左拉的邊界 (類似 Plurk 的起點限制)
+        const newX = Math.min(0, startPan.current + delta);
+
+        // 直接更新 State 會觸發 React Render，這裡使用 requestAnimationFrame 優化
+        if (rafId.current) cancelAnimationFrame(rafId.current);
+        rafId.current = requestAnimationFrame(() => {
+            setPanX(newX);
+        });
+    };
+
+    const handleEnd = () => {
+        isDragging.current = false;
+        if (trackRef.current) trackRef.current.style.cursor = 'grab';
         if (rafId.current) cancelAnimationFrame(rafId.current);
     };
 
-    const handleDragMove = (clientX: number) => {
-        if (!isDragging) return;
-        const diff = clientX - startX.current;
-        velocity.current = clientX - lastX.current;
-        lastX.current = clientX;
-
-        // 計算邊界
-        const trackWidth = trackRef.current?.scrollWidth || 0;
-        const containerWidth = containerRef.current?.clientWidth || 0;
-        const minPosition = Math.min(0, -(trackWidth - containerWidth + 40)); // 40px 邊距
-        const maxPosition = 0;
-
-        let newPosition = startPosition.current + diff;
-        // 套用橡皮筋效果 (超出邊界時減速)
-        if (newPosition > maxPosition) {
-            newPosition = maxPosition + (newPosition - maxPosition) * 0.3;
-        } else if (newPosition < minPosition) {
-            newPosition = minPosition + (newPosition - minPosition) * 0.3;
-        }
-
-        setPosition(newPosition);
-    };
-
-    const handleDragEnd = () => {
-        setIsDragging(false);
-
-        // 慣性滑動
-        const decelerate = () => {
-            velocity.current *= 0.92; // 減速係數
-            if (Math.abs(velocity.current) < 0.5) {
-                // 邊界回彈
-                const trackWidth = trackRef.current?.scrollWidth || 0;
-                const containerWidth = containerRef.current?.clientWidth || 0;
-                const minPosition = Math.min(0, -(trackWidth - containerWidth + 40));
-                const maxPosition = 0;
-
-                setPosition(prev => {
-                    if (prev > maxPosition) return maxPosition;
-                    if (prev < minPosition) return minPosition;
-                    return prev;
-                });
-                return;
-            }
-
-            setPosition(prev => {
-                const newPos = prev + velocity.current * 2;
-                return newPos;
-            });
-            rafId.current = requestAnimationFrame(decelerate);
-        };
-        decelerate();
-    };
-
-    // Mouse Events
-    const handleMouseDown = (e: React.MouseEvent) => {
-        e.preventDefault();
-        handleDragStart(e.clientX);
-    };
-    const handleMouseMove = (e: React.MouseEvent) => handleDragMove(e.clientX);
-    const handleMouseUp = () => handleDragEnd();
-    const handleMouseLeave = () => { if (isDragging) handleDragEnd(); };
-
-    // Touch Events
-    const handleTouchStart = (e: React.TouchEvent) => handleDragStart(e.touches[0].clientX);
-    const handleTouchMove = (e: React.TouchEvent) => handleDragMove(e.touches[0].clientX);
-    const handleTouchEnd = () => handleDragEnd();
-
     return (
+        // Timeline Holder (視窗)
         <div
-            ref={containerRef}
-            className="overflow-hidden cursor-grab active:cursor-grabbing select-none relative h-[420px]"
-            onMouseDown={handleMouseDown}
-            onMouseMove={handleMouseMove}
-            onMouseUp={handleMouseUp}
-            onMouseLeave={handleMouseLeave}
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
+            className="relative w-full h-[400px] overflow-hidden cursor-grab active:cursor-grabbing select-none py-2"
+            onMouseDown={(e) => handleStart(e.clientX)}
+            onMouseMove={(e) => handleMove(e.clientX)}
+            onMouseUp={handleEnd}
+            onMouseLeave={handleEnd}
+            onTouchStart={(e) => handleStart(e.touches[0].clientX)}
+            onTouchMove={(e) => handleMove(e.touches[0].clientX)}
+            onTouchEnd={handleEnd}
         >
+            {/* Block Content (畫布) */}
             <div
                 ref={trackRef}
-                className="grid grid-rows-[repeat(3,120px)] grid-flow-col gap-4 w-max px-6 items-center"
+                className="absolute top-0 left-0 h-full grid grid-rows-[repeat(3,110px)] grid-flow-col gap-x-6 gap-y-4 px-10 transition-transform duration-75 ease-out will-change-transform width-max"
                 style={{
-                    transform: `translate3d(${position}px, 0, 0)`,
-                    transition: isDragging ? 'none' : 'transform 0.4s cubic-bezier(0.25, 1, 0.5, 1)',
+                    transform: `translate3d(${panX}px, 0, 0)`,
+                    width: 'max-content' // 自動撐開寬度
                 }}
             >
                 {children}
@@ -135,48 +84,48 @@ const MasonryTrack: React.FC<MasonryTrackProps> = ({ children }) => {
 };
 
 // ==========================================
-// BubbleCard 卡片元件 (Horizontal Masonry)
+// BubbleCard: 隨機寬度卡片 (創造錯落感)
 // ==========================================
 interface BubbleCardProps {
     bubble: any;
     onClick: () => void;
 }
 
-const BubbleCard: React.FC<BubbleCardProps> = ({ bubble, onClick }) => {
-    // 產生穩定的隨機寬度 (220px - 400px)，避免 Hydration 不一致
-    const cardWidth = React.useMemo(() => {
+const BubbleCard = ({ bubble, onClick }: BubbleCardProps) => {
+    // 根據 ID 產生穩定的隨機寬度 (260px ~ 420px)
+    const randomWidth = React.useMemo(() => {
         if (!bubble.id) return 300;
         const idStr = String(bubble.id);
-        const seed = idStr.charCodeAt(0) + (idStr.length > 5 ? idStr.charCodeAt(5) : 0);
-        return 220 + (seed % 180);
+        const seed = idStr.split("").reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0);
+        return 260 + (seed % 160);
     }, [bubble.id]);
 
     return (
         <div
             onClick={onClick}
-            style={{ width: `${cardWidth}px`, height: '110px' }}
-            className="shrink-0 relative bg-blue-900/40 backdrop-blur-md border border-white/10 rounded-xl p-3 hover:bg-blue-800/50 hover:scale-[1.02] transition-all cursor-pointer shadow-lg group overflow-hidden flex flex-col justify-between"
+            style={{ width: `${randomWidth}px` }}
+            className="shrink-0 h-[110px] relative bg-blue-900/30 backdrop-blur-md border border-white/10 rounded-xl p-4 hover:bg-blue-800/50 hover:scale-[1.02] transition-all shadow-lg cursor-pointer flex flex-col justify-between group overflow-hidden"
         >
-            {/* Header: Topic + Time */}
-            <div className="flex items-center justify-between gap-2">
-                <span className="text-[9px] px-1.5 py-0.5 bg-blue-500/20 text-blue-200 rounded border border-blue-500/30 uppercase font-bold whitespace-nowrap">
+            {/* 裝飾：左側光條 */}
+            <div className="absolute left-0 top-2 bottom-2 w-1 bg-blue-500/20 rounded-r-full" />
+
+            <div className="pl-3 flex justify-between items-center opacity-70 mb-1">
+                <span className="text-[10px] bg-blue-500/10 px-2 py-0.5 rounded text-blue-200 border border-blue-500/20 tracking-wider">
                     {bubble.topic || "General"}
                 </span>
-                <span className="text-[9px] text-blue-400/60 font-mono">
-                    {bubble.created_at ? new Date(bubble.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
+                <span className="text-[9px] text-blue-400 font-mono">
+                    {bubble.created_at ? new Date(bubble.created_at).toLocaleDateString() : ''}
                 </span>
             </div>
 
-            <h3 className="text-white text-xs font-bold leading-tight line-clamp-1 mt-1">
-                {bubble.title || "無題"}
-            </h3>
-
-            <p className="text-blue-200/70 text-[10px] leading-relaxed line-clamp-2">
-                {bubble.content}
-            </p>
-
-            {/* Footer Decoration */}
-            <div className="absolute bottom-0 left-0 w-full h-0.5 bg-linear-to-r from-blue-500/0 via-blue-400/50 to-blue-500/0 opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="pl-3 flex-1 flex flex-col justify-center min-h-0">
+                <h3 className="text-white text-sm font-bold truncate leading-tight mb-1">
+                    {bubble.title || "無題"}
+                </h3>
+                <p className="text-blue-100/60 text-xs line-clamp-2 font-light leading-relaxed">
+                    {bubble.content}
+                </p>
+            </div>
         </div>
     );
 };
@@ -266,7 +215,7 @@ const LobbyView = ({ bubbles, onSend, isUnlocked = false }: LobbyViewProps) => {
                                         {topicBubbles.length} 則思考
                                     </span>
                                 </h3>
-                                <MasonryTrack>
+                                <TimelineTrack>
                                     {topicBubbles.map((bubble) => (
                                         <BubbleCard
                                             key={bubble.id}
@@ -274,7 +223,7 @@ const LobbyView = ({ bubbles, onSend, isUnlocked = false }: LobbyViewProps) => {
                                             onClick={() => setSelectedBubble(bubble)}
                                         />
                                     ))}
-                                </MasonryTrack>
+                                </TimelineTrack>
                             </section>
                         );
                     })}
