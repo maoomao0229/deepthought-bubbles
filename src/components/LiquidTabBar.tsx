@@ -136,7 +136,7 @@ const LiquidTabBar: React.FC<LiquidTabBarProps> = ({ currentView, onChange, isUn
   const ballLeft = displayX - 28;
 
   return (
-    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 w-full max-w-md px-4 z-50">
+    <div className="w-full max-w-md px-4">
 
       {/* 導航列容器 */}
       <div

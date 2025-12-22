@@ -233,7 +233,7 @@ export default function Home() {
       </div>
 
       {/* 導航欄：固定在畫面最底部，z-index 高於內容區域 */}
-      <div className={`fixed bottom-0 left-0 right-0 z-50 transition-transform duration-500 ease-in-out ${isNavHidden ? 'translate-y-[200%]' : 'translate-y-0'}`}>
+      <div className={`fixed bottom-6 left-0 right-0 z-50 flex justify-center transition-transform duration-500 ease-in-out ${isNavHidden ? 'translate-y-[250%]' : 'translate-y-0'}`}>
         <LiquidTabBar currentView={currentView} onChange={setCurrentView} isUnlocked={isUnlocked} />
       </div>
     </div>
