@@ -2,6 +2,10 @@
 
 ## 修改歷史
 
+- [2025/12/22 15:06 v0.97] 檔案: `src/components/SonarView.tsx`, `app/page.tsx` | 內容: 實作深海聲納儀 (SonarView) 視圖：1. 建立 SonarView 元件包含三大區塊：The Daily Ping (肺活量呼吸動畫+今日統計)、Weekly Wave (聲納覆蓋域環狀圖+回聲波紋動畫)、Deep Archive (活躍度熱力圖+演化等級)；2. 實作水壓暗角 (Vignette) 視覺效果，綁定動態 opacity；3. 使用 Mock Data 結構，預留未來 API 替換空間；4. 更新 page.tsx 在 currentView === 'sonar' 時渲染 SonarView | 原因: 完成深海聲納儀核心視覺與佈局，提供使用者思考活躍度與深度的數據儀表板
+
+- [2025/12/22 14:30 v0.96] 檔案: `src/components/PantryView.tsx`, `src/app/page.tsx` | 內容: 優化編輯體驗：1. 實作 Focus Mode，編輯個人資料時自動隱藏底部導航列；2. 調整 Avatar Picker 佈局為 3 欄 + 寬間距，提升選取體驗 | 原因: 減少畫面干擾，提升操作舒適度
+
 - [2025/12/22 14:15 v0.95] 檔案: `src/components/PantryView.tsx` | 內容: 實作預設頭像選擇器：1. 匯入 40 款 `personal_icon` 至 public 目錄；2. PantryView 支援 `avatar_url` 資料讀寫 (整合 Supabase)；3. 編輯模式下新增更換頭像按鈕與選擇 Modal；4. UI 從 CSS 圓圈改為顯示真實圖片 | 原因: 增加個人化選項，提供更豐富的預設頭像庫
 
 - [2025/12/22 13:55 v0.94] 檔案: `src/components/PantryView.tsx` | 內容: 修復文字裁切問題：1. Profile Bio 移除 `truncate` 改為 `line-clamp-3` 與自動換行，支援多行簡介顯示；2. 增加 `TimelineTrack` 容器高度至 500px 並加大上下 Padding，防止氣泡浮動動畫溢出裁切 | 原因: 優化 UI 細節，確保內容完整呈現

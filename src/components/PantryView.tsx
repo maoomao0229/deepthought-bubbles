@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabaseClient";
 
 interface PantryViewProps {
     user?: any;
+    onEditingChange?: (isEditing: boolean) => void;
 }
 
 // ==========================================
@@ -193,7 +194,7 @@ const BubbleCard = ({ bubble, onClick }: BubbleCardProps) => {
     );
 };
 
-const PantryView: React.FC<PantryViewProps> = ({ user }) => {
+const PantryView: React.FC<PantryViewProps> = ({ user, onEditingChange }) => {
     const [activeTab, setActiveTab] = useState<'bubbles' | 'replies' | 'saved'>('bubbles');
 
     // Profile State

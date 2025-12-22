@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Session } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabaseClient";
 import DiveView from "@/components/DiveView";
+import SonarView from "@/components/SonarView";
 import LiquidTabBar, { ViewState } from "@/components/LiquidTabBar";
 import AuthView from "@/components/AuthView";
 import LobbyView from "@/components/LobbyView";
@@ -39,228 +40,139 @@ export default function Home() {
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // 解鎖狀態 (今日是否已潛入)
+  // 視圖與資料狀態
+  const [currentView, setCurrentView] = useState<ViewState>("dive");
+  const [bubbles, setBubbles] = useState<any[]>([]); // DiveView 用的隨機/精選氣泡
+  const [allBubbles, setAllBubbles] = useState<any[]>([]); // LobbyView 用的完整歷史
   const [isUnlocked, setIsUnlocked] = useState(false);
 
-  // 管理當前視圖狀態
-  const [currentView, setCurrentView] = useState<ViewState>("dive");
+  // 導航欄隱藏狀態 (Focus Mode)
+  const [isNavHidden, setIsNavHidden] = useState(false);
 
-  // 泡泡資料狀態
-  const [bubbles, setBubbles] = useState<any[]>([]);
-  // 大廳專用：所有歷史泡泡
-  const [allBubbles, setAllBubbles] = useState<any[]>([]);
-
-  /**
-   * 檢查解鎖狀態：當前使用者今天是否有任何紀錄
-   */
-  const checkUnlockStatus = async (userId: string) => {
-    // 使用本地時間判定今天是否存在紀錄 (避免 UTC 換日誤差)
-    const now = new Date();
-    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
-    const tomorrowStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1).toISOString();
-
-    const { data, error } = await supabase
-      .from("bubbles")
-      .select("id")
-      .eq("user_id", userId)
-      .gte("created_at", todayStart)
-      .lt("created_at", tomorrowStart)
-      .limit(1);
-
-    if (error) {
-      console.error("查驗每日潛入狀態失敗:", error.message);
-    } else {
-      setIsUnlocked(data && data.length > 0);
-    }
-  };
-
-  /**
-   * 抓取所有主泡泡 (parent_id 為空)
-   */
-  const fetchBubbles = async () => {
-    // [MODIFIED] 主題分批抓取模式 (Topic-Based Ratio Fetching)
-    // 解決單一查詢可能只抓到最新特定主題的問題，確保首頁有多樣性
-    const PER_TOPIC_COUNT = 5; // 每個主題各抓 5 篇，總池子約 30 篇
-
-    try {
-      // 平行發送 6 個請求 (Batch Fetching)
-      const promises = TOPIC_LIST.map((topic) =>
-        supabase
-          .from("bubbles")
-          .select("*")
-          .is("parent_id", null) // 只抓主氣泡
-          .eq("topic", topic) // 鎖定特定主題
-          .order("created_at", { ascending: false }) // 抓該主題最新的
-          .limit(PER_TOPIC_COUNT)
-      );
-
-      const results = await Promise.all(promises);
-
-      // 合併資料
-      let combinedBubbles: any[] = [];
-      results.forEach(({ data, error }) => {
-        if (!error && data) {
-          combinedBubbles = [...combinedBubbles, ...data];
-        }
-      });
-
-      // 全局洗牌並取出前 20 則
-      // 這樣既保證了首頁有多個主題，每次重新整理順序又不同
-      const finalBubbles = shuffleArray(combinedBubbles).slice(0, 20);
-
-      setBubbles(finalBubbles);
-    } catch (err) {
-      console.error("Unexpected error fetching bubbles:", err);
-    }
-  };
-
-  /**
-   * 監聽 Supabase Auth 狀態變化
-   */
+  // 初始化與監聽 Auth 狀態
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setIsLoading(false);
-      if (session) {
-        fetchBubbles();
-        checkUnlockStatus(session.user.id); // 查驗解鎖狀態
-      }
     });
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
-      if (session) {
-        fetchBubbles();
-        checkUnlockStatus(session.user.id);
-      } else {
-        setIsUnlocked(false);
-        setBubbles([]);
-      }
     });
 
-    return () => subscription.unsubscribe(); return () => subscription.unsubscribe();
+    return () => subscription.unsubscribe();
   }, []);
 
-  /**
-   * 當切換至 Lobby 時，抓取所有泡泡資料
-   */
-  useEffect(() => {
-    if (currentView === "lobby") {
-      const fetchAllBubbles = async () => {
-        const { data, error } = await supabase
-          .from("bubbles")
-          .select("*")
-          .is("parent_id", null) // [關鍵修正] 只抓沒有父層的主氣泡
-          .order("created_at", { ascending: false });
+  // 檢查每日解鎖狀態
+  const checkUnlockStatus = async () => {
+    if (!session?.user) return;
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0); // Local time start of day
 
-        if (error) {
-          console.error("抓取所有泡泡失敗:", error.message);
-        } else if (data) {
-          setAllBubbles(data);
-        }
-      };
-      fetchAllBubbles();
-    }
-  }, [currentView]);
+    const { data } = await supabase
+      .from("bubbles")
+      .select("id")
+      .eq("user_id", session.user.id)
+      .gte("created_at", startOfDay.toISOString()) // 注意：Supabase 存 UTC，這裡可能會有時區誤差，但在 MVP 可接受
+      .limit(1);
 
-  /**
-   * 處理使用者送出觀點
-   */
-  const handleSend = async (
-    content: string,
-    parentId: string | null = null,
-    topic: string | null = null,
-    title: string | null = null
-  ) => {
-    if (!session?.user?.id) return;
-
-    const xPosition = Math.random() * 100;
-    const yPosition = Math.random() * 100;
-
-    // 計算深度等級 (Backend Logic)
-    let depthLevel = "Surface";
-    const t = topic || "";
-    if (["哲學", "議題"].includes(t)) depthLevel = "Depth";
-    else if (["時事", "科普"].includes(t)) depthLevel = "Midzone";
-    else depthLevel = "Surface";
-
-    const { error } = await supabase.from("bubbles").insert([
-      {
-        content: content,
-        topic: topic,
-        title: title,
-        x_position: xPosition,
-        y_position: yPosition,
-        user_id: session.user.id,
-        parent_id: parentId,
-        depth_level: depthLevel,
-      },
-    ]);
-
-    if (error) {
-      console.error("氣泡寫入失敗:", error.message);
-      alert("⚠️ 氣泡回傳失敗，請稍後再試。");
-    } else {
-      console.log("氣泡已成功寫入資料庫");
-
-      // 同步機制：只要發送成功就解鎖
+    if (data && data.length > 0) {
       setIsUnlocked(true);
-      fetchBubbles();
-
-      if (session.user.is_anonymous) {
-        alert("這筆思考已紀錄！由於你是以訪客身分登入，建議註冊 Email 以永久保存你的肺活量與資料。");
-      } else {
-        alert("泡泡已浮起");
-      }
     }
   };
 
-  /**
-   * 根據當前視圖渲染對應的內容
-   * DiveView 需要佔滿全螢幕，其他視圖暫時顯示建置中提示
-   */
+  // 獲取氣泡資料
+  const fetchBubbles = async () => {
+    // 1. 取得所有歷史氣泡 (給 Lobby)
+    const { data: allData, error } = await supabase
+      .from("bubbles")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Error fetching bubbles:", error);
+      return;
+    }
+    setAllBubbles(allData || []);
+
+    // 2. 準備 DiveView 資料 (包含部分隨機性)
+    if (allData) {
+      // 過濾出主氣泡 (非回覆)
+      const mainBubbles = allData.filter((b: any) => !b.parent_id);
+      // 簡單洗牌
+      setBubbles(shuffleArray(mainBubbles));
+    }
+  };
+
+  // 資料載入 Effect
+  useEffect(() => {
+    if (session) {
+      fetchBubbles();
+      checkUnlockStatus();
+    }
+  }, [session]);
+
+  // 處理發送氣泡/回覆
+  const handleSend = async (content: string, parentId?: string | null, topic?: string | null, title?: string | null) => {
+    if (!session?.user) return;
+
+    // 隨機座標 (0-100)
+    const randomX = Math.random() * 100;
+    const randomY = Math.random() * 100;
+
+    const { error } = await supabase.from("bubbles").insert({
+      content,
+      parent_id: parentId || null,
+      title: title || null,
+      topic: topic || "科普",
+      user_id: session.user.id,
+      x_position: randomX,
+      y_position: randomY,
+    });
+
+    if (error) {
+      console.error("Error sending bubble:", error);
+      alert("發送失敗，請稍後再試。");
+    } else {
+      // 成功發送後：
+      // 1. 立即解鎖
+      setIsUnlocked(true);
+      // 2. 重新獲取資料
+      await fetchBubbles();
+    }
+  };
+
+
   const renderContentView = () => {
     switch (currentView) {
       case "dive":
-        // 每日潛入：顯示今日泡泡或精選主泡泡
         return <DiveView bubbles={bubbles} onSend={handleSend} isUnlocked={isUnlocked} />;
       case "lobby":
-        // 泡泡大廳：顯示所有海域的主泡泡 (使用 allBubbles)
         return <LobbyView bubbles={allBubbles} onSend={handleSend} isUnlocked={isUnlocked} />;
       case "sonar":
-        return (
-          <div className="w-full h-full flex items-center justify-center">
-            <p className="text-blue-300 text-lg">深海聲納 - 建置中</p>
-          </div>
-        );
+        return <SonarView user={session?.user} />;
       case "pantry":
-        return <PantryView user={session?.user} />;
+        return <PantryView user={session?.user} onEditingChange={setIsNavHidden} />;
       default:
-        return <DiveView bubbles={bubbles} onSend={handleSend} />;
+        return <DiveView bubbles={bubbles} onSend={handleSend} isUnlocked={isUnlocked} />;
     }
   };
 
-  // 載入中狀態
   if (isLoading) {
     return (
-      <div className="w-full h-screen bg-blue-900 flex items-center justify-center">
-        <p className="text-blue-300 text-lg animate-pulse">載入中...</p>
+      <div className="w-full h-screen bg-slate-900 flex items-center justify-center text-blue-200">
+        載入中...
       </div>
     );
   }
 
-  // 未登入：顯示登入/註冊畫面
+  // 未登入顯示 AuthView
   if (!session) {
     return <AuthView />;
   }
 
-  // Cast to any to avoid prop type errors (library types mismatch)
-  // @ts-ignore
-  const ShaderGradientAny = ShaderGradient as any;
-
-  // 已登入：顯示主要內容
   return (
     <div className="relative w-full h-screen overflow-hidden">
       {/* Global Background Shader */}
@@ -270,9 +182,8 @@ export default function Home() {
           importedFiber={{ ...fiber, ...drei, ...reactSpring }}
           style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", pointerEvents: "none" }}
         >
-          <ShaderGradientAny
+          <ShaderGradient
             animate="on"
-            axesHelper="off"
             brightness={1.2}
             cAzimuthAngle={180}
             cDistance={3.2}
@@ -281,22 +192,13 @@ export default function Home() {
             color1="#5B8BB4"
             color2="#54B39E"
             color3="#FFDFB3"
-            destination="onCanvas"
-            embedMode="off"
             envPreset="city"
-            format="gif"
-            fov={45}
-            frameRate={10}
-            gizmoHelper="hide"
             grain="on"
             lightType="3d"
             pixelDensity={1}
             positionX={-1.4}
             positionY={0}
             positionZ={0}
-            range="disabled"
-            rangeEnd={40}
-            rangeStart={0}
             reflection={0.1}
             rotationX={0}
             rotationY={10}
@@ -313,6 +215,7 @@ export default function Home() {
           />
         </ShaderGradientCanvas>
       </div>
+
       {/* Global Floating Actions - Only for Guest */}
       {session?.user?.is_anonymous && (
         <button
@@ -330,7 +233,9 @@ export default function Home() {
       </div>
 
       {/* 導航欄：固定在畫面最底部，z-index 高於內容區域 */}
-      <LiquidTabBar currentView={currentView} onChange={setCurrentView} isUnlocked={isUnlocked} />
+      <div className={`fixed bottom-0 left-0 right-0 z-50 transition-transform duration-500 ease-in-out ${isNavHidden ? 'translate-y-[150%]' : 'translate-y-0'}`}>
+        <LiquidTabBar currentView={currentView} onChange={setCurrentView} isUnlocked={isUnlocked} />
+      </div>
     </div>
   );
 }
