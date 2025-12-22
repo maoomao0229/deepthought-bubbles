@@ -1,7 +1,9 @@
-import React, { useMemo } from 'react';
 import DailyPing from './DailyPing';
 import WeeklyWave from './WeeklyWave';
 import DeepArchive from './DeepArchive';
+import { supabase } from '../lib/supabaseClient';
+import { LogOut } from 'lucide-react';
+import React, { useMemo } from 'react';
 import {
     generateDailyStats,
     generateWeeklyData,
@@ -36,6 +38,16 @@ const SonarView = ({ user }: { user: any }) => {
     // Normalize pressure for opacity (0 to 1 range, assuming max pressure ~100 for visual)
     const pressureOpacity = Math.min(Math.max(0.3, pressureValue / 100), 0.9);
 
+    const handleLogout = async () => {
+        try {
+            const { error } = await supabase.auth.signOut();
+            if (error) throw error;
+            window.location.reload();
+        } catch (error) {
+            console.error('Error logging out:', error);
+        }
+    };
+
     return (
         <div className="w-full h-full relative overflow-y-auto overflow-x-hidden pt-20 pb-32 no-scrollbar">
 
@@ -51,6 +63,18 @@ const SonarView = ({ user }: { user: any }) => {
 
             {/* Main Content Container */}
             <div className="relative z-10 px-6 space-y-12 max-w-4xl mx-auto">
+
+                {/* --- Top Header Area with Logout --- */}
+                <div className="flex justify-end pt-4">
+                    <button
+                        onClick={handleLogout}
+                        className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-900/40 border border-blue-700/50 text-blue-100 hover:bg-blue-700/60 hover:text-white transition-all text-xs font-mono shadow-lg backdrop-blur-md"
+                        title="登出 / 上浮"
+                    >
+                        <LogOut className="w-4 h-4" />
+                        <span className="hidden sm:inline tracking-widest">ASCEND</span>
+                    </button>
+                </div>
 
                 {/* --- Layer 1: The Daily Ping --- */}
                 {/* Pass calculated stats to the DailyPing component */}
