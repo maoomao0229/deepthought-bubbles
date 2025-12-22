@@ -273,6 +273,11 @@ const PantryView: React.FC<PantryViewProps> = ({ user, onEditingChange }) => {
         }
     };
 
+    // 自動連動導覽列隱藏狀態
+    useEffect(() => {
+        onEditingChange?.(isEditing || showAvatarModal);
+    }, [isEditing, showAvatarModal, onEditingChange]);
+
     // Mock Bubbles for demo (different count for each tab)
     const displayBubbles = useMemo(() => {
         const count = activeTab === 'bubbles' ? 20 : activeTab === 'replies' ? 12 : 5;
@@ -461,9 +466,9 @@ const PantryView: React.FC<PantryViewProps> = ({ user, onEditingChange }) => {
             {/* Avatar Selection Modal */}
             {showAvatarModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in" onClick={() => setShowAvatarModal(false)}>
-                    <div className="bg-[#0f172a] border border-white/10 rounded-2xl p-6 w-full max-w-sm max-h-[80vh] flex flex-col shadow-2xl animate-scale-up" onClick={e => e.stopPropagation()}>
-                        <h3 className="text-white text-lg font-bold mb-4 text-center tracking-wide">選擇你的深海替身</h3>
-                        <div className="flex-1 overflow-y-auto grid grid-cols-4 gap-4 p-2 custom-scrollbar">
+                    <div className="bg-[#0f172a] border border-white/10 rounded-2xl p-8 w-full max-w-md max-h-[80vh] flex flex-col shadow-2xl animate-scale-up" onClick={e => e.stopPropagation()}>
+                        <h3 className="text-white text-lg font-bold mb-6 text-center tracking-wide">選擇你的深海替身</h3>
+                        <div className="flex-1 overflow-y-auto grid grid-cols-3 gap-6 p-2 custom-scrollbar place-items-center">
                             {AVATAR_LIST.map((src, index) => (
                                 <button
                                     key={src}
@@ -471,7 +476,7 @@ const PantryView: React.FC<PantryViewProps> = ({ user, onEditingChange }) => {
                                         setProfile({ ...profile, avatar_url: src });
                                         setShowAvatarModal(false);
                                     }}
-                                    className={`relative rounded-full overflow-hidden aspect-square border-2 transition-all hover:scale-110 hover:shadow-[0_0_15px_rgba(255,255,255,0.3)] ${profile.avatar_url === src ? 'border-blue-400 ring-2 ring-blue-400/50 shadow-[0_0_15px_rgba(96,165,250,0.5)]' : 'border-white/10 hover:border-white/50'
+                                    className={`relative rounded-full overflow-hidden aspect-square w-20 h-20 border-2 transition-all hover:scale-110 hover:shadow-[0_0_20px_rgba(255,255,255,0.4)] ${profile.avatar_url === src ? 'border-blue-400 ring-2 ring-blue-400/50 shadow-[0_0_20px_rgba(96,165,250,0.6)]' : 'border-white/10 hover:border-white/50'
                                         }`}
                                 >
                                     <img
