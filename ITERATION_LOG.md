@@ -2,6 +2,8 @@
 
 ## 修改歷史
 
+- [2025/12/22 15:50 v1.00] 檔案: `src/components/LobbyView.tsx` | 內容: 全面優化手機版 Modal 體驗：1. 將 Overlay z-index 提升至 `z-[100]` 確保蓋過所有元素；2. 改為完全垂直置中佈局 (`flex items-center justify-center`)，解決貼文偏下問題；3. 在 Card 容器加入 `onClick stopPropagation` 阻止事件冒泡，確保輸入框可正常點擊；4. 將輸入區域固定在底部與內容區域分離，改善捲動體驗；5. 統一深色背景色調 `#0f172a` | 原因: 解決使用者回報的手機版無法留言與版面過低的問題
+
 - [2025/12/22 15:36 v0.99] 檔案: `src/components/LobbyView.tsx` | 內容: 修復手機版 Modal 無法點擊輸入框問題：1. 在 Modal 卡片容器加入 `touch-auto pointer-events-auto` class，確保觸控事件可以正確傳遞至輸入框；2. 修正未定義的動畫 `animate-slide-up` 為已定義的 `animate-scale-up` | 原因: 解決使用者回報在泡泡大廳點開貼文後無法留言的問題
 
 - [2025/12/22 15:16 v0.98] 檔案: `src/components/LobbyView.tsx` | 內容: 修復手機版體驗問題：1. 新增 Modal 開啟時自動隱藏底部導航列邏輯 (與 DiveView 同步使用 `nav-hidden` class)，避免點開貼文時被 Tab Bar 遮擋；2. 修復 iOS 鍵盤刪除鍵無效問題，在 `onKeyDown` 加入 `isComposing` 檢查，防止 IME 組字時誤觸送出 | 原因: 解決使用者回報的手機版導航列遮擋問題與 iOS 使用者無法刪除文字的 Bug

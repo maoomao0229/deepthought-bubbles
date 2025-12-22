@@ -372,42 +372,70 @@ const LobbyView = ({ bubbles, onSend, isUnlocked = false }: LobbyViewProps) => {
                 </div>
             )}
 
-            {/* Bubble Detail Modal */}
+            {/* Bubble Detail Modal (Overlay) */}
             {selectedBubble && (
-                <div className="fixed inset-0 z-50 flex items-end justify-center md:items-center p-0 md:p-4 animate-fade-in">
-                    <div className="absolute inset-0 bg-blue-950/80 backdrop-blur-md" onClick={() => setSelectedBubble(null)} />
-                    <div className="relative w-full max-w-lg bg-blue-900/95 backdrop-blur-2xl border border-white/10 shadow-2xl rounded-t-4xl md:rounded-4xl p-6 md:p-8 max-h-[85vh] overflow-hidden flex flex-col animate-scale-up touch-auto pointer-events-auto">
-                        <button onClick={() => setSelectedBubble(null)} className="absolute top-4 right-4 p-2 rounded-full hover:bg-white/10 text-blue-200 z-10">
-                            <X size={20} />
+                <div
+                    className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm transition-opacity duration-300 pointer-events-auto"
+                    onClick={() => setSelectedBubble(null)} // 點擊背景關閉
+                >
+                    {/* Card Container */}
+                    <div
+                        className="w-full max-w-lg max-h-[85vh] flex flex-col bg-[#0f172a] border border-blue-500/30 rounded-2xl shadow-2xl shadow-blue-900/50 overflow-hidden relative animate-scale-up touch-auto"
+                        onClick={(e) => e.stopPropagation()} // [Critical] 阻止事件冒泡，確保 input 可點擊
+                    >
+                        {/* Close Button */}
+                        <button
+                            onClick={() => setSelectedBubble(null)}
+                            className="absolute top-3 right-3 p-2 bg-black/20 hover:bg-black/40 text-white/50 hover:text-white rounded-full transition-colors z-10"
+                        >
+                            <X size={18} />
                         </button>
 
-                        <div className="mb-6">
-                            <span className="text-[10px] px-2 py-1 bg-blue-500/20 text-blue-300 rounded border border-blue-500/30 uppercase tracking-widest font-bold">
-                                {selectedBubble.topic}
-                            </span>
-                            <h2 className="text-xl font-bold text-white mt-3 mb-2">{selectedBubble.title}</h2>
-                            <p className="text-blue-200/80 text-sm leading-relaxed">{selectedBubble.content}</p>
-                        </div>
+                        {/* Scrollable Content */}
+                        <div className="flex-1 overflow-y-auto overflow-x-hidden p-6">
+                            {/* Topic Tag & Date */}
+                            <div className="flex items-center gap-2 mb-3">
+                                <span className="text-xs font-bold px-2 py-0.5 rounded bg-blue-500/20 text-blue-200 border border-blue-500/30">
+                                    {selectedBubble.topic}
+                                </span>
+                                <span className="text-xs text-slate-400">
+                                    {selectedBubble.created_at ? new Date(selectedBubble.created_at).toLocaleString() : ''}
+                                </span>
+                            </div>
 
-                        <div className="flex-1 overflow-y-auto space-y-3 mb-4 pr-2">
-                            <h4 className="text-xs text-blue-400/60 font-bold uppercase tracking-widest sticky top-0 bg-blue-900/95 py-2">
-                                回應 ({replies.length})
-                            </h4>
-                            {replies.map((reply) => (
-                                <div key={reply.id} className="bg-indigo-900/30 backdrop-blur-md border border-indigo-400/20 rounded-2xl p-4">
-                                    <p className="text-indigo-100/90 text-sm leading-relaxed">{reply.content}</p>
-                                    <div className="flex items-center gap-2 mt-2 opacity-50">
-                                        <div className="w-4 h-4 rounded-full bg-indigo-600 flex items-center justify-center text-[6px] text-white">潛</div>
-                                        <span className="text-[8px] text-indigo-300">潛水員</span>
+                            {/* Title & Content */}
+                            <h2 className="text-xl font-bold text-white mb-4 leading-snug">
+                                {selectedBubble.title}
+                            </h2>
+                            <div className="text-slate-300 text-sm leading-relaxed whitespace-pre-wrap mb-8">
+                                {selectedBubble.content}
+                            </div>
+
+                            {/* Divider */}
+                            <div className="h-px w-full bg-white/10 mb-6" />
+
+                            {/* Reply Section */}
+                            <div className="relative z-20 space-y-3">
+                                <h4 className="text-xs text-blue-400/60 font-bold uppercase tracking-widest">
+                                    回應 ({replies.length})
+                                </h4>
+                                {replies.map((reply) => (
+                                    <div key={reply.id} className="bg-indigo-900/30 backdrop-blur-md border border-indigo-400/20 rounded-2xl p-4">
+                                        <p className="text-indigo-100/90 text-sm leading-relaxed">{reply.content}</p>
+                                        <div className="flex items-center gap-2 mt-2 opacity-50">
+                                            <div className="w-4 h-4 rounded-full bg-indigo-600 flex items-center justify-center text-[6px] text-white">潛</div>
+                                            <span className="text-[8px] text-indigo-300">潛水員</span>
+                                        </div>
                                     </div>
-                                </div>
-                            ))}
-                            {replies.length === 0 && (
-                                <p className="text-blue-400/30 text-xs text-center py-8">尚無回應，成為第一個回覆者</p>
-                            )}
+                                ))}
+                                {replies.length === 0 && (
+                                    <p className="text-blue-400/30 text-xs text-center py-8">尚無回應，成為第一個回覆者</p>
+                                )}
+                            </div>
                         </div>
 
-                        <div className="pt-4 border-t border-white/5">
+                        {/* Input Area (Fixed at bottom) */}
+                        <div className="p-4 border-t border-white/10 bg-[#0f172a]">
                             <div className="flex items-center gap-3">
                                 <input
                                     value={replyContent}
@@ -418,7 +446,7 @@ const LobbyView = ({ bubbles, onSend, isUnlocked = false }: LobbyViewProps) => {
                                         if (e.key === "Enter" && !e.shiftKey) handleSendReply();
                                     }}
                                     placeholder="加入這場對話..."
-                                    className="flex-1 bg-blue-950/50 rounded-xl px-4 py-3 text-sm text-gray-50 placeholder-blue-400/30 border border-white/5 focus:outline-none focus:ring-1 focus:ring-blue-500/50 transition-all"
+                                    className="flex-1 bg-slate-800/50 rounded-xl px-4 py-3 text-sm text-gray-50 placeholder-slate-500 border border-white/10 focus:outline-none focus:ring-1 focus:ring-blue-500/50 transition-all"
                                 />
                                 <button
                                     onClick={handleSendReply}
