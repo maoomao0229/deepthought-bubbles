@@ -75,7 +75,7 @@ const DraggableRow: React.FC<DraggableRowProps> = ({ children }) => {
     return (
         <div
             ref={rowRef}
-            className="flex gap-4 overflow-x-hidden px-6 cursor-grab active:cursor-grabbing select-none"
+            className="grid grid-rows-3 grid-flow-col gap-3 overflow-x-hidden px-6 cursor-grab active:cursor-grabbing select-none h-[380px] items-center"
             onMouseDown={handleMouseDown}
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}
@@ -98,44 +98,40 @@ interface BubbleCardProps {
 }
 
 const BubbleCard: React.FC<BubbleCardProps> = ({ bubble, onClick }) => {
-    // 產生穩定的隨機寬度 (240px - 360px)，避免 Hydration 不一致
+    // 產生穩定的隨機寬度 (220px - 400px)，避免 Hydration 不一致
     const cardWidth = React.useMemo(() => {
-        if (!bubble.id) return 260;
-        const idStr = String(bubble.id); // 確保 ID 是字串
+        if (!bubble.id) return 300;
+        const idStr = String(bubble.id);
         const seed = idStr.charCodeAt(0) + (idStr.length > 5 ? idStr.charCodeAt(5) : 0);
-        return 240 + (seed % 120);
+        return 220 + (seed % 180);
     }, [bubble.id]);
 
     return (
         <div
             onClick={onClick}
-            style={{ width: `${cardWidth}px` }}
-            className="shrink-0 h-[260px] bg-blue-900/40 backdrop-blur-xl hover:bg-blue-800/60 border border-white/10 rounded-2xl p-5 transition-all hover:scale-105 cursor-pointer shadow-2xl flex flex-col"
+            style={{ width: `${cardWidth}px`, height: '110px' }}
+            className="shrink-0 relative bg-blue-900/40 backdrop-blur-md border border-white/10 rounded-xl p-3 hover:bg-blue-800/50 hover:scale-[1.02] transition-all cursor-pointer shadow-lg group overflow-hidden flex flex-col justify-between"
         >
-            <div className="flex items-start justify-between mb-3 shrink-0">
-                <span className="text-[8px] px-1.5 py-0.5 bg-blue-500/20 text-blue-300 rounded border border-blue-500/30 uppercase tracking-widest font-bold">
+            {/* Header: Topic + Time */}
+            <div className="flex items-center justify-between gap-2">
+                <span className="text-[9px] px-1.5 py-0.5 bg-blue-500/20 text-blue-200 rounded border border-blue-500/30 uppercase font-bold whitespace-nowrap">
                     {bubble.topic || "General"}
                 </span>
+                <span className="text-[9px] text-blue-400/60 font-mono">
+                    {bubble.created_at ? new Date(bubble.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
+                </span>
             </div>
-            <h3 className="text-white text-sm font-bold mb-3 line-clamp-2 leading-snug shrink-0">
-                {bubble.title || "探索標題"}
+
+            <h3 className="text-white text-xs font-bold leading-tight line-clamp-1 mt-1">
+                {bubble.title || "無題"}
             </h3>
-            <p className="text-blue-200/60 text-xs line-clamp-5 mb-3 flex-1">
+
+            <p className="text-blue-200/70 text-[10px] leading-relaxed line-clamp-2">
                 {bubble.content}
             </p>
-            <div className="h-px w-6 bg-blue-500/40 mb-3 shrink-0" />
-            <div className="flex items-center justify-between shrink-0">
-                <div className="flex items-center gap-1.5 opacity-60">
-                    <div className="w-5 h-5 rounded-full bg-blue-700 border border-blue-900 flex items-center justify-center text-[8px] text-white">
-                        鯨
-                    </div>
-                    <span className="text-[8px] text-blue-300">潛者</span>
-                </div>
-                <div className="flex items-center gap-1 text-[8px] text-blue-400/40 font-bold uppercase tracking-wider">
-                    <MessageSquare size={8} />
-                    <span>對話</span>
-                </div>
-            </div>
+
+            {/* Footer Decoration */}
+            <div className="absolute bottom-0 left-0 w-full h-0.5 bg-linear-to-r from-blue-500/0 via-blue-400/50 to-blue-500/0 opacity-0 group-hover:opacity-100 transition-opacity" />
         </div>
     );
 };
