@@ -131,6 +131,17 @@ export default function Home() {
       return;
     }
 
+    // [Logic] 計算深度等級 (Depth Level)
+    // 必須符合資料庫 check_depth_level constraint: 'Surface' | 'Midzone' | 'Depth'
+    const calculateDepthLevel = (t: string | null) => {
+      const safeTopic = t || "科普";
+      if (["哲學", "議題"].includes(safeTopic)) return "Depth";
+      if (["時事", "科普"].includes(safeTopic)) return "Midzone";
+      return "Surface"; // 生活, 奇想, 其他預設為 Surface
+    };
+
+    const depthLevel = calculateDepthLevel(topic);
+
     // 準備 Insert 物件 (強型別檢查)
     const payload = {
       content: cleanContent,
@@ -140,6 +151,7 @@ export default function Home() {
       user_id: user.id,
       x_position: Math.random() * 100, // 隨機座標
       y_position: Math.random() * 100,
+      depth_level: depthLevel, // <--- [FIX] 新增此必填欄位
     };
 
     console.log("正在發送泡泡 (Payload Check):", payload);
