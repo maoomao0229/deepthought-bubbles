@@ -2,6 +2,8 @@
 
 ## 修改歷史
 
+- [2025/12/22 13:40 v0.93] 檔案: `src/components/PantryView.tsx` | 內容: 重構個人頁面佈局：1. 實作「置中 Profile + 橫向河道 (Horizontal Timeline)」的複合式佈局；2. 移植 `TimelineTrack` 物理拖曳與慣性邏輯；3. 移植 `BubbleCard` 隨機錯落視覺；4. 模擬多樣化的 Tab 資料展示 | 原因: 統一全站的「深海流動」操作體驗，避免垂直捲動與橫向操作的割裂感
+
 - [2025/12/22 13:20 v0.92] 檔案: `src/components/PantryView.tsx` | 內容: 實作編輯個人資料功能：1. 新增編輯模式切換 (Toggle Edit Mode)；2. 支援修改暱稱、User ID 與簡介；3. 整合 Supabase `profiles` 表格的讀取 (Select) 與寫入 (Upsert) 邏輯；4. 新增 Edit/Save/Cancel 按鈕與對應 UI 狀態 | 原因: 滿足使用者自訂個人資訊的需求
 
 - [2025/12/22 13:00 v0.91] 檔案: `src/components/PantryView.tsx`, `src/app/page.tsx` | 內容: 實作個人頁面 (PantryView)：1. 建立具有 Profile Card (頭像/簡介/分享/聲納數據) 的個人檔案介面；2. 實作三個分頁標籤 (發布/回覆/收藏) 與切換邏輯；3. 使用 Mock Data 展示靜態氣泡清單樣式 | 原因: 取代原本的建置中 Placeholder，提供完整的個人頁面基礎架構

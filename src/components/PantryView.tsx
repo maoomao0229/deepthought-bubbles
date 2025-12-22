@@ -1,12 +1,191 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { Share2, Edit2, Save, X } from "lucide-react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
+import { Share2, Edit2, Save, X, Settings } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 
 interface PantryViewProps {
     user?: any;
 }
+
+// ==========================================
+// TimelineTrack: 模擬 Plurk 河道 (無限橫向畫布)
+// Ported from LobbyView.tsx
+// ==========================================
+interface TimelineTrackProps {
+    children: React.ReactNode;
+}
+
+const TimelineTrack: React.FC<TimelineTrackProps> = ({ children }) => {
+    const trackRef = useRef<HTMLDivElement>(null);
+    const containerRef = useRef<HTMLDivElement>(null);
+    const [panX, setPanX] = useState(0);
+    const isDragging = useRef(false);
+    const startX = useRef(0);
+    const startPan = useRef(0);
+    const velocity = useRef(0);
+    const lastMoveTime = useRef(0);
+    const rafId = useRef<number | null>(null);
+
+    // Physics constants
+    const FRICTION = 0.95;
+    const BOUNCE_DAMPING = 0.1;
+    const DRAG_DAMPING = 1.0;
+
+    const getBounds = () => {
+        if (!trackRef.current || !containerRef.current) return { min: 0, max: 0 };
+        const contentWidth = trackRef.current.scrollWidth;
+        const containerWidth = containerRef.current.clientWidth;
+        const minPan = Math.min(0, containerWidth - contentWidth - 40);
+        return { min: minPan, max: 0 };
+    };
+
+    const handleStart = (clientX: number) => {
+        isDragging.current = true;
+        startX.current = clientX;
+        startPan.current = panX;
+        velocity.current = 0;
+        lastMoveTime.current = Date.now();
+        if (rafId.current) {
+            cancelAnimationFrame(rafId.current);
+            rafId.current = null;
+        }
+        if (containerRef.current) containerRef.current.style.cursor = 'grabbing';
+    };
+
+    const handleMove = (clientX: number) => {
+        if (!isDragging.current) return;
+        const now = Date.now();
+        const dt = now - lastMoveTime.current;
+        lastMoveTime.current = now;
+        const delta = (clientX - startX.current) * DRAG_DAMPING;
+        let newPan = startPan.current + delta;
+        const { min, max } = getBounds();
+        if (newPan > max) {
+            newPan = max + (newPan - max) * 0.3;
+        } else if (newPan < min) {
+            newPan = min + (newPan - min) * 0.3;
+        }
+        if (dt > 0) {
+            velocity.current = newPan - panX;
+        }
+        setPanX(newPan);
+    };
+
+    const handleEnd = () => {
+        isDragging.current = false;
+        if (containerRef.current) containerRef.current.style.cursor = 'grab';
+        const loop = () => {
+            if (isDragging.current) return;
+            const { min, max } = getBounds();
+            setPanX(prevPan => {
+                let nextPan = prevPan + velocity.current;
+                velocity.current *= FRICTION;
+                if (nextPan > max) {
+                    velocity.current += (max - nextPan) * BOUNCE_DAMPING;
+                    velocity.current *= 0.9;
+                } else if (nextPan < min) {
+                    velocity.current += (min - nextPan) * BOUNCE_DAMPING;
+                    velocity.current *= 0.9;
+                }
+                if (Math.abs(velocity.current) < 0.1) {
+                    if (Math.abs(nextPan - max) < 1) nextPan = max;
+                    if (Math.abs(nextPan - min) < 1) nextPan = min;
+                    const isOutOfBounds = nextPan > max + 0.5 || nextPan < min - 0.5;
+                    if (!isOutOfBounds) {
+                        rafId.current = null;
+                        return nextPan;
+                    }
+                }
+                rafId.current = requestAnimationFrame(loop);
+                return nextPan;
+            });
+        };
+        rafId.current = requestAnimationFrame(loop);
+    };
+
+    useEffect(() => {
+        return () => {
+            if (rafId.current) cancelAnimationFrame(rafId.current);
+        };
+    }, []);
+
+    return (
+        <div
+            ref={containerRef}
+            className="flex-1 w-full relative overflow-hidden cursor-grab active:cursor-grabbing select-none"
+            onMouseDown={(e) => handleStart(e.clientX)}
+            onMouseMove={(e) => handleMove(e.clientX)}
+            onMouseUp={handleEnd}
+            onMouseLeave={handleEnd}
+            onTouchStart={(e) => handleStart(e.touches[0].clientX)}
+            onTouchMove={(e) => handleMove(e.touches[0].clientX)}
+            onTouchEnd={handleEnd}
+        >
+            <div
+                ref={trackRef}
+                className="absolute top-10 left-0 h-[360px] grid grid-rows-[repeat(3,110px)] grid-flow-col gap-y-4 px-10 transition-transform duration-75 ease-out will-change-transform"
+                style={{
+                    transform: `translate3d(${panX}px, 0, 0)`,
+                    width: 'max-content'
+                }}
+            >
+                {children}
+            </div>
+        </div>
+    );
+};
+
+// ==========================================
+// BubbleCard: 隨機寬度卡片
+// Ported from LobbyView.tsx
+// ==========================================
+interface BubbleCardProps {
+    bubble: any;
+    onClick: () => void;
+}
+
+const BubbleCard = ({ bubble, onClick }: BubbleCardProps) => {
+    const { width, marginRight, translateY } = useMemo(() => {
+        const idStr = String(bubble.id);
+        const seed = idStr.split("").reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0);
+        return {
+            width: 260 + (seed % 140),
+            marginRight: 60 + (seed % 180),
+            translateY: -40 + (seed % 120)
+        };
+    }, [bubble.id]);
+
+    return (
+        <div
+            onClick={onClick}
+            style={{
+                width: `${width}px`,
+                marginRight: `${marginRight}px`,
+                transform: `translateY(${translateY}px)`
+            }}
+            className="shrink-0 h-[100px] relative bg-blue-900/30 backdrop-blur-md border border-white/10 rounded-xl p-4 hover:bg-blue-800/50 hover:scale-[1.02] transition-all shadow-lg cursor-pointer flex flex-col justify-between group overflow-hidden"
+        >
+            <div className="absolute left-0 top-2 bottom-2 w-1 bg-blue-500/20 rounded-r-full" />
+            <div className="pl-3 flex justify-between items-center opacity-70 mb-1">
+                <span className="text-[10px] bg-blue-500/10 px-2 py-0.5 rounded text-blue-200 border border-blue-500/20 tracking-wider">
+                    {bubble.topic}
+                </span>
+                <span className="text-[9px] text-blue-400 font-mono">
+                    {new Date(bubble.created_at).toLocaleDateString()}
+                </span>
+            </div>
+            <div className="pl-3 flex-1 flex flex-col justify-center min-h-0 w-full overflow-hidden">
+                <h3 className="text-white text-sm font-bold truncate leading-tight mb-1">
+                    {bubble.title}
+                </h3>
+                <p className="text-blue-100/60 text-xs line-clamp-2 font-light leading-relaxed">
+                    {bubble.content}
+                </p>
+            </div>
+        </div>
+    );
+};
 
 const PantryView: React.FC<PantryViewProps> = ({ user }) => {
     const [activeTab, setActiveTab] = useState<'bubbles' | 'replies' | 'saved'>('bubbles');
@@ -18,16 +197,16 @@ const PantryView: React.FC<PantryViewProps> = ({ user }) => {
         user_id: "",
         bio: ""
     });
-    const [loading, setLoading] = useState(true);
+    // Removed loading state as we rely on effect
+    // const [loading, setLoading] = useState(true);
 
     // Fetch Profile Data
     useEffect(() => {
         if (!user) return;
-
         const fetchProfile = async () => {
-            setLoading(true);
+            // setLoading(true); // Removed to avoid linting warning for unused
             try {
-                const { data, error } = await supabase
+                const { data } = await supabase
                     .from('profiles')
                     .select('*')
                     .eq('id', user.id)
@@ -40,7 +219,6 @@ const PantryView: React.FC<PantryViewProps> = ({ user }) => {
                         bio: data.bio || "正在尋找思想的迴響..."
                     });
                 } else {
-                    // Fallback to Auth Metadata if no profile exists yet
                     setProfile({
                         display_name: user.user_metadata?.name || "深海旅人",
                         user_id: user.email?.split('@')[0] || "deep_thinker",
@@ -49,14 +227,13 @@ const PantryView: React.FC<PantryViewProps> = ({ user }) => {
                 }
             } catch (error) {
                 console.error("Error fetching profile:", error);
-                // Fallback on error
                 setProfile({
                     display_name: user.user_metadata?.name || "深海旅人",
                     user_id: user.email?.split('@')[0] || "deep_thinker",
                     bio: "正在尋找思想的迴響..."
                 });
             } finally {
-                setLoading(false);
+                // setLoading(false);
             }
         };
 
@@ -66,7 +243,6 @@ const PantryView: React.FC<PantryViewProps> = ({ user }) => {
     // Handle Save
     const handleSave = async () => {
         if (!user) return;
-
         try {
             const { error } = await supabase.from('profiles').upsert({
                 id: user.id,
@@ -84,15 +260,32 @@ const PantryView: React.FC<PantryViewProps> = ({ user }) => {
         }
     };
 
-    return (
-        <div className="w-full h-full pt-20 pb-32 px-4 overflow-y-auto no-scrollbar font-sans">
-            {/* 1. Profile Card */}
-            <div className="bg-blue-950/40 backdrop-blur-md border border-white/10 rounded-3xl p-6 mb-8 shadow-xl animate-fade-in relative overflow-hidden transition-all duration-300">
-                {/* Decor: light leak */}
-                <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 blur-3xl rounded-full pointer-events-none" />
+    // Mock Bubbles for demo (different count for each tab)
+    const displayBubbles = useMemo(() => {
+        const count = activeTab === 'bubbles' ? 20 : activeTab === 'replies' ? 12 : 5;
+        const topicMap = { 'bubbles': '個人', 'replies': '回覆', 'saved': '收藏' };
 
-                <div className="flex items-start justify-between relative z-10 mb-4">
-                    <div className="flex items-start gap-4 flex-1">
+        return Array.from({ length: count }).map((_, i) => ({
+            id: `pantry-${activeTab}-${i}`,
+            topic: topicMap[activeTab],
+            title: `${topicMap[activeTab]} 氣泡 #${i + 1}`,
+            content: `這是 ${activeTab} 的測試內容。在這片深海中，我們保留著每一個思考的軌跡，等待著某天能夠再次浮上水面，與其他意識共鳴。`,
+            created_at: new Date(Date.now() - i * 86400000).toISOString()
+        }));
+    }, [activeTab]);
+
+    return (
+        <div className="w-full h-full flex flex-col pt-24 pb-24 font-sans overflow-hidden">
+
+            {/* 1. Header Area (Centered Layout) */}
+            <div className="w-full max-w-md mx-auto px-6 z-10 shrink-0">
+
+                {/* Profile Card */}
+                <div className="bg-blue-950/40 backdrop-blur-md border border-white/10 rounded-3xl p-6 mb-4 shadow-xl relative overflow-hidden transition-all">
+                    {/* Decor: light leak */}
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 blur-3xl rounded-full pointer-events-none" />
+
+                    <div className="flex items-start gap-4 relative z-10 mb-4">
                         {/* Avatar */}
                         <div className="shrink-0 w-16 h-16 rounded-full bg-linear-to-tr from-blue-400 to-cyan-300 shadow-[0_0_20px_rgba(56,189,248,0.5)] border-2 border-white/20 flex items-center justify-center text-2xl font-bold text-white">
                             {profile.display_name?.[0] || "?"}
@@ -127,118 +320,73 @@ const PantryView: React.FC<PantryViewProps> = ({ user }) => {
                                 </div>
                             ) : (
                                 <div className="animate-fade-in">
-                                    <h2 className="text-xl font-bold text-white tracking-wide truncate">{profile.display_name}</h2>
+                                    <h2 className="text-xl font-bold text-white tracking-wide truncate pr-8">{profile.display_name}</h2>
                                     <p className="text-blue-300 text-xs font-mono mb-2 truncate">@{profile.user_id}</p>
                                     <p className="text-blue-100/80 text-sm leading-relaxed line-clamp-3">{profile.bio}</p>
                                 </div>
                             )}
                         </div>
                     </div>
-                </div>
 
-                {/* Action Buttons Row */}
-                <div className="flex items-center justify-between border-t border-white/5 pt-4 mt-2">
-                    <div className="flex gap-2">
-                        {isEditing ? (
-                            <>
-                                <button
-                                    onClick={handleSave}
-                                    className="flex items-center gap-1.5 px-3 py-1.5 bg-green-500/20 hover:bg-green-500/30 text-green-300 border border-green-500/30 rounded-full text-xs transition-colors"
-                                >
-                                    <Save size={12} /> 儲存
+                    {/* Action Buttons */}
+                    <div className="flex items-center justify-between border-t border-white/5 pt-3">
+                        <div className="flex gap-2">
+                            {isEditing ? (
+                                <>
+                                    <button onClick={handleSave} className="flex items-center gap-1.5 px-3 py-1.5 bg-green-500/20 hover:bg-green-500/30 text-green-300 border border-green-500/30 rounded-full text-xs transition-colors">
+                                        <Save size={12} /> 儲存
+                                    </button>
+                                    <button onClick={() => setIsEditing(false)} className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 hover:bg-white/10 text-gray-400 border border-white/10 rounded-full text-xs transition-colors">
+                                        <X size={12} /> 取消
+                                    </button>
+                                </>
+                            ) : (
+                                <button onClick={() => setIsEditing(true)} className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-500/20 hover:bg-blue-500/30 text-blue-200 border border-blue-500/30 rounded-full text-xs transition-colors group">
+                                    <Edit2 size={12} className="group-hover:scale-110 transition-transform" /> 編輯資料
                                 </button>
-                                <button
-                                    onClick={() => setIsEditing(false)}
-                                    className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 hover:bg-white/10 text-gray-400 border border-white/10 rounded-full text-xs transition-colors"
-                                >
-                                    <X size={12} /> 取消
-                                </button>
-                            </>
-                        ) : (
-                            <button
-                                onClick={() => setIsEditing(true)}
-                                className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-500/20 hover:bg-blue-500/30 text-blue-200 border border-blue-500/30 rounded-full text-xs transition-colors group"
-                            >
-                                <Edit2 size={12} className="group-hover:scale-110 transition-transform" /> 編輯資料
-                            </button>
-                        )}
+                            )}
+                        </div>
+
+                        <button className="p-2 bg-white/5 hover:bg-white/10 rounded-full transition-colors border border-white/10 group">
+                            <Share2 size={16} className="text-blue-200 group-hover:text-white transition-colors" />
+                        </button>
                     </div>
 
-                    <button className="p-2 bg-white/5 hover:bg-white/10 rounded-full transition-colors border border-white/10 group">
-                        <Share2 size={16} className="text-blue-200 group-hover:text-white transition-colors" />
-                    </button>
+                    {/* Settings Icon (Decor) */}
+                    <div className="absolute top-0 right-0 p-4 opacity-20 hover:opacity-40 transition-opacity cursor-pointer">
+                        <Settings className="text-white" size={18} />
+                    </div>
                 </div>
 
-                {/* Sonar Stats Placeholder */}
-                <div className="mt-4 p-3 bg-black/20 rounded-xl border border-white/5 flex gap-4 items-center overflow-hidden relative group cursor-default">
-                    <div className="absolute left-0 top-0 bottom-0 w-1/2 bg-blue-500/10 blur-xl group-hover:w-full transition-all duration-1000" />
-                    <div className="z-10 text-xs text-blue-300 flex items-center gap-4 w-full">
-                        <span className="opacity-70">📡 聲納分析</span>
-                        <div className="h-px bg-white/10 flex-1" />
-                        <span className="text-white font-bold flex items-center gap-1">
-                            <span className="w-2 h-2 rounded-full bg-yellow-400 inline-block" /> 哲學 45%
-                        </span>
-                        <span className="text-white font-bold flex items-center gap-1">
-                            <span className="w-2 h-2 rounded-full bg-green-400 inline-block" /> 生活 30%
-                        </span>
-                    </div>
+                {/* Tabs */}
+                <div className="flex border-b border-white/10 mb-2">
+                    {(['bubbles', 'replies', 'saved'] as const).map(tab => (
+                        <button
+                            key={tab}
+                            onClick={() => setActiveTab(tab)}
+                            className={`flex-1 pb-3 text-sm font-bold transition-all relative ${activeTab === tab ? 'text-white' : 'text-white/40 hover:text-white/60'
+                                }`}
+                        >
+                            {tab === 'bubbles' ? '我的發布' : tab === 'replies' ? '回覆紀錄' : '收藏庫'}
+                            {activeTab === tab && (
+                                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-1 bg-blue-400 rounded-full shadow-[0_0_10px_#60A5FA]" />
+                            )}
+                        </button>
+                    ))}
                 </div>
             </div>
 
-            {/* 2. Tabs */}
-            <div className="flex border-b border-white/10 mb-6 sticky top-0 bg-[#050B1A]/80 backdrop-blur-xl z-20 -mx-4 px-4 pt-4 pb-0">
-                {(['bubbles', 'replies', 'saved'] as const).map((tab) => (
-                    <button
-                        key={tab}
-                        onClick={() => setActiveTab(tab)}
-                        className={`flex-1 pb-3 text-sm font-bold transition-all relative ${activeTab === tab ? 'text-white' : 'text-white/40 hover:text-white/60'
-                            }`}
-                    >
-                        {tab === 'bubbles' && '發布'}
-                        {tab === 'replies' && '回覆'}
-                        {tab === 'saved' && '收藏'}
-
-                        {activeTab === tab && (
-                            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-1 bg-blue-400 rounded-full shadow-[0_0_10px_#60A5FA]" />
-                        )}
-                    </button>
+            {/* 2. Timeline Area (Full Width) */}
+            <TimelineTrack>
+                {displayBubbles.map((bubble) => (
+                    <BubbleCard
+                        key={bubble.id}
+                        bubble={bubble}
+                        onClick={() => { }}
+                    />
                 ))}
-            </div>
+            </TimelineTrack>
 
-            {/* 3. Content Area */}
-            <div className="grid grid-cols-1 gap-4 min-h-[300px] animate-slide-up">
-                {/* Mock Content */}
-                <div className="text-center text-white/20 py-10 flex flex-col items-center justify-center gap-4">
-                    {/* Static Bubble Cards for Demo */}
-                    {activeTab === 'bubbles' && (
-                        <>
-                            <div className="w-full bg-blue-900/20 border border-white/5 p-4 rounded-2xl text-left hover:bg-blue-900/30 transition-colors">
-                                <div className="flex justify-between items-center mb-2">
-                                    <span className="text-[10px] bg-blue-500/10 text-blue-300 px-2 py-0.5 rounded border border-blue-500/20">哲學</span>
-                                    <span className="text-[10px] text-blue-400/50">2025/12/20</span>
-                                </div>
-                                <h3 className="text-white font-bold text-sm mb-1">思考的本質是什麼？</h3>
-                                <p className="text-blue-100/60 text-xs line-clamp-2">當我們在思考的時候，是誰在觀察這個思考？</p>
-                            </div>
-                            <div className="w-full bg-blue-900/20 border border-white/5 p-4 rounded-2xl text-left hover:bg-blue-900/30 transition-colors">
-                                <div className="flex justify-between items-center mb-2">
-                                    <span className="text-[10px] bg-green-500/10 text-green-300 px-2 py-0.5 rounded border border-green-500/20">生活</span>
-                                    <span className="text-[10px] text-blue-400/50">2025/12/18</span>
-                                </div>
-                                <h3 className="text-white font-bold text-sm mb-1">今天的咖啡好苦</h3>
-                                <p className="text-blue-100/60 text-xs line-clamp-2">也許這就是成長的味道吧，不得不吞下的苦澀。</p>
-                            </div>
-                        </>
-                    )}
-
-                    {activeTab !== 'bubbles' && (
-                        <p className="text-xs tracking-widest uppercase opacity-50">
-                            {activeTab === 'replies' && "尚無回覆紀錄"}
-                            {activeTab === 'saved' && "尚無收藏氣泡"}
-                        </p>
-                    )}
-                </div>
-            </div>
         </div>
     );
 };
