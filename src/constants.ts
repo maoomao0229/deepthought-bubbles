@@ -66,7 +66,9 @@ export const generateMonthlyData = (): DailyXP[] => {
         data.push({
             date: date.toISOString().split('T')[0], // YYYY-MM-DD
             xp: xp,
-            maxDepth: isDeepDive ? Math.floor(Math.random() * 200) + 800 : Math.floor(Math.random() * 600),
+            maxDepth: isDeepDive
+                ? Math.floor(Math.random() * 400) + 800 // High XP = Deeper (800-1200m)
+                : Math.floor(Math.random() * 600) + 100 // Low XP = Shallower (100-700m)
         });
     }
     return data;

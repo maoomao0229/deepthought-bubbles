@@ -26,7 +26,7 @@ export interface WeeklyWaveData {
 export interface DailyXP {
     date: string; // YYYY-MM-DD
     xp: number;
-    maxDepth: number; // in meters
+    maxDepth: number; // [新增] 當日探索最大深度 (公尺)
 }
 
 export interface UserLevel {
