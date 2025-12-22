@@ -141,3 +141,17 @@ body {
 body.nav-hidden #main-nav-bar {
   transform: translateY(150%);
 }
+
+/* ==========================================
+   iOS Input Zoom Fix
+   ========================================== */
+/* 強制行動裝置上的輸入框至少 16px，防止 iOS Safari 自動放大 */
+@media screen and (max-width: 768px) {
+
+  input,
+  textarea,
+  select {
+    font-size: 16px !important;
+    /* 防止 iOS 自動放大 */
+  }
+}

@@ -86,10 +86,11 @@ export default function Home() {
 
   // 獲取氣泡資料
   const fetchBubbles = async () => {
-    // 1. 取得所有歷史氣泡 (給 Lobby)
+    // 1. 取得所有主氣泡 (給 Lobby)，排除留言
     const { data: allData, error } = await supabase
       .from("bubbles")
       .select("*")
+      .is("parent_id", null) // 只取主氣泡，排除留言
       .order("created_at", { ascending: false });
 
     if (error) {
@@ -100,10 +101,8 @@ export default function Home() {
 
     // 2. 準備 DiveView 資料 (包含部分隨機性)
     if (allData) {
-      // 過濾出主氣泡 (非回覆)
-      const mainBubbles = allData.filter((b: any) => !b.parent_id);
-      // 簡單洗牌
-      setBubbles(shuffleArray(mainBubbles));
+      // 簡單洗牌 (資料已在查詢時過濾，只含主氣泡)
+      setBubbles(shuffleArray(allData));
     }
   };
 

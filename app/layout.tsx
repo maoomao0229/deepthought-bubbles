@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 
@@ -42,6 +42,13 @@ const deepThoughtFont = localFont({
 export const metadata: Metadata = {
   title: "深思氣泡",
   description: "深思氣泡 - Deep Thought Bubbles",
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 };
 
 export default function RootLayout({

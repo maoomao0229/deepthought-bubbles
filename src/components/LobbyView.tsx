@@ -389,7 +389,8 @@ const LobbyView = ({ bubbles, onSend, isUnlocked = false }: LobbyViewProps) => {
                     {/* Card Container */}
                     <div
                         className="w-full max-w-lg max-h-[85vh] flex flex-col bg-[#0f172a] border border-blue-500/30 rounded-2xl shadow-2xl shadow-blue-900/50 overflow-hidden relative animate-scale-up touch-auto"
-                        onClick={(e) => e.stopPropagation()} // [Critical] 阻止事件冒泡，確保 input 可點擊
+                        onClick={(e) => e.stopPropagation()}
+                        onTouchStart={(e) => e.stopPropagation()} // [iOS Fix] 阻擋觸控事件穿透
                     >
                         {/* Close Button */}
                         <button
@@ -443,7 +444,7 @@ const LobbyView = ({ bubbles, onSend, isUnlocked = false }: LobbyViewProps) => {
                         </div>
 
                         {/* Input Area (Fixed at bottom) */}
-                        <div className="p-4 border-t border-white/10 bg-[#0f172a]">
+                        <div className="p-4 pb-8 md:pb-4 border-t border-white/10 bg-[#0f172a]">
                             <div className="flex items-center gap-3">
                                 <input
                                     value={replyContent}
@@ -454,12 +455,12 @@ const LobbyView = ({ bubbles, onSend, isUnlocked = false }: LobbyViewProps) => {
                                         if (e.key === "Enter" && !e.shiftKey) handleSendReply();
                                     }}
                                     placeholder="加入這場對話..."
-                                    className="flex-1 bg-slate-800/50 rounded-xl px-4 py-3 text-sm text-gray-50 placeholder-slate-500 border border-white/10 focus:outline-none focus:ring-1 focus:ring-blue-500/50 transition-all"
+                                    className="flex-1 bg-slate-800/50 rounded-xl px-4 py-3 text-base text-gray-50 placeholder-slate-500 border border-white/10 focus:outline-none focus:ring-1 focus:ring-blue-500/50 transition-all"
                                 />
                                 <button
                                     onClick={handleSendReply}
                                     disabled={!replyContent.trim() || isSubmitting}
-                                    className={`p-3 rounded-xl transition-all ${replyContent.trim() && !isSubmitting
+                                    className={`h-12 w-12 flex items-center justify-center rounded-xl transition-all ${replyContent.trim() && !isSubmitting
                                         ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/20 active:scale-95"
                                         : "bg-white/5 text-blue-400/20 cursor-not-allowed"
                                         }`}
@@ -476,7 +477,10 @@ const LobbyView = ({ bubbles, onSend, isUnlocked = false }: LobbyViewProps) => {
             {isNewBubbleOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
                     <div className="absolute inset-0 bg-blue-950/80 backdrop-blur-md" onClick={() => setIsNewBubbleOpen(false)} />
-                    <div className="relative w-full max-w-lg bg-blue-900/90 backdrop-blur-2xl border border-white/10 shadow-2xl rounded-4xl p-8 flex flex-col items-center animate-scale-up">
+                    <div
+                        className="relative w-full max-w-lg bg-blue-900/90 backdrop-blur-2xl border border-white/10 shadow-2xl rounded-4xl p-8 pb-10 flex flex-col items-center animate-scale-up"
+                        onTouchStart={(e) => e.stopPropagation()} // [iOS Fix] 阻擋觸控事件穿透
+                    >
                         <button onClick={() => setIsNewBubbleOpen(false)} className="absolute top-6 right-6 p-2 rounded-full hover:bg-white/10 text-blue-200">
                             <X size={24} />
                         </button>
