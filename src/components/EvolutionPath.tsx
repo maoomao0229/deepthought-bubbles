@@ -11,8 +11,8 @@ interface Props {
 
 // Level Configuration
 const LEVELS = [
-    { lv: 1, name: '新手海狗', minXP: 0, iconScale: 0.8, glow: 'blue-300' },
-    { lv: 2, name: '瓶鼻海豚', minXP: 5000, iconScale: 1.0, glow: 'blue-500' },
+    { lv: 1, name: '新手海狗', minXP: 0, iconScale: 1.0, glow: 'blue-300', image: '/seal.png' },
+    { lv: 2, name: '瓶鼻海豚', minXP: 5000, iconScale: 1.0, glow: 'blue-500', image: '/dolphin.png' },
     { lv: 3, name: '虎鯨', minXP: 20000, iconScale: 1.2, glow: 'indigo-300' },
     { lv: 4, name: '座頭鯨', minXP: 50000, iconScale: 1.4, glow: 'indigo-500' },
     { lv: 5, name: '終極藍鯨', minXP: 150000, iconScale: 1.6, glow: 'blue-700' },
@@ -67,7 +67,12 @@ export const EvolutionPath: React.FC<Props> = ({ userLevel, dailyStats }) => {
                 <div className="flex flex-col items-center justify-center relative z-10">
                     <div className="relative flex items-center justify-center transition-all duration-1000" style={{ transform: `scale(${currentLevel.iconScale})` }}>
                         <div className={`absolute inset-0 rounded-full opacity-40 blur-xl bg-${currentLevel.glow}`}></div>
-                        <Fish className="w-24 h-24 text-gray-50 drop-shadow-lg" strokeWidth={1} fill="rgba(255,255,255,0.1)" />
+                        {/* @ts-ignore */}
+                        {currentLevel.image ? (
+                            <img src={currentLevel.image} alt={currentLevel.name} className="w-24 h-24 object-contain drop-shadow-lg relative z-10" />
+                        ) : (
+                            <Fish className="w-24 h-24 text-gray-50 drop-shadow-lg" strokeWidth={1} fill="rgba(255,255,255,0.1)" />
+                        )}
                     </div>
                     <div className="mt-4 text-center">
                         <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-linear-to-r from-gray-50 to-blue-300">{currentLevel.name}</h2>
@@ -79,7 +84,12 @@ export const EvolutionPath: React.FC<Props> = ({ userLevel, dailyStats }) => {
                 {nextLevel && (
                     <div className="flex flex-col items-center justify-center opacity-30 grayscale blur-[1px] transform scale-90">
                         <div style={{ transform: `scale(${nextLevel.iconScale})` }}>
-                            <Fish className="w-20 h-20 text-blue-500/50" strokeWidth={1} />
+                            {/* @ts-ignore */}
+                            {nextLevel.image ? (
+                                <img src={nextLevel.image} alt={nextLevel.name} className="w-20 h-20 object-contain" />
+                            ) : (
+                                <Fish className="w-20 h-20 text-blue-500/50" strokeWidth={1} />
+                            )}
                         </div>
                         <div className="mt-4 text-center">
                             <h3 className="text-lg font-bold text-blue-500/50">{nextLevel.name}</h3>
