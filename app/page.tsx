@@ -116,44 +116,54 @@ export default function Home() {
 
   // 處理發送氣泡/回覆
   const handleSend = async (content: string, parentId?: string | null, topic?: string | null, title?: string | null) => {
+    // [Check 1] 確保使用者已登入
     const user = session?.user;
-
-    // 1. [檢查點] 先印出來看看，確認 user.id 真的有值！
-    console.log("正在發送泡泡...", {
-      userId: user?.id,
-      content: content
-    });
-
     if (!user || !user.id) {
+      console.error("發送失敗: 無使用者資訊", session);
       alert("抓不到使用者 ID，請重新登入！");
       return;
     }
 
-    // 隨機座標 (0-100)
-    const randomX = Math.random() * 100;
-    const randomY = Math.random() * 100;
+    // [Check 2] 整理與驗證資料
+    const cleanContent = content?.trim();
+    if (!cleanContent) {
+      alert("內容不能為空！");
+      return;
+    }
 
-    const { error } = await supabase.from("bubbles").insert({
-      content,
+    // 準備 Insert 物件 (強型別檢查)
+    const payload = {
+      content: cleanContent,
       parent_id: parentId || null,
       title: title || null,
-      topic: topic || "科普",
+      topic: topic || (parentId ? null : "科普"), // 如果是回覆(有 parentId)，topic 通常繼承或為 null
       user_id: user.id,
-      x_position: randomX,
-      y_position: randomY,
-    });
+      x_position: Math.random() * 100, // 隨機座標
+      y_position: Math.random() * 100,
+    };
+
+    console.log("正在發送泡泡 (Payload Check):", payload);
+
+    const { error } = await supabase.from("bubbles").insert(payload);
 
     if (error) {
-      console.error("Error sending bubble:", error);
-      console.error("Error Details:", JSON.stringify(error, null, 2));
-      alert("發送失敗，請稍後再試。");
-    } else {
-      // 成功發送後：
-      // 1. 立即解鎖
-      setIsUnlocked(true);
-      // 2. 重新獲取資料
-      await fetchBubbles();
+      // [Check 3] 展開錯誤訊息 (Unmask the error)
+      console.error("發送失敗詳細資訊:", {
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+        fullError: error
+      });
+      alert(`發送失敗: ${error.message} (Code: ${error.code})`);
+      return;
     }
+
+    // 成功發送後：
+    // 1. 立即解鎖
+    setIsUnlocked(true);
+    // 2. 重新獲取資料
+    await fetchBubbles();
   };
 
 
