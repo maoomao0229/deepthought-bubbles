@@ -13,78 +13,123 @@ interface LobbyViewProps {
 const TOPIC_OPTIONS = ['科普', '生活', '時事', '奇想', '哲學', '議題'];
 
 // ==========================================
-// DraggableRow 可拖曳水平列元件
+// MasonryTrack 可拖曳水平瀑布流軌道元件 (TranslateX)
 // ==========================================
-interface DraggableRowProps {
+interface MasonryTrackProps {
     children: React.ReactNode;
 }
 
-const DraggableRow: React.FC<DraggableRowProps> = ({ children }) => {
-    const rowRef = useRef<HTMLDivElement>(null);
-    const isMouseDown = useRef(false);
+const MasonryTrack: React.FC<MasonryTrackProps> = ({ children }) => {
+    const containerRef = useRef<HTMLDivElement>(null);
+    const trackRef = useRef<HTMLDivElement>(null);
+
+    const [position, setPosition] = useState(0);
+    const [isDragging, setIsDragging] = useState(false);
+
     const startX = useRef(0);
-    const scrollLeft = useRef(0);
+    const startPosition = useRef(0);
     const velocity = useRef(0);
+    const lastX = useRef(0);
     const rafId = useRef<number | null>(null);
 
-    const handleMouseDown = (e: React.MouseEvent) => {
-        if (!rowRef.current) return;
-        isMouseDown.current = true;
-        startX.current = e.pageX - rowRef.current.offsetLeft;
-        scrollLeft.current = rowRef.current.scrollLeft;
+    const handleDragStart = (clientX: number) => {
+        setIsDragging(true);
+        startX.current = clientX;
+        startPosition.current = position;
+        lastX.current = clientX;
         velocity.current = 0;
         if (rafId.current) cancelAnimationFrame(rafId.current);
     };
 
-    const handleMouseMove = (e: React.MouseEvent) => {
-        if (!isMouseDown.current || !rowRef.current) return;
-        e.preventDefault();
-        const x = e.pageX - rowRef.current.offsetLeft;
-        const walk = (x - startX.current) * 1.5; // 1.5x 加速係數，模擬水中阻力
-        const newScrollLeft = scrollLeft.current - walk;
-        velocity.current = rowRef.current.scrollLeft - newScrollLeft;
-        rowRef.current.scrollLeft = newScrollLeft;
+    const handleDragMove = (clientX: number) => {
+        if (!isDragging) return;
+        const diff = clientX - startX.current;
+        velocity.current = clientX - lastX.current;
+        lastX.current = clientX;
+
+        // 計算邊界
+        const trackWidth = trackRef.current?.scrollWidth || 0;
+        const containerWidth = containerRef.current?.clientWidth || 0;
+        const minPosition = Math.min(0, -(trackWidth - containerWidth + 40)); // 40px 邊距
+        const maxPosition = 0;
+
+        let newPosition = startPosition.current + diff;
+        // 套用橡皮筋效果 (超出邊界時減速)
+        if (newPosition > maxPosition) {
+            newPosition = maxPosition + (newPosition - maxPosition) * 0.3;
+        } else if (newPosition < minPosition) {
+            newPosition = minPosition + (newPosition - minPosition) * 0.3;
+        }
+
+        setPosition(newPosition);
     };
 
-    const handleMouseUp = () => {
-        isMouseDown.current = false;
+    const handleDragEnd = () => {
+        setIsDragging(false);
+
         // 慣性滑動
         const decelerate = () => {
-            if (!rowRef.current || Math.abs(velocity.current) < 0.5) return;
-            rowRef.current.scrollLeft += velocity.current * 0.95;
-            velocity.current *= 0.95;
+            velocity.current *= 0.92; // 減速係數
+            if (Math.abs(velocity.current) < 0.5) {
+                // 邊界回彈
+                const trackWidth = trackRef.current?.scrollWidth || 0;
+                const containerWidth = containerRef.current?.clientWidth || 0;
+                const minPosition = Math.min(0, -(trackWidth - containerWidth + 40));
+                const maxPosition = 0;
+
+                setPosition(prev => {
+                    if (prev > maxPosition) return maxPosition;
+                    if (prev < minPosition) return minPosition;
+                    return prev;
+                });
+                return;
+            }
+
+            setPosition(prev => {
+                const newPos = prev + velocity.current * 2;
+                return newPos;
+            });
             rafId.current = requestAnimationFrame(decelerate);
         };
         decelerate();
     };
 
-    const handleTouchStart = (e: React.TouchEvent) => {
-        if (!rowRef.current) return;
-        isMouseDown.current = true;
-        startX.current = e.touches[0].pageX - rowRef.current.offsetLeft;
-        scrollLeft.current = rowRef.current.scrollLeft;
+    // Mouse Events
+    const handleMouseDown = (e: React.MouseEvent) => {
+        e.preventDefault();
+        handleDragStart(e.clientX);
     };
+    const handleMouseMove = (e: React.MouseEvent) => handleDragMove(e.clientX);
+    const handleMouseUp = () => handleDragEnd();
+    const handleMouseLeave = () => { if (isDragging) handleDragEnd(); };
 
-    const handleTouchMove = (e: React.TouchEvent) => {
-        if (!isMouseDown.current || !rowRef.current) return;
-        const x = e.touches[0].pageX - rowRef.current.offsetLeft;
-        const walk = (x - startX.current) * 1.5;
-        rowRef.current.scrollLeft = scrollLeft.current - walk;
-    };
+    // Touch Events
+    const handleTouchStart = (e: React.TouchEvent) => handleDragStart(e.touches[0].clientX);
+    const handleTouchMove = (e: React.TouchEvent) => handleDragMove(e.touches[0].clientX);
+    const handleTouchEnd = () => handleDragEnd();
 
     return (
         <div
-            ref={rowRef}
-            className="grid grid-rows-3 grid-flow-col gap-3 overflow-x-hidden px-6 cursor-grab active:cursor-grabbing select-none h-[380px] items-center"
+            ref={containerRef}
+            className="overflow-hidden cursor-grab active:cursor-grabbing select-none relative h-[420px]"
             onMouseDown={handleMouseDown}
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}
-            onMouseLeave={handleMouseUp}
+            onMouseLeave={handleMouseLeave}
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
-            onTouchEnd={handleMouseUp}
+            onTouchEnd={handleTouchEnd}
         >
-            {children}
+            <div
+                ref={trackRef}
+                className="grid grid-rows-[repeat(3,120px)] grid-flow-col gap-4 w-max px-6 items-center"
+                style={{
+                    transform: `translate3d(${position}px, 0, 0)`,
+                    transition: isDragging ? 'none' : 'transform 0.4s cubic-bezier(0.25, 1, 0.5, 1)',
+                }}
+            >
+                {children}
+            </div>
         </div>
     );
 };
@@ -221,7 +266,7 @@ const LobbyView = ({ bubbles, onSend, isUnlocked = false }: LobbyViewProps) => {
                                         {topicBubbles.length} 則思考
                                     </span>
                                 </h3>
-                                <DraggableRow>
+                                <MasonryTrack>
                                     {topicBubbles.map((bubble) => (
                                         <BubbleCard
                                             key={bubble.id}
@@ -229,7 +274,7 @@ const LobbyView = ({ bubbles, onSend, isUnlocked = false }: LobbyViewProps) => {
                                             onClick={() => setSelectedBubble(bubble)}
                                         />
                                     ))}
-                                </DraggableRow>
+                                </MasonryTrack>
                             </section>
                         );
                     })}

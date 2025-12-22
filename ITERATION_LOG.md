@@ -2,6 +2,8 @@
 
 ## 修改歷史
 
+- [2025/12/22 10:20 v0.78] 檔案: `src/components/LobbyView.tsx` | 內容: 重構為 `MasonryTrack` 元件，使用 `transform: translateX` 取代 `scrollLeft`，實現更流暢的拖曳體驗；加入慣性動畫與邊界橡皮筋效果；維持 3 列網格佈局 (`grid-rows-[repeat(3,120px)]`) | 原因: 提升拖曳互動的效能與觸感，接近原生應用體驗
+
 - [2025/12/22 03:45 v0.77] 檔案: `src/components/LobbyView.tsx` | 內容: 實作 Plurk 風格水平瀑布流佈局：1. `DraggableRow` 改用 CSS Grid (`grid-rows-3 grid-flow-col`)，使卡片先垂直填充 3 列再水平延伸；2. `BubbleCard` 改為緊湊設計 (110px 高度，220-400px 隨機寬度)，顯示時間戳記，移除冗餘元素 | 原因: 創造更密集且有機的視覺節奏，類似 Plurk 時間軸
 
 - [2025/12/22 03:25 v0.76] 檔案: `src/app/page.tsx`, `src/components/LobbyView.tsx` | 內容: 1. `page.tsx`: 新增 `allBubbles` 狀態並在切換至 Lobby 時抓取所有歷史氣泡，按時間排序；2. `LobbyView.tsx`: 實作 Horizontal Masonry 佈局，`BubbleCard` 根據 ID 生成隨機寬度 (240px-360px)，創造有機且不規則的流動感 | 原因: 解決大廳資料不完整問題，並優化視覺節奏
