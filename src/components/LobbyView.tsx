@@ -21,44 +21,145 @@ interface TimelineTrackProps {
 
 const TimelineTrack: React.FC<TimelineTrackProps> = ({ children }) => {
     const trackRef = useRef<HTMLDivElement>(null);
+    const containerRef = useRef<HTMLDivElement>(null);
     const [panX, setPanX] = useState(0);
     const isDragging = useRef(false);
     const startX = useRef(0);
     const startPan = useRef(0);
+    const velocity = useRef(0);
+    const lastMoveTime = useRef(0);
     const rafId = useRef<number | null>(null);
 
-    // 阻尼係數 (讓拖曳更有重量感，像在撥水)
-    const DAMPING = 1.0;
+    // Physics constants
+    const FRICTION = 0.95;
+    const BOUNCE_DAMPING = 0.1; // Spring force when out of bounds
+    const DRAG_DAMPING = 1.0;
+
+    const getBounds = () => {
+        if (!trackRef.current || !containerRef.current) return { min: 0, max: 0 };
+        const contentWidth = trackRef.current.scrollWidth;
+        const containerWidth = containerRef.current.clientWidth;
+        // minPan should be negative (scrolling left moves content to negative x)
+        // If content is smaller than container, minPan is 0
+        const minPan = Math.min(0, containerWidth - contentWidth - 40); // 40px padding buffer
+        return { min: minPan, max: 0 };
+    };
 
     const handleStart = (clientX: number) => {
         isDragging.current = true;
         startX.current = clientX;
         startPan.current = panX;
-        if (trackRef.current) trackRef.current.style.cursor = 'grabbing';
+        velocity.current = 0;
+        lastMoveTime.current = Date.now();
+        if (rafId.current) {
+            cancelAnimationFrame(rafId.current);
+            rafId.current = null;
+        }
+        if (containerRef.current) containerRef.current.style.cursor = 'grabbing';
     };
 
     const handleMove = (clientX: number) => {
         if (!isDragging.current) return;
-        const delta = (clientX - startX.current) * DAMPING;
-        // 限制往左拉的邊界 (類似 Plurk 的起點限制)
-        const newX = Math.min(0, startPan.current + delta);
 
-        // 直接更新 State 會觸發 React Render，這裡使用 requestAnimationFrame 優化
-        if (rafId.current) cancelAnimationFrame(rafId.current);
-        rafId.current = requestAnimationFrame(() => {
-            setPanX(newX);
-        });
+        const now = Date.now();
+        const dt = now - lastMoveTime.current;
+        lastMoveTime.current = now;
+
+        const delta = (clientX - startX.current) * DRAG_DAMPING;
+        let newPan = startPan.current + delta;
+
+        // Resistance when pulling out of bounds (Rubber band during drag)
+        const { min, max } = getBounds();
+        if (newPan > max) {
+            newPan = max + (newPan - max) * 0.3;
+        } else if (newPan < min) {
+            newPan = min + (newPan - min) * 0.3;
+        }
+
+        // Calculate velocity (pixels per frame approx)
+        if (dt > 0) {
+            const movement = newPan - panX; // Immediate movement
+            // Smooth velocity tracking
+            velocity.current = movement;
+        }
+
+        setPanX(newPan);
     };
 
     const handleEnd = () => {
         isDragging.current = false;
-        if (trackRef.current) trackRef.current.style.cursor = 'grab';
-        if (rafId.current) cancelAnimationFrame(rafId.current);
+        if (containerRef.current) containerRef.current.style.cursor = 'grab';
+
+        // Start inertia loop
+        const loop = () => {
+            if (isDragging.current) return;
+
+            const { min, max } = getBounds();
+            let currentPan = 0;
+
+            // Getting current state from setter callback to ensure freshness isn't enough, 
+            // we need to track it manually or use ref. 
+            // Since we setPanX every frame, we can just use the value we are about to calculate.
+            // But React state might lag. Let's use a temp variable or verify logic.
+            // Actually, best to read the current transform from ref or trust our calculation loop.
+            // To be safe, let's just rely on velocity decay and current panX state via functional update?
+            // No, purely functional update `setPanX(prev => ...)` is better for physics loop.
+
+            setPanX(prevPan => {
+                currentPan = prevPan;
+                let nextPan = prevPan + velocity.current;
+
+                // Friction
+                velocity.current *= FRICTION;
+
+                // Bounce back logic (Spring)
+                if (nextPan > max) {
+                    const force = (max - nextPan) * BOUNCE_DAMPING;
+                    velocity.current += force;
+                    // Apply stronger friction when out of bounds to stop quickly
+                    velocity.current *= 0.9;
+                } else if (nextPan < min) {
+                    const force = (min - nextPan) * BOUNCE_DAMPING;
+                    velocity.current += force;
+                    velocity.current *= 0.9;
+                }
+
+                // Stop condition
+                if (Math.abs(velocity.current) < 0.1) {
+                    // Snap to bounds if close enough and stopped
+                    if (Math.abs(nextPan - max) < 1) nextPan = max;
+                    if (Math.abs(nextPan - min) < 1) nextPan = min;
+
+                    // If strictly out of bounds and stopped, force snap (safety)
+                    // But the spring logic above should handle it. 
+                    // We only stop if velocity is tiny AND we are effectively Inside or Snapped.
+
+                    const isOutOfBounds = nextPan > max + 0.5 || nextPan < min - 0.5;
+                    if (!isOutOfBounds) {
+                        rafId.current = null;
+                        return nextPan; // Stop updating
+                    }
+                }
+
+                rafId.current = requestAnimationFrame(loop);
+                return nextPan;
+            });
+        };
+
+        rafId.current = requestAnimationFrame(loop);
     };
+
+    // Clean up raf
+    useEffect(() => {
+        return () => {
+            if (rafId.current) cancelAnimationFrame(rafId.current);
+        };
+    }, []);
 
     return (
         // Timeline Holder (視窗)
         <div
+            ref={containerRef}
             className="relative w-full h-[700px] overflow-hidden cursor-grab active:cursor-grabbing select-none py-24"
             onMouseDown={(e) => handleStart(e.clientX)}
             onMouseMove={(e) => handleMove(e.clientX)}
@@ -127,7 +228,7 @@ const BubbleCard = ({ bubble, onClick }: BubbleCardProps) => {
                 </span>
             </div>
 
-            <div className="pl-3 flex-1 flex flex-col justify-center min-h-0">
+            <div className="pl-3 flex-1 flex flex-col justify-center min-h-0 w-full overflow-hidden">
                 <h3 className="text-white text-sm font-bold truncate leading-tight mb-1">
                     {bubble.title || "無題"}
                 </h3>
@@ -197,7 +298,7 @@ const LobbyView = ({ bubbles, onSend, isUnlocked = false }: LobbyViewProps) => {
                     {/* Centered Title */}
                     <h1 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
                         <Waves className="text-blue-400" size={18} />
-                        意識大廳
+                        泡泡大廳
                     </h1>
 
                     {/* Right Action Button */}

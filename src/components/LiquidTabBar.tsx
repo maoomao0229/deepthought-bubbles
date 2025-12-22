@@ -22,9 +22,9 @@ const LiquidTabBar: React.FC<LiquidTabBarProps> = ({ currentView, onChange, isUn
   const menus = useMemo<MenuItem[]>(
     () => [
       { id: "dive", icon: Waves, color: "text-green-400", label: "每日潛入" },
-      { id: "lobby", icon: LayoutGrid, color: "text-blue-400", label: "氣泡大廳" },
+      { id: "lobby", icon: LayoutGrid, color: "text-blue-400", label: "泡泡大廳" },
+      { id: "pantry", icon: Fish, color: "text-yellow-400", label: "個人頁面" },
       { id: "sonar", icon: Activity, color: "text-indigo-400", label: "深海聲納" },
-      { id: "pantry", icon: Fish, color: "text-yellow-400", label: "我的糧倉" },
     ],
     []
   );

@@ -17,6 +17,22 @@ import { LogOut } from "lucide-react";
  * 首頁元件
  * 整合身分驗證、導航欄與各視圖內容，提供完整的 App 體驗
  */
+/**
+ * 輔助函式：洗牌演算法 (Fisher-Yates Shuffle)
+ * 用於從大量氣泡中隨機選取顯示內容
+ */
+const shuffleArray = (array: any[]) => {
+  const newArr = [...array];
+  for (let i = newArr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [newArr[i], newArr[j]] = [newArr[j], newArr[i]];
+  }
+  return newArr;
+};
+
+// [Config] 定義主題列表
+const TOPIC_LIST = ["科普", "生活", "時事", "奇想", "哲學", "議題"];
+
 export default function Home() {
   // 身分驗證狀態
   const [session, setSession] = useState<Session | null>(null);
@@ -61,14 +77,39 @@ export default function Home() {
    * 抓取所有主泡泡 (parent_id 為空)
    */
   const fetchBubbles = async () => {
-    const { data, error } = await supabase.rpc("get_random_bubbles", {
-      limit_num: 20,
-    });
+    // [MODIFIED] 主題分批抓取模式 (Topic-Based Ratio Fetching)
+    // 解決單一查詢可能只抓到最新特定主題的問題，確保首頁有多樣性
+    const PER_TOPIC_COUNT = 5; // 每個主題各抓 5 篇，總池子約 30 篇
 
-    if (error) {
-      console.error("抓取隨機泡泡失敗:", error.message);
-    } else if (data) {
-      setBubbles(data);
+    try {
+      // 平行發送 6 個請求 (Batch Fetching)
+      const promises = TOPIC_LIST.map((topic) =>
+        supabase
+          .from("bubbles")
+          .select("*")
+          .is("parent_id", null) // 只抓主氣泡
+          .eq("topic", topic) // 鎖定特定主題
+          .order("created_at", { ascending: false }) // 抓該主題最新的
+          .limit(PER_TOPIC_COUNT)
+      );
+
+      const results = await Promise.all(promises);
+
+      // 合併資料
+      let combinedBubbles: any[] = [];
+      results.forEach(({ data, error }) => {
+        if (!error && data) {
+          combinedBubbles = [...combinedBubbles, ...data];
+        }
+      });
+
+      // 全局洗牌並取出前 20 則
+      // 這樣既保證了首頁有多個主題，每次重新整理順序又不同
+      const finalBubbles = shuffleArray(combinedBubbles).slice(0, 20);
+
+      setBubbles(finalBubbles);
+    } catch (err) {
+      console.error("Unexpected error fetching bubbles:", err);
     }
   };
 
@@ -110,6 +151,7 @@ export default function Home() {
         const { data, error } = await supabase
           .from("bubbles")
           .select("*")
+          .is("parent_id", null) // [關鍵修正] 只抓沒有父層的主氣泡
           .order("created_at", { ascending: false });
 
         if (error) {
@@ -284,7 +326,7 @@ export default function Home() {
       {session?.user?.is_anonymous && (
         <button
           onClick={() => supabase.auth.signOut()}
-          className="fixed top-6 left-6 z-50 flex items-center gap-2 px-4 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-200 border border-red-500/30 rounded-full backdrop-blur-md text-xs font-bold transition-all group pointer-events-auto"
+          className="fixed top-6 left-6 z-50 flex items-center gap-2 px-4 py-2 bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-300 border border-yellow-500/30 rounded-full backdrop-blur-md text-xs font-bold transition-all group pointer-events-auto"
         >
           <LogOut size={14} className="group-hover:-translate-x-0.5 transition-transform" />
           <span>終止潛行</span>

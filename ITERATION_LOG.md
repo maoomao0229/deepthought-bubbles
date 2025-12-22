@@ -2,6 +2,20 @@
 
 ## 修改歷史
 
+- [2025/12/22 12:40 v0.90] 檔案: `src/components/LiquidTabBar.tsx` & `src/components/LobbyView.tsx` | 內容: 介面命名與導覽優化：1. 將 Lobby View 命名從 "意識大廳" 統一為 "泡泡大廳"；2. 將 Pantry View 命名從 "我的糧倉" 改為 "個人頁面"；3. 調整 Nav Bar 順序為：每日潛入 (Dive) -> 泡泡大廳 (Lobby) -> 個人頁面 (Pantry) -> 深海聲納 (Sonar) | 原因: 提升導航直覺性，讓核心功能排序更符合使用者習慣
+
+- [2025/12/22 12:20 v0.89] 檔案: `src/app/page.tsx` | 內容: 實作主題分批抓取 (Topic-Based Ratio Fetching)：1. 重構 `fetchBubbles` 為平行請求模式 (`Promise.all`)；2. 針對 6 大主題 (`['科普', '生活', '時事', '奇想', '哲學', '議題']`) 各別抓取最新 5 則；3. 合併結果後洗牌並取前 20 則 | 原因: 確保每日潛入的內容多樣性，避免特定單一主題佔據所有版面，並保留未來動態調整各主題比例的彈性
+
+- [2025/12/22 12:10 v0.88] 檔案: `src/app/page.tsx` | 內容: 優化 DiveView 氣泡抓取邏輯 (Random Historic Dive)：1. 移除 `fetchBubbles` 的「僅限今日」日期過濾；2. 改為抓取最近 100 筆歷史主氣泡作為池子；3. 實作 Fisher-Yates Shuffle 演算法隨機抽出 20 筆顯示 | 原因: 解決因今日無人發文導致每日潛入頁面空白的問題，確保使用者每次進入都能看到豐富的歷史內容
+
+- [2025/12/22 12:00 v0.87] 檔案: `src/app/page.tsx` | 內容: 視覺規範修正：將「終止潛行 (登出)」按鈕的主色調從紅色 (Red-500) 改為黃色 (Yellow-500/Yellow-300)，符合 VIBE System 定義的「警示/蝦米」色系，消除紅色帶來的焦慮感 | 原因: 嚴格遵守文件 `docs/PRD.md` 中的視覺規範 (NO RED rule)
+
+- [2025/12/22 11:50 v0.86] 檔案: `src/components/LobbyView.tsx` | 內容: 修正 BubbleCard 文字溢出問題：在文字容器層加入 `w-full overflow-hidden`，確保標題與內文在 flex 佈局下能正確截斷 (`truncate`/`line-clamp`)，防止寬度被長文字撐開導致跑版 | 原因: 解決使用者回報的氣泡卡片破版問題，提升介面穩定性
+
+- [2025/12/22 11:40 v0.85] 檔案: `src/app/page.tsx` | 內容: 修正氣泡查詢邏輯 Bug：1. `fetchBubbles` (每日潛入) 改為直接查詢 `bubbles` 資料表並嚴格過濾 `.is('parent_id', null)`，確保只顯示今日的主氣泡；2. `fetchAllBubbles` (大廳) 同步加入相同過濾條件，剔除所有留言回覆 | 原因: 解決留言 (Replies) 被錯誤顯示為獨立主氣泡的問題，確保視圖層級正確
+
+- [2025/12/22 11:30 v0.84] 檔案: `src/components/LobbyView.tsx` | 內容: 恢復高流暢度拖曳物理效果：1. 重構 `TimelineTrack` 加入慣性滑動 (Inertia Momentum) 與衰減算法；2. 實作邊界橡皮筋效果 (Rubber-band Effect)，當拖曳或滑動過界時會感受到阻力並彈回；3. 動態計算邊界範圍 (`track.scrollWidth - container.clientWidth`) 確保捲動範圍正確 | 原因: 應使用者要求，找回 v0.78 版本的原生級操作手感，同時保留 v0.83 的有機排版
+
 - [2025/12/22 11:20 v0.83] 檔案: `src/components/LobbyView.tsx` | 內容: 極度強化錯落感 (Plurk-like Staggered Maxi)：1. 右邊距隨機範圍擴增為 80px-320px；2. 垂直偏移範圍擴增為 -80px 至 +160px；3. 容器高度對應增至 700px 以適應大幅度的垂直擺動 | 原因: 滿足使用者對於「忽大忽小」與「打破直線」的極致視覺需求
 
 - [2025/12/22 11:10 v0.82] 檔案: `src/components/LobbyView.tsx` | 內容: 強化 LobbyView 錯落感排版 (Organic Staggered Layout)：1. 大幅增加隨機右邊距至 80px-160px，並將垂直偏移擴大至 +/- 80px；2. `TimelineTrack` 容器高度增至 600px 並加寬上下內距 (py-24) 以容納劇烈的垂直浮動 | 原因: 應使用者要求，進一步增強版面的視覺張力與錯落感，打破單調的直線排列
