@@ -113,7 +113,7 @@ const TimelineTrack: React.FC<TimelineTrackProps> = ({ children }) => {
     return (
         <div
             ref={containerRef}
-            className="flex-1 w-full relative overflow-hidden cursor-grab active:cursor-grabbing select-none"
+            className="w-full h-[500px] relative overflow-hidden cursor-grab active:cursor-grabbing select-none py-14"
             onMouseDown={(e) => handleStart(e.clientX)}
             onMouseMove={(e) => handleMove(e.clientX)}
             onMouseUp={handleEnd}
@@ -124,7 +124,7 @@ const TimelineTrack: React.FC<TimelineTrackProps> = ({ children }) => {
         >
             <div
                 ref={trackRef}
-                className="absolute top-10 left-0 h-[360px] grid grid-rows-[repeat(3,110px)] grid-flow-col gap-y-4 px-10 transition-transform duration-75 ease-out will-change-transform"
+                className="absolute top-10 left-0 h-[500px] grid grid-rows-[repeat(3,110px)] grid-flow-col gap-y-8 px-10 transition-transform duration-75 ease-out will-change-transform"
                 style={{
                     transform: `translate3d(${panX}px, 0, 0)`,
                     width: 'max-content'
@@ -322,7 +322,7 @@ const PantryView: React.FC<PantryViewProps> = ({ user }) => {
                                 <div className="animate-fade-in">
                                     <h2 className="text-xl font-bold text-white tracking-wide truncate pr-8">{profile.display_name}</h2>
                                     <p className="text-blue-300 text-xs font-mono mb-2 truncate">@{profile.user_id}</p>
-                                    <p className="text-blue-100/80 text-sm leading-relaxed line-clamp-3">{profile.bio}</p>
+                                    <p className="text-blue-100/80 text-sm leading-relaxed whitespace-normal wrap-break-word line-clamp-3">{profile.bio}</p>
                                 </div>
                             )}
                         </div>
