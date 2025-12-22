@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { Waves, Search, X, Send, MessageSquare, Plus, Bookmark, Fish, ToggleLeft } from "lucide-react";
+import { Waves, Search, X, Send, MessageSquare, Plus, Bookmark, Fish, ToggleLeft, Eye, EyeOff } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 
 interface LobbyViewProps {
@@ -252,6 +252,7 @@ const LobbyView = ({ bubbles, onSend, isUnlocked = false }: LobbyViewProps) => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isNewBubbleOpen, setIsNewBubbleOpen] = useState(false);
     const [isHeaderVisible, setIsHeaderVisible] = useState(true);
+    const [isIdentityVisible, setIsIdentityVisible] = useState(false);
     const hideTimer = useRef<NodeJS.Timeout | null>(null);
 
     const handleInteraction = useCallback(() => {
@@ -420,10 +421,13 @@ const LobbyView = ({ bubbles, onSend, isUnlocked = false }: LobbyViewProps) => {
                                 {selectedBubble.content}
                             </div>
 
-                            {/* Resonance (Bookmark) Icon Placeholder */}
-                            <div className="flex justify-end mb-4">
-                                <button className="p-2 rounded-full hover:bg-white/5 text-blue-400/40 hover:text-blue-400 transition-colors">
-                                    <Bookmark size={18} />
+                            {/* Icons Group: Resonance (Bookmark) & Shrimp (Donation) */}
+                            <div className="flex justify-end mb-4 gap-3">
+                                <button className="p-2 rounded-full hover:bg-white/5 text-blue-400/40 hover:text-blue-400 transition-colors" title="收藏共鳴">
+                                    <Bookmark size={20} />
+                                </button>
+                                <button className="p-2 rounded-full hover:bg-white/5 text-yellow-500/50 hover:text-yellow-500 transition-colors" title="給予蝦米支持">
+                                    <Fish size={20} />
                                 </button>
                             </div>
 
@@ -436,11 +440,20 @@ const LobbyView = ({ bubbles, onSend, isUnlocked = false }: LobbyViewProps) => {
                                     <h4 className="text-xs text-blue-400/60 font-bold uppercase tracking-widest">
                                         回應 ({replies.length})
                                     </h4>
-                                    {/* Identity Toggle Placeholder */}
-                                    <div className="flex items-center gap-2 opacity-50 cursor-not-allowed">
-                                        <span className="text-[10px] text-blue-400/60">顯示身份</span>
-                                        <ToggleLeft size={20} className="text-blue-400/30" />
-                                    </div>
+                                    {/* Identity Toggle */}
+                                    <button
+                                        onClick={() => setIsIdentityVisible(!isIdentityVisible)}
+                                        className="flex items-center gap-2 opacity-50 hover:opacity-100 transition-opacity"
+                                    >
+                                        <span className="text-[10px] text-blue-400/60 w-12 text-right">
+                                            {isIdentityVisible ? "顯示身份" : "匿名"}
+                                        </span>
+                                        {isIdentityVisible ? (
+                                            <Eye size={20} className="text-blue-400" />
+                                        ) : (
+                                            <EyeOff size={20} className="text-blue-400/30" />
+                                        )}
+                                    </button>
                                 </div>
                                 {replies.sort((a, b) => {
                                     const getLevel = (content: string) => {
@@ -455,7 +468,14 @@ const LobbyView = ({ bubbles, onSend, isUnlocked = false }: LobbyViewProps) => {
                                     return (
                                         <div key={reply.id} className="bg-indigo-900/30 backdrop-blur-md border border-indigo-400/20 rounded-2xl p-4">
                                             <p className="text-indigo-100/90 text-sm leading-relaxed">{reply.content}</p>
-                                            {/* Anonymous UI: User info hidden by default */}
+
+                                            {/* Anonymous UI: User info toggled by state */}
+                                            {isIdentityVisible && (
+                                                <div className="flex items-center gap-2 mt-2 animate-fade-in">
+                                                    <div className="w-4 h-4 rounded-full bg-indigo-600 flex items-center justify-center text-[6px] text-white">潛</div>
+                                                    <span className="text-[8px] text-indigo-300">潛水員</span>
+                                                </div>
+                                            )}
                                         </div>
                                     );
                                 })}
@@ -468,10 +488,7 @@ const LobbyView = ({ bubbles, onSend, isUnlocked = false }: LobbyViewProps) => {
                         {/* Input Area (Fixed at bottom) */}
                         <div className="p-4 pb-[max(1rem,env(safe-area-inset-bottom))] border-t border-white/10 bg-[#0f172a]">
                             <div className="flex items-center gap-3">
-                                {/* Shrimp (Donation) Icon Placeholder */}
-                                <button className="p-2 -ml-2 rounded-full hover:bg-white/5 text-yellow-500/50 hover:text-yellow-500 transition-colors" title="給予蝦米支持">
-                                    <Fish size={20} />
-                                </button>
+                                {/* Shrimp (Donation) Icon Removed from here */}
                                 <input
                                     value={replyContent}
                                     onChange={(e) => setReplyContent(e.target.value)}
