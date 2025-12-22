@@ -104,10 +104,10 @@ const TopicBubble = forwardRef<HTMLDivElement, TopicBubbleProps>(
       <div
         ref={ref}
         data-speed={topic.speed}
-        className="relative group cursor-pointer p-2 transition-transform duration-300 ease-out"
+        className="relative group cursor-pointer transition-transform duration-300 ease-out"
         style={{
-          zIndex: topic.zIndex,
-          transform: isHovered ? "scale(1.2)" : "scale(1)",
+          transform: isHovered ? "scale(1.15)" : "scale(1)",
+          // 外層 z-index 由 DiveView 控制，此處不重複設定以面層級混亂
         }}
 
       >
@@ -488,7 +488,10 @@ const DiveView = ({
     const topics: SeedTopic[] = [];
     if (!bubbles) return topics;
 
-    bubbles.forEach((b, index) => {
+    // [Optimize 1] 限制泡泡總數為最多 20 個
+    const displayBubbles = bubbles.slice(0, 20);
+
+    displayBubbles.forEach((b, index) => {
       // 基礎座標映射 (0-100 -> 畫布偏移)
       let finalX = (b.x_position - 50) * 8;
       let finalY = (b.y_position - 50) * 8;
@@ -519,7 +522,8 @@ const DiveView = ({
         id: b.id,
         x: finalX,
         y: finalY,
-        zIndex: (index % 4) + 1,
+        // [Optimize 2] 堆疊層級限制：限制為 3 層 (10, 20, 30)
+        zIndex: (index % 3 + 1) * 10,
         topic: b.topic,
         title: b.title,
         depthLevel: ["哲學", "議題"].includes(b.topic) ? "Depth" : ["時事", "科普"].includes(b.topic) ? "Midzone" : "Surface",
