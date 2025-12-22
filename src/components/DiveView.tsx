@@ -573,7 +573,7 @@ const DiveView = ({
     <div className="h-full relative overflow-hidden bg-transparent font-sans">
       {/* 歡迎界面 (僅在未解鎖或初回顯示) */}
       {showWelcome && (
-        <div className={`fixed inset-0 z-50 flex items-center justify-center bg-blue-900/80 backdrop-blur-xl transition-opacity duration-300 ease-out ${isFading ? "opacity-0" : "opacity-100"} cursor-pointer`} onClick={handleWelcomeClick}>
+        <div className={`fixed inset-0 z-50 flex items-center justify-center bg-blue-900/30 backdrop-blur-xl transition-opacity duration-300 ease-out ${isFading ? "opacity-0" : "opacity-100"} cursor-pointer`} onClick={handleWelcomeClick}>
           <div className="text-center px-6 py-8 pointer-events-none">
             <h2 className="text-2xl md:text-3xl font-light text-blue-100 leading-relaxed drop-shadow-lg mb-4">
               {isUnlocked ? "歡迎回到呼吸頻率。" : "開始潛入海域。"}

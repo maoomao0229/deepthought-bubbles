@@ -17,9 +17,10 @@ const TOPIC_OPTIONS = ['科普', '生活', '時事', '奇想', '哲學', '議題
 // ==========================================
 interface TimelineTrackProps {
     children: React.ReactNode;
+    onInteraction?: () => void;
 }
 
-const TimelineTrack: React.FC<TimelineTrackProps> = ({ children }) => {
+const TimelineTrack: React.FC<TimelineTrackProps> = ({ children, onInteraction }) => {
     const trackRef = useRef<HTMLDivElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     const [panX, setPanX] = useState(0);
@@ -56,6 +57,7 @@ const TimelineTrack: React.FC<TimelineTrackProps> = ({ children }) => {
             rafId.current = null;
         }
         if (containerRef.current) containerRef.current.style.cursor = 'grabbing';
+        onInteraction?.();
     };
 
     const handleMove = (clientX: number) => {
@@ -249,6 +251,16 @@ const LobbyView = ({ bubbles, onSend, isUnlocked = false }: LobbyViewProps) => {
     const [replyContent, setReplyContent] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isNewBubbleOpen, setIsNewBubbleOpen] = useState(false);
+    const [isHeaderVisible, setIsHeaderVisible] = useState(true);
+    const hideTimer = useRef<NodeJS.Timeout | null>(null);
+
+    const handleInteraction = useCallback(() => {
+        setIsHeaderVisible(false);
+        if (hideTimer.current) clearTimeout(hideTimer.current);
+        hideTimer.current = setTimeout(() => {
+            setIsHeaderVisible(true);
+        }, 800);
+    }, []);
 
     // 根據主題分組氣泡
     const groupedBubbles = TOPIC_OPTIONS.reduce((acc, topic) => {
@@ -303,26 +315,22 @@ const LobbyView = ({ bubbles, onSend, isUnlocked = false }: LobbyViewProps) => {
         <div className="w-full h-full bg-transparent overflow-hidden relative font-sans">
             <div className={`w-full h-full flex flex-col transition-all duration-700 ${!isUnlocked ? "blur-2xl scale-105 opacity-30 select-none pointer-events-none" : "blur-0 scale-100 opacity-100"}`}>
 
-                {/* Header - Simplified */}
-                <div className="relative flex items-center justify-center h-16 px-6 z-40 bg-blue-950/40 backdrop-blur-md border-b border-white/5 pointer-events-auto shrink-0">
-                    {/* Centered Title */}
-                    <h1 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
-                        <Waves className="text-blue-400" size={18} />
-                        泡泡大廳
-                    </h1>
-
-                    {/* Right Action Button */}
+                {/* Floating Header Button */}
+                <div
+                    className={`fixed top-0 left-0 right-0 h-16 flex items-center justify-center z-40 pointer-events-none transition-all duration-500 ease-in-out ${isHeaderVisible ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0'
+                        }`}
+                >
                     <button
                         onClick={() => setIsNewBubbleOpen(true)}
-                        className="absolute right-6 flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-400 text-white rounded-full text-[10px] font-bold transition-all shadow-lg shadow-blue-500/20 active:scale-95"
+                        className="pointer-events-auto flex items-center gap-2 px-6 py-2.5 bg-blue-500/80 hover:bg-blue-400 text-white rounded-full text-sm font-bold shadow-[0_0_20px_rgba(59,130,246,0.5)] backdrop-blur-md transition-all hover:scale-105 active:scale-95 border border-white/20"
                     >
-                        <Plus size={12} />
+                        <Plus size={16} />
                         發起思考
                     </button>
                 </div>
 
                 {/* Scrollable Content */}
-                <div className="flex-1 overflow-y-auto no-scrollbar pb-32 space-y-8">
+                <div className="flex-1 overflow-y-auto no-scrollbar pb-32 pt-20 space-y-8" onScroll={handleInteraction}>
                     {TOPIC_OPTIONS.map(topic => {
                         const topicBubbles = groupedBubbles[topic];
                         if (!topicBubbles || topicBubbles.length === 0) return null;
@@ -336,7 +344,7 @@ const LobbyView = ({ bubbles, onSend, isUnlocked = false }: LobbyViewProps) => {
                                         {topicBubbles.length} 則思考
                                     </span>
                                 </h3>
-                                <TimelineTrack>
+                                <TimelineTrack onInteraction={handleInteraction}>
                                     {topicBubbles.map((bubble) => (
                                         <BubbleCard
                                             key={bubble.id}
@@ -375,7 +383,7 @@ const LobbyView = ({ bubbles, onSend, isUnlocked = false }: LobbyViewProps) => {
             {/* Bubble Detail Modal (Overlay) */}
             {selectedBubble && (
                 <div
-                    className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm transition-opacity duration-300 pointer-events-auto"
+                    className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm transition-opacity duration-300 pointer-events-auto"
                     onClick={() => setSelectedBubble(null)} // 點擊背景關閉
                 >
                     {/* Card Container */}

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useMemo } from "react";
-import { Share2, Edit2, Save, X, Settings, Camera } from "lucide-react";
+import { Share2, Edit2, Save, X, Settings, Camera, Wind, Anchor, Zap } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 
 interface PantryViewProps {
@@ -294,33 +294,41 @@ const PantryView: React.FC<PantryViewProps> = ({ user, onEditingChange }) => {
             <div className="w-full max-w-md mx-auto px-6 z-10 shrink-0">
 
                 {/* Profile Card */}
-                <div className="bg-blue-950/40 backdrop-blur-md border border-white/10 rounded-3xl p-6 mb-4 shadow-xl relative overflow-hidden transition-all">
+                <div className="bg-blue-950/40 backdrop-blur-md border border-white/10 rounded-3xl p-6 mb-4 shadow-xl relative overflow-hidden group">
                     {/* Decor: light leak */}
                     <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 blur-3xl rounded-full pointer-events-none" />
 
-                    <div className="flex items-start gap-4 relative z-10 mb-4">
+                    {/* Settings Button (Top Right) */}
+                    <button onClick={() => setIsEditing(true)} className="absolute top-4 right-4 p-2 text-white/40 hover:text-white transition-colors z-20">
+                        <Settings size={18} />
+                    </button>
+
+                    {/* 1. Identity Section */}
+                    <div className="flex items-center gap-5 mb-5 relative z-10">
                         {/* Avatar */}
-                        <div className="shrink-0 w-20 h-20 rounded-full border-2 border-white/20 shadow-[0_0_20px_rgba(56,189,248,0.5)] flex items-center justify-center bg-black/40 overflow-hidden relative group">
-                            <img
-                                src={profile.avatar_url || AVATAR_LIST[0]}
-                                alt="Avatar"
-                                className="w-full h-full object-cover"
-                            />
-                            {/* Edit Overlay */}
-                            {isEditing && (
-                                <button
-                                    onClick={() => setShowAvatarModal(true)}
-                                    className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer z-10"
-                                >
-                                    <Camera size={24} className="text-white drop-shadow-md" />
-                                </button>
-                            )}
+                        <div className="relative group/avatar shrink-0">
+                            <div className="w-20 h-20 rounded-full border-2 border-white/20 shadow-[0_0_20px_rgba(56,189,248,0.5)] flex items-center justify-center bg-black/40 overflow-hidden">
+                                <img
+                                    src={profile.avatar_url || AVATAR_LIST[0]}
+                                    alt="Avatar"
+                                    className="w-full h-full object-cover"
+                                />
+                                {/* Edit Overlay */}
+                                {isEditing && (
+                                    <button
+                                        onClick={() => setShowAvatarModal(true)}
+                                        className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover/avatar:opacity-100 transition-opacity cursor-pointer z-10"
+                                    >
+                                        <Camera size={24} className="text-white drop-shadow-md" />
+                                    </button>
+                                )}
+                            </div>
                         </div>
 
-                        {/* Info / Edit Form */}
-                        <div className="flex-1 min-w-0 space-y-2">
+                        {/* User Info */}
+                        <div className="flex-1 min-w-0">
                             {isEditing ? (
-                                <div className="space-y-3 animate-fade-in">
+                                <div className="space-y-2 animate-fade-in">
                                     <input
                                         value={profile.display_name}
                                         onChange={(e) => setProfile({ ...profile, display_name: e.target.value })}
@@ -336,52 +344,89 @@ const PantryView: React.FC<PantryViewProps> = ({ user, onEditingChange }) => {
                                             placeholder="User ID"
                                         />
                                     </div>
-                                    <textarea
-                                        value={profile.bio}
-                                        onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
-                                        className="w-full bg-blue-950/50 border border-blue-400/30 rounded px-2 py-1 text-blue-100/80 text-sm resize-none focus:outline-none focus:border-blue-400"
-                                        rows={2}
-                                        placeholder="簡介 Bio"
-                                    />
                                 </div>
                             ) : (
-                                <div className="animate-fade-in">
-                                    <h2 className="text-xl font-bold text-white tracking-wide truncate pr-8">{profile.display_name}</h2>
-                                    <p className="text-blue-300 text-xs font-mono mb-2 truncate">@{profile.user_id}</p>
-                                    <p className="text-blue-100/80 text-sm leading-relaxed whitespace-normal wrap-break-word line-clamp-3">{profile.bio}</p>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Action Buttons */}
-                    <div className="flex items-center justify-between border-t border-white/5 pt-3">
-                        <div className="flex gap-2">
-                            {isEditing ? (
                                 <>
-                                    <button onClick={handleSave} className="flex items-center gap-1.5 px-3 py-1.5 bg-green-500/20 hover:bg-green-500/30 text-green-300 border border-green-500/30 rounded-full text-xs transition-colors">
-                                        <Save size={12} /> 儲存
-                                    </button>
-                                    <button onClick={() => setIsEditing(false)} className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 hover:bg-white/10 text-gray-400 border border-white/10 rounded-full text-xs transition-colors">
-                                        <X size={12} /> 取消
-                                    </button>
+                                    <h2 className="text-2xl font-bold text-white truncate pr-8">{profile.display_name}</h2>
+                                    <p className="text-blue-300 text-sm font-mono mb-2">@{profile.user_id}</p>
                                 </>
-                            ) : (
-                                <button onClick={() => setIsEditing(true)} className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-500/20 hover:bg-blue-500/30 text-blue-200 border border-blue-500/30 rounded-full text-xs transition-colors group">
-                                    <Edit2 size={12} className="group-hover:scale-110 transition-transform" /> 編輯資料
-                                </button>
                             )}
                         </div>
-
-                        <button className="p-2 bg-white/5 hover:bg-white/10 rounded-full transition-colors border border-white/10 group">
-                            <Share2 size={16} className="text-blue-200 group-hover:text-white transition-colors" />
-                        </button>
                     </div>
 
-                    {/* Settings Icon (Decor) */}
-                    <div className="absolute top-0 right-0 p-4 opacity-20 hover:opacity-40 transition-opacity cursor-pointer">
-                        <Settings className="text-white" size={18} />
+                    {/* Bio */}
+                    <div className="mb-5 relative z-10">
+                        {isEditing ? (
+                            <textarea
+                                value={profile.bio}
+                                onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
+                                className="w-full bg-blue-950/50 border border-blue-400/30 rounded px-3 py-2 text-blue-100/80 text-sm resize-none focus:outline-none focus:border-blue-400"
+                                rows={2}
+                                placeholder="簡介 Bio"
+                            />
+                        ) : (
+                            <p className="text-blue-100/70 text-xs leading-relaxed line-clamp-2">
+                                {profile.bio || "暫無簡介..."}
+                            </p>
+                        )}
                     </div>
+
+                    {/* Action Buttons (Edit Mode) */}
+                    {isEditing && (
+                        <div className="flex gap-2 mb-5 relative z-10 animate-fade-in">
+                            <button onClick={handleSave} className="flex items-center gap-1.5 px-3 py-1.5 bg-green-500/20 hover:bg-green-500/30 text-green-300 border border-green-500/30 rounded-full text-xs transition-colors">
+                                <Save size={12} /> 儲存
+                            </button>
+                            <button onClick={() => setIsEditing(false)} className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 hover:bg-white/10 text-gray-400 border border-white/10 rounded-full text-xs transition-colors">
+                                <X size={12} /> 取消
+                            </button>
+                        </div>
+                    )}
+
+                    {/* Divider */}
+                    <div className="h-px w-full bg-white/5 mb-5" />
+
+                    {/* 2. Evolution Bar */}
+                    <div className="mb-6 relative z-10">
+                        <div className="flex justify-between items-end mb-2">
+                            <span className="text-blue-200 text-[10px] font-bold tracking-wider uppercase">Current Species</span>
+                            <span className="text-cyan-300 text-xs font-mono">2,450 / 3,000 XP</span>
+                        </div>
+                        <div className="flex items-center justify-between mb-1.5">
+                            <span className="text-white font-bold text-sm">座頭鯨 (Lv.4)</span>
+                        </div>
+                        {/* Progress Bar Track */}
+                        <div className="w-full h-1.5 bg-black/30 rounded-full overflow-hidden">
+                            <div className="h-full bg-linear-to-r from-blue-500 to-cyan-400 w-[82%] shadow-[0_0_10px_rgba(56,189,248,0.5)]" />
+                        </div>
+                    </div>
+
+                    {/* 3. Sonar Stats Grid */}
+                    <div className="grid grid-cols-3 divide-x divide-white/10 bg-black/20 rounded-2xl p-3 border border-white/5 relative z-10">
+                        {/* Stat 1: Lung Capacity */}
+                        <div className="flex flex-col items-center gap-1">
+                            <Wind size={14} className="text-blue-400 mb-1" />
+                            <span className="text-lg font-bold text-white tabular-nums">1.2k</span>
+                            <span className="text-[10px] text-blue-300/60">肺活量</span>
+                        </div>
+                        {/* Stat 2: Pressure */}
+                        <div className="flex flex-col items-center gap-1">
+                            <Anchor size={14} className="text-indigo-400 mb-1" />
+                            <span className="text-lg font-bold text-white tabular-nums">890</span>
+                            <span className="text-[10px] text-blue-300/60">目前水壓</span>
+                        </div>
+                        {/* Stat 3: Bioluminescence */}
+                        <div className="flex flex-col items-center gap-1">
+                            <Zap size={14} className="text-yellow-400 mb-1" />
+                            <span className="text-lg font-bold text-white tabular-nums">12</span>
+                            <span className="text-[10px] text-blue-300/60">生物光</span>
+                        </div>
+                    </div>
+
+                    {/* Share Button (Bottom Right) */}
+                    <button className="absolute bottom-4 right-4 p-2 bg-white/5 hover:bg-white/10 rounded-full transition-colors border border-white/10 group z-20">
+                        <Share2 size={14} className="text-blue-200 group-hover:text-white transition-colors" />
+                    </button>
                 </div>
 
                 {/* Tabs */}

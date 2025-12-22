@@ -9,6 +9,7 @@ import LiquidTabBar, { ViewState } from "@/components/LiquidTabBar";
 import AuthView from "@/components/AuthView";
 import LobbyView from "@/components/LobbyView";
 import PantryView from "@/components/PantryView";
+import LoadingWhale from "@/components/LoadingWhale";
 import { ShaderGradientCanvas, ShaderGradient } from "shadergradient";
 import * as reactSpring from "@react-spring/three";
 import * as drei from "@react-three/drei";
@@ -162,8 +163,9 @@ export default function Home() {
 
   if (isLoading) {
     return (
-      <div className="w-full h-screen bg-slate-900 flex items-center justify-center text-blue-200">
-        載入中...
+      <div className="w-full h-screen bg-slate-900 flex flex-col items-center justify-center gap-4">
+        <LoadingWhale className="w-24 h-24" />
+        <span className="text-blue-200 text-sm animate-pulse">載入中...</span>
       </div>
     );
   }
