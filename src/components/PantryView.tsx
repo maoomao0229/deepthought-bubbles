@@ -1,8 +1,9 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useMemo } from "react";
-import { Share2, Edit2, Save, X, Settings, Camera, Wind, Anchor, Zap } from "lucide-react";
+import { Share2, Edit2, Save, X, Settings, Camera, Wind, Anchor, Zap, LogOut, Heart } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
+import { ShrimpCheckoutModal } from './ShrimpCheckoutModal';
 
 interface PantryViewProps {
     user?: any;
@@ -209,6 +210,18 @@ const PantryView: React.FC<PantryViewProps> = ({ user, onEditingChange }) => {
     // Removed loading state as we rely on effect
     // const [loading, setLoading] = useState(true);
 
+    const [isShrimpModalOpen, setIsShrimpModalOpen] = useState(false);
+
+    const handleLogout = async () => {
+        try {
+            const { error } = await supabase.auth.signOut();
+            if (error) throw error;
+            window.location.reload();
+        } catch (error) {
+            console.error('Error logging out:', error);
+        }
+    };
+
     // Fetch Profile Data
     useEffect(() => {
         if (!user) return;
@@ -315,6 +328,24 @@ const PantryView: React.FC<PantryViewProps> = ({ user, onEditingChange }) => {
 
             {/* 1. Header Area (Centered Layout) */}
             <div className="w-full max-w-md mx-auto px-6 z-10 shrink-0">
+
+                {/* Top Action Buttons */}
+                <div className="flex justify-end gap-3 mb-4">
+                    <button
+                        onClick={() => setIsShrimpModalOpen(true)}
+                        className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-yellow-500/10 border border-yellow-500/50 text-yellow-400 hover:bg-yellow-500/20 transition-all text-xs font-mono"
+                    >
+                        <img src="/prawn.png" alt="Shrimp" className="w-3 h-3 opacity-80" />
+                        <span>蝦米</span>
+                    </button>
+                    <button
+                        onClick={handleLogout}
+                        className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-900/40 border border-blue-700/50 text-blue-100 hover:bg-blue-700/60 hover:text-white transition-all text-xs font-mono shadow-lg backdrop-blur-md"
+                    >
+                        <LogOut className="w-3.5 h-3.5" />
+                        <span>結束潛水</span>
+                    </button>
+                </div>
 
                 {/* Profile Card */}
                 <div className="bg-blue-950/40 backdrop-blur-md border border-white/10 rounded-3xl p-6 mb-4 shadow-xl relative overflow-hidden group">
@@ -515,6 +546,11 @@ const PantryView: React.FC<PantryViewProps> = ({ user, onEditingChange }) => {
                     </div>
                 </div>
             )}
+
+            <ShrimpCheckoutModal
+                isOpen={isShrimpModalOpen}
+                onClose={() => setIsShrimpModalOpen(false)}
+            />
 
         </div>
     );

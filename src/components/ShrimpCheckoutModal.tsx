@@ -50,7 +50,7 @@ export const ShrimpCheckoutModal: React.FC<Props> = ({ isOpen, onClose }) => {
                     <div className="space-y-6">
                         <div className="text-center space-y-2">
                             <div className="w-16 h-16 bg-yellow-500/20 rounded-full flex items-center justify-center mx-auto mb-4 border border-yellow-500/30">
-                                <Heart className="w-8 h-8 text-yellow-500 fill-yellow-500/20" />
+                                <img src="/prawn.png" alt="Shrimp" className="w-8 h-8 opacity-90" />
                             </div>
                             <h3 className="text-xl font-bold text-gray-50">給予蝦米支持</h3>
                             <p className="text-blue-200 text-sm leading-relaxed">
@@ -81,7 +81,7 @@ export const ShrimpCheckoutModal: React.FC<Props> = ({ isOpen, onClose }) => {
                                 onClick={handlePayment}
                                 className="w-full py-3 px-4 bg-linear-to-r from-yellow-500 to-yellow-600 hover:from-yellow-400 hover:to-yellow-500 text-blue-950 font-bold rounded-xl shadow-lg shadow-yellow-900/20 transition-all transform active:scale-95 flex items-center justify-center gap-2"
                             >
-                                <Heart className="w-4 h-4 fill-blue-950/20" />
+                                <img src="/prawn.png" alt="Shrimp" className="w-4 h-4 opacity-80" />
                                 確認投餵
                             </button>
                         </div>
