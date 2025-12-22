@@ -42,7 +42,7 @@ export const BubbleComposition: React.FC<Props> = ({ originalCount, replyCount }
     const path2 = describeArc(cx, cy, radius, originalAngleSpan + 3, 180);
 
     return (
-        <div className="bg-slate-800/50 backdrop-blur rounded-xl border border-slate-500/30 w-full h-full flex flex-col items-center justify-center relative overflow-hidden">
+        <div className="bg-slate-800/50 backdrop-blur rounded-xl border border-slate-500/30 w-full min-h-[160px] flex flex-col items-center justify-center relative overflow-hidden">
             {/* 標題 */}
             <div className="absolute top-2 left-4 text-[10px] text-slate-300 uppercase tracking-widest font-bold">Composition</div>
 

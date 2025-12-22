@@ -79,7 +79,7 @@ export const DailyPing: React.FC<Props> = ({ stats }) => {
             </div>
 
             {/* 底部詳情區 */}
-            <div className="z-10 grid grid-cols-1 md:grid-cols-2 gap-4 h-32">
+            <div className="z-10 grid grid-cols-1 md:grid-cols-2 gap-4 mt-auto">
                 {/* 泡泡組成分析 */}
                 <BubbleComposition originalCount={stats.originalWords} replyCount={stats.replyWords} />
 
