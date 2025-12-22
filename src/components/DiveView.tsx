@@ -250,8 +250,8 @@ const DiveModal = ({
                 <button className="p-2 rounded-full hover:bg-white/5 text-blue-400/40 hover:text-blue-400 transition-colors" title="收藏共鳴">
                   <Bookmark size={18} />
                 </button>
-                <button className="p-2 rounded-full hover:bg-white/5 text-yellow-500/50 hover:text-yellow-500 transition-colors" title="給予蝦米支持">
-                  <Fish size={18} />
+                <button className="p-2 rounded-full hover:bg-white/5 text-yellow-500/50 hover:text-yellow-500 transition-colors flex items-center justify-center" title="給予蝦米支持">
+                  <img src="/prawn.png" alt="蝦米" className="w-[18px] h-[18px] object-contain opacity-50 group-hover:opacity-100 transition-opacity" />
                 </button>
               </div>
             </div>

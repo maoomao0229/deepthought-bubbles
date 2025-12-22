@@ -426,8 +426,8 @@ const LobbyView = ({ bubbles, onSend, isUnlocked = false }: LobbyViewProps) => {
                                 <button className="p-2 rounded-full hover:bg-white/5 text-blue-400/40 hover:text-blue-400 transition-colors" title="收藏共鳴">
                                     <Bookmark size={20} />
                                 </button>
-                                <button className="p-2 rounded-full hover:bg-white/5 text-yellow-500/50 hover:text-yellow-500 transition-colors" title="給予蝦米支持">
-                                    <Fish size={20} />
+                                <button className="p-2 rounded-full hover:bg-white/5 text-yellow-500/50 hover:text-yellow-500 transition-colors flex items-center justify-center" title="給予蝦米支持">
+                                    <img src="/prawn.png" alt="蝦米" className="w-5 h-5 object-contain opacity-50 hover:opacity-100 transition-opacity" />
                                 </button>
                             </div>
 
