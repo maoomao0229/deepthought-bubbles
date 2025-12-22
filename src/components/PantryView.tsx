@@ -257,34 +257,39 @@ const PantryView: React.FC<PantryViewProps> = ({ user, onEditingChange }) => {
         if (!user) return;
 
         try {
-            // [FIX] 改用 upsert：如果資料存在就更新，不存在就建立 (防呆)
+            const updates = {
+                id: user.id, // upsert 必須包含主鍵
+                display_name: profile.display_name,
+                user_id: profile.user_id,
+                bio: profile.bio,
+                avatar_url: profile.avatar_url,
+                updated_at: new Date().toISOString(),
+            };
+
+            // [關鍵] 使用 upsert 而非 update
+            // 如果資料存在就更新，不存在就新增
             const { error } = await supabase
                 .from('profiles')
-                .upsert({
-                    id: user.id, // upsert 必須包含主鍵
-                    display_name: profile.display_name,
-                    user_id: profile.user_id,
-                    bio: profile.bio,
-                    avatar_url: profile.avatar_url,
-                    updated_at: new Date().toISOString(),
-                });
+                .upsert(updates);
 
             if (error) {
                 throw error;
             }
 
+            // 成功後的處理
             setIsEditing(false);
+            alert('更新成功！');
 
         } catch (error: any) {
             // [DEBUG] 使用 JSON.stringify 展開錯誤物件，不然 console 只會顯示 [object Object] 或 {}
-            console.error('Profile update error details:', JSON.stringify(error, null, 2));
+            console.error('Update Error:', JSON.stringify(error, null, 2));
 
             if (error.code === '23505') {
                 alert('這個 User ID (@' + profile.user_id + ') 已經被其他人使用了，請換一個！');
             } else if (error.code === '42501') {
                 alert('權限不足！請確認 Supabase RLS Policy 是否已設定 "Enable Update for Users"。');
             } else {
-                alert(`更新失敗 (${error.code || 'Unknown'}): ${error.message}`);
+                alert(`更新失敗: ${error.message || '請檢查 Console 錯誤訊息'}`);
             }
         }
     };
