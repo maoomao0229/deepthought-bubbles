@@ -444,7 +444,7 @@ const LobbyView = ({ bubbles, onSend, isUnlocked = false }: LobbyViewProps) => {
                         </div>
 
                         {/* Input Area (Fixed at bottom) */}
-                        <div className="p-4 pb-8 md:pb-4 border-t border-white/10 bg-[#0f172a]">
+                        <div className="p-4 pb-[max(1rem,env(safe-area-inset-bottom))] border-t border-white/10 bg-[#0f172a]">
                             <div className="flex items-center gap-3">
                                 <input
                                     value={replyContent}
@@ -456,6 +456,7 @@ const LobbyView = ({ bubbles, onSend, isUnlocked = false }: LobbyViewProps) => {
                                     }}
                                     placeholder="加入這場對話..."
                                     className="flex-1 bg-slate-800/50 rounded-xl px-4 py-3 text-base text-gray-50 placeholder-slate-500 border border-white/10 focus:outline-none focus:ring-1 focus:ring-blue-500/50 transition-all"
+                                    style={{ fontSize: '16px' }} // Prevent iOS zoom
                                 />
                                 <button
                                     onClick={handleSendReply}

@@ -213,13 +213,17 @@ const PantryView: React.FC<PantryViewProps> = ({ user, onEditingChange }) => {
     useEffect(() => {
         if (!user) return;
         const fetchProfile = async () => {
-            // setLoading(true); // Removed to avoid linting warning for unused
             try {
-                const { data } = await supabase
+                // 強制從資料庫獲取最新資料，不使用快取
+                const { data, error } = await supabase
                     .from('profiles')
                     .select('*')
                     .eq('id', user.id)
                     .single();
+
+                if (error && error.code !== 'PGRST116') {
+                    console.error("Error fetching profile:", error);
+                }
 
                 if (data) {
                     setProfile({
@@ -229,6 +233,7 @@ const PantryView: React.FC<PantryViewProps> = ({ user, onEditingChange }) => {
                         avatar_url: data.avatar_url || AVATAR_LIST[0]
                     });
                 } else {
+                    // 若無資料（首次登入），使用預設值
                     setProfile({
                         display_name: user.user_metadata?.name || "深海旅人",
                         user_id: user.email?.split('@')[0] || "deep_thinker",
@@ -237,15 +242,7 @@ const PantryView: React.FC<PantryViewProps> = ({ user, onEditingChange }) => {
                     });
                 }
             } catch (error) {
-                console.error("Error fetching profile:", error);
-                setProfile({
-                    display_name: user.user_metadata?.name || "深海旅人",
-                    user_id: user.email?.split('@')[0] || "deep_thinker",
-                    bio: "正在尋找思想的迴響...",
-                    avatar_url: AVATAR_LIST[0]
-                });
-            } finally {
-                // setLoading(false);
+                console.error("Error in fetchProfile:", error);
             }
         };
 

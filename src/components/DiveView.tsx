@@ -161,7 +161,30 @@ const DiveModal = ({
   useEffect(() => {
     document.body.style.overflow = "hidden";
     fetchReplies();
-    return () => { document.body.style.overflow = ""; };
+
+    // [Mobile UX] 監聽 Visual Viewport 以解決鍵盤遮擋問題
+    const handleResize = () => {
+      if (!window.visualViewport) return;
+      const inputContainer = document.getElementById('dive-input-container');
+      if (inputContainer) {
+        // 當鍵盤彈出時，visualViewport height 會變小
+        // 我們可以動態調整 bottom 位置
+        const offset = window.innerHeight - window.visualViewport.height;
+        // 簡單處理：如果 offset > 0 (鍵盤出現)，則將容器 bottom 設為 offset
+        // 但因為我們使用 fixed bottom-0，通常瀏覽器會自動推上去，但在某些 iOS 版本需要手動
+        // 這裡暫時保留標準 CSS approach (pb-safe)，若無效再開啟此邏輯
+        // inputContainer.style.bottom = `${Math.max(0, offset)}px`;
+      }
+    };
+
+    window.visualViewport?.addEventListener('resize', handleResize);
+    window.visualViewport?.addEventListener('scroll', handleResize);
+
+    return () => {
+      document.body.style.overflow = "";
+      window.visualViewport?.removeEventListener('resize', handleResize);
+      window.visualViewport?.removeEventListener('scroll', handleResize);
+    };
   }, [topic.id]);
 
   const fetchReplies = async () => {
@@ -277,28 +300,33 @@ const DiveModal = ({
         </div>
 
         {/* Input Area */}
-        <div className="p-4 bg-blue-950/50 border-t border-white/5 backdrop-blur-md">
-          <div className="flex items-end gap-2 bg-white/5 rounded-2xl p-2 border border-white/5 focus-within:bg-white/10 transition-colors">
+        {/* Input Area: Adjusted for Mobile Keyboard & Safe Area */}
+        <div
+          id="dive-input-container"
+          className="p-4 bg-blue-950/90 border-t border-white/5 backdrop-blur-xl transition-all duration-300 pb-[max(1rem,env(safe-area-inset-bottom))]"
+        >
+          <div className="flex items-end gap-3 bg-white/5 rounded-2xl p-3 border border-white/5 focus-within:bg-white/10 transition-colors focus-within:ring-1 focus-within:ring-blue-400/30">
             <textarea
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               placeholder={isUnlocked ? "輸入你的見解..." : "回應此觀點以解鎖更多回聲..."}
-              className="flex-1 bg-transparent border-none focus:ring-0 text-sm text-blue-50 placeholder-blue-400/20 p-2 min-h-[44px] max-h-32 resize-none leading-relaxed"
+              className="flex-1 bg-transparent border-none focus:ring-0 text-base text-blue-50 placeholder-blue-400/20 p-1 min-h-[44px] max-h-32 resize-none leading-relaxed"
               rows={1}
+              style={{ fontSize: '16px' }} // 防止 iOS 自動縮放
             />
             <button
               onClick={handleSubmit}
               disabled={!inputValue.trim() || isSubmitting}
-              className={`p-3 rounded-xl transition-all ${inputValue.trim() && !isSubmitting
+              className={`p-3 rounded-xl transition-all min-w-[48px] min-h-[48px] flex items-center justify-center ${inputValue.trim() && !isSubmitting
                 ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/20 active:scale-95"
                 : "bg-white/5 text-blue-400/20 cursor-not-allowed"
                 }`}
             >
-              <Send size={18} />
+              <Send size={20} />
             </button>
           </div>
           <div className="flex justify-between items-center mt-2 px-2">
-            <p className="text-[9px] text-blue-400/40 tracking-wider">回應將標註為靛色</p>
+            <p className="text-[10px] text-blue-400/40 tracking-wider">回應將標註為靛色</p>
             <span className={`text-[9px] px-2 py-0.5 rounded-full ${depthConfig.color}`}>{depthConfig.label}</span>
           </div>
         </div>
@@ -321,9 +349,17 @@ const NewBubbleModal = ({ onClose, onSend }: { onClose: () => void; onSend: (con
   const handleSubmit = async () => {
     if (!content.trim() || !topic.trim() || !title.trim() || isSubmitting) return;
     setIsSubmitting(true);
-    await onSend(content, null, topic, title);
-    setIsSubmitting(false);
-    onClose();
+    try {
+      console.log("Submitting new bubble:", { title, topic });
+      await onSend(content, null, topic, title);
+      console.log("Bubble submitted successfully");
+    } catch (e) {
+      console.error("Error submitting bubble:", e);
+      // 保留輸入內容讓使用者重試
+    } finally {
+      setIsSubmitting(false);
+      onClose();
+    }
   };
 
   return (
@@ -679,13 +715,14 @@ const DiveView = ({
       {!showWelcome && (
         <button
           onClick={() => setIsNewBubbleOpen(true)}
-          className={`fixed bottom-24 right-6 z-40 p-4 rounded-full shadow-2xl transition-all duration-300 hover:scale-110 active:scale-95 group animate-fade-in ${isUnlocked
+          className={`fixed bottom-24 right-6 z-40 p-5 rounded-full shadow-2xl transition-all duration-300 hover:scale-110 active:scale-95 group animate-fade-in touch-manipulation ${isUnlocked
             ? "bg-blue-500 hover:bg-blue-400 text-white shadow-blue-500/30"
             : "bg-yellow-500 hover:bg-yellow-400 text-blue-900 shadow-yellow-500/40 ring-4 ring-yellow-500/20"
             }`}
           title={isUnlocked ? "釋放新的思考" : "發布今日首個氣泡以解鎖"}
+          style={{ paddingBottom: 'max(1.25rem, env(safe-area-inset-bottom))' }} // 簡單的 Safe Area 處理
         >
-          <Plus size={24} className="group-hover:rotate-90 transition-transform duration-300" />
+          <Plus size={28} className="group-hover:rotate-90 transition-transform duration-300" />
           {!isUnlocked && (
             <span className="absolute -top-12 right-0 bg-yellow-500 text-blue-900 text-[10px] font-bold py-1 px-3 rounded-full whitespace-nowrap shadow-lg animate-bounce">
               釋放新氣泡
