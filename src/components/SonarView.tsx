@@ -50,7 +50,7 @@ const SonarView = ({ user }: { user: any }) => {
             />
 
             {/* Main Content Container */}
-            <div className="relative z-10 px-6 space-y-12 max-w-lg mx-auto">
+            <div className="relative z-10 px-6 space-y-12 max-w-4xl mx-auto">
 
                 {/* --- Layer 1: The Daily Ping --- */}
                 {/* Pass calculated stats to the DailyPing component */}

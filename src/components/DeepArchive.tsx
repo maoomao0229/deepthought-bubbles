@@ -43,7 +43,7 @@ const DeepArchive: React.FC<DeepArchiveProps> = ({ monthlyData, userLevel, daily
                     {heatmapData.map((day, i) => (
                         <div
                             key={i}
-                            className="flex-1 aspect-[1/2] rounded-sm transition-all hover:scale-110"
+                            className="flex-1 aspect-1/2 rounded-sm transition-all hover:scale-110"
                             style={{
                                 backgroundColor: `rgba(91, 139, 180, ${0.1 + day.intensity * 0.9})`,
                                 boxShadow: day.intensity > 0.8 ? `0 0 8px ${COLORS.ocean500}80` : 'none',
@@ -59,7 +59,7 @@ const DeepArchive: React.FC<DeepArchiveProps> = ({ monthlyData, userLevel, daily
             </div>
 
             {/* 演化歷程卡片 */}
-            <div className="bg-gradient-to-r from-blue-900/40 to-indigo-900/40 rounded-2xl p-6 border border-white/10">
+            <div className="bg-linear-to-r from-blue-900/40 to-indigo-900/40 rounded-2xl p-6 border border-white/10">
                 <div className="flex items-center justify-between">
                     <div className="flex-1">
                         <div className="text-blue-300 text-xs mb-1">目前物種</div>
