@@ -2,6 +2,8 @@
 
 ## 修改歷史
 
+- [2025/12/22 15:16 v0.98] 檔案: `src/components/LobbyView.tsx` | 內容: 修復手機版體驗問題：1. 新增 Modal 開啟時自動隱藏底部導航列邏輯 (與 DiveView 同步使用 `nav-hidden` class)，避免點開貼文時被 Tab Bar 遮擋；2. 修復 iOS 鍵盤刪除鍵無效問題，在 `onKeyDown` 加入 `isComposing` 檢查，防止 IME 組字時誤觸送出 | 原因: 解決使用者回報的手機版導航列遮擋問題與 iOS 使用者無法刪除文字的 Bug
+
 - [2025/12/22 15:06 v0.97] 檔案: `src/components/SonarView.tsx`, `app/page.tsx` | 內容: 實作深海聲納儀 (SonarView) 視圖：1. 建立 SonarView 元件包含三大區塊：The Daily Ping (肺活量呼吸動畫+今日統計)、Weekly Wave (聲納覆蓋域環狀圖+回聲波紋動畫)、Deep Archive (活躍度熱力圖+演化等級)；2. 實作水壓暗角 (Vignette) 視覺效果，綁定動態 opacity；3. 使用 Mock Data 結構，預留未來 API 替換空間；4. 更新 page.tsx 在 currentView === 'sonar' 時渲染 SonarView | 原因: 完成深海聲納儀核心視覺與佈局，提供使用者思考活躍度與深度的數據儀表板
 
 - [2025/12/22 14:30 v0.96] 檔案: `src/components/PantryView.tsx`, `src/app/page.tsx` | 內容: 優化編輯體驗：1. 實作 Focus Mode，編輯個人資料時自動隱藏底部導航列；2. 調整 Avatar Picker 佈局為 3 欄 + 寬間距，提升選取體驗 | 原因: 減少畫面干擾，提升操作舒適度

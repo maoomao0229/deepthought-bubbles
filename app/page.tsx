@@ -195,7 +195,6 @@ export default function Home() {
             envPreset="city"
             grain="on"
             lightType="3d"
-            pixelDensity={1}
             positionX={-1.4}
             positionY={0}
             positionZ={0}

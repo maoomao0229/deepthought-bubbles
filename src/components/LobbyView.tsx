@@ -256,6 +256,16 @@ const LobbyView = ({ bubbles, onSend, isUnlocked = false }: LobbyViewProps) => {
         return acc;
     }, {} as Record<string, any[]>);
 
+    // 當 Modal 開啟時隱藏導覽列 (與 DiveView 同步)
+    useEffect(() => {
+        if (selectedBubble || isNewBubbleOpen) {
+            document.body.classList.add('nav-hidden');
+        } else {
+            document.body.classList.remove('nav-hidden');
+        }
+        return () => document.body.classList.remove('nav-hidden');
+    }, [selectedBubble, isNewBubbleOpen]);
+
     // 載入回覆
     useEffect(() => {
         if (!selectedBubble) {
@@ -402,7 +412,11 @@ const LobbyView = ({ bubbles, onSend, isUnlocked = false }: LobbyViewProps) => {
                                 <input
                                     value={replyContent}
                                     onChange={(e) => setReplyContent(e.target.value)}
-                                    onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSendReply()}
+                                    onKeyDown={(e) => {
+                                        // 防止 iOS IME composing 時誤觸送出 (修復刪除鍵無效問題)
+                                        if (e.nativeEvent.isComposing) return;
+                                        if (e.key === "Enter" && !e.shiftKey) handleSendReply();
+                                    }}
                                     placeholder="加入這場對話..."
                                     className="flex-1 bg-blue-950/50 rounded-xl px-4 py-3 text-sm text-gray-50 placeholder-blue-400/30 border border-white/5 focus:outline-none focus:ring-1 focus:ring-blue-500/50 transition-all"
                                 />

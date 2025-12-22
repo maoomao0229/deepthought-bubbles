@@ -79,9 +79,9 @@ const SonarView = ({ user }: { user: any }) => {
                 {/* --- Layer 2: The Weekly Wave --- */}
                 <section>
                     <h2 className="text-blue-300 text-xs font-bold tracking-[0.2em] uppercase mb-6 flex items-center gap-2 opacity-50">
-                        <span className="w-8 h-[1px] bg-blue-500/30"></span>
+                        <span className="w-8 h-px bg-blue-500/30"></span>
                         Weekly Wave
-                        <span className="flex-1 h-[1px] bg-blue-500/30"></span>
+                        <span className="flex-1 h-px bg-blue-500/30"></span>
                     </h2>
 
                     <div className="bg-blue-900/20 backdrop-blur-md rounded-2xl p-6 border border-white/5 grid grid-cols-2 gap-6 items-center">
@@ -120,16 +120,16 @@ const SonarView = ({ user }: { user: any }) => {
                 {/* --- Layer 3: Deep Archive --- */}
                 <section>
                     <h2 className="text-blue-300 text-xs font-bold tracking-[0.2em] uppercase mb-6 flex items-center gap-2 opacity-50">
-                        <span className="w-8 h-[1px] bg-blue-500/30"></span>
+                        <span className="w-8 h-px bg-blue-500/30"></span>
                         Deep Archive
-                        <span className="flex-1 h-[1px] bg-blue-500/30"></span>
+                        <span className="flex-1 h-px bg-blue-500/30"></span>
                     </h2>
 
                     {/* Heatmap */}
                     <div className="flex gap-1 justify-between mb-4">
                         {stats.monthly.heatmap.map((val, i) => (
                             <div key={i}
-                                className="flex-1 aspect-[1/2] rounded-sm transition-all hover:scale-110"
+                                className="flex-1 aspect-1/2 rounded-sm transition-all hover:scale-110"
                                 style={{
                                     backgroundColor: `rgba(96, 165, 250, ${0.1 + val * 0.9})`, // Using blue-500 roughly
                                     boxShadow: val > 0.8 ? '0 0 8px rgba(96, 165, 250, 0.5)' : 'none'
@@ -139,7 +139,7 @@ const SonarView = ({ user }: { user: any }) => {
                     </div>
 
                     {/* Evolution Status */}
-                    <div className="bg-gradient-to-r from-blue-900/40 to-indigo-900/40 rounded-2xl p-6 border border-white/10 flex items-center justify-between">
+                    <div className="bg-linear-to-r from-blue-900/40 to-indigo-900/40 rounded-2xl p-6 border border-white/10 flex items-center justify-between">
                         <div>
                             <div className="text-blue-300 text-xs mb-1">目前物種</div>
                             <div className="text-2xl font-bold text-gray-50">{stats.monthly.evolution}</div>
