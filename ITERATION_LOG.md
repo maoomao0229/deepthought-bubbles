@@ -2,6 +2,8 @@
 
 ## 修改歷史
 
+- [2025/12/22 15:36 v0.99] 檔案: `src/components/LobbyView.tsx` | 內容: 修復手機版 Modal 無法點擊輸入框問題：1. 在 Modal 卡片容器加入 `touch-auto pointer-events-auto` class，確保觸控事件可以正確傳遞至輸入框；2. 修正未定義的動畫 `animate-slide-up` 為已定義的 `animate-scale-up` | 原因: 解決使用者回報在泡泡大廳點開貼文後無法留言的問題
+
 - [2025/12/22 15:16 v0.98] 檔案: `src/components/LobbyView.tsx` | 內容: 修復手機版體驗問題：1. 新增 Modal 開啟時自動隱藏底部導航列邏輯 (與 DiveView 同步使用 `nav-hidden` class)，避免點開貼文時被 Tab Bar 遮擋；2. 修復 iOS 鍵盤刪除鍵無效問題，在 `onKeyDown` 加入 `isComposing` 檢查，防止 IME 組字時誤觸送出 | 原因: 解決使用者回報的手機版導航列遮擋問題與 iOS 使用者無法刪除文字的 Bug
 
 - [2025/12/22 15:06 v0.97] 檔案: `src/components/SonarView.tsx`, `app/page.tsx` | 內容: 實作深海聲納儀 (SonarView) 視圖：1. 建立 SonarView 元件包含三大區塊：The Daily Ping (肺活量呼吸動畫+今日統計)、Weekly Wave (聲納覆蓋域環狀圖+回聲波紋動畫)、Deep Archive (活躍度熱力圖+演化等級)；2. 實作水壓暗角 (Vignette) 視覺效果，綁定動態 opacity；3. 使用 Mock Data 結構，預留未來 API 替換空間；4. 更新 page.tsx 在 currentView === 'sonar' 時渲染 SonarView | 原因: 完成深海聲納儀核心視覺與佈局，提供使用者思考活躍度與深度的數據儀表板

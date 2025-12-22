@@ -376,7 +376,7 @@ const LobbyView = ({ bubbles, onSend, isUnlocked = false }: LobbyViewProps) => {
             {selectedBubble && (
                 <div className="fixed inset-0 z-50 flex items-end justify-center md:items-center p-0 md:p-4 animate-fade-in">
                     <div className="absolute inset-0 bg-blue-950/80 backdrop-blur-md" onClick={() => setSelectedBubble(null)} />
-                    <div className="relative w-full max-w-lg bg-blue-900/95 backdrop-blur-2xl border border-white/10 shadow-2xl rounded-t-4xl md:rounded-4xl p-6 md:p-8 max-h-[85vh] overflow-hidden flex flex-col animate-slide-up">
+                    <div className="relative w-full max-w-lg bg-blue-900/95 backdrop-blur-2xl border border-white/10 shadow-2xl rounded-t-4xl md:rounded-4xl p-6 md:p-8 max-h-[85vh] overflow-hidden flex flex-col animate-scale-up touch-auto pointer-events-auto">
                         <button onClick={() => setSelectedBubble(null)} className="absolute top-4 right-4 p-2 rounded-full hover:bg-white/10 text-blue-200 z-10">
                             <X size={20} />
                         </button>
