@@ -2,6 +2,14 @@
 
 ## 修改歷史
 
+- [2025/12/22 11:20 v0.83] 檔案: `src/components/LobbyView.tsx` | 內容: 極度強化錯落感 (Plurk-like Staggered Maxi)：1. 右邊距隨機範圍擴增為 80px-320px；2. 垂直偏移範圍擴增為 -80px 至 +160px；3. 容器高度對應增至 700px 以適應大幅度的垂直擺動 | 原因: 滿足使用者對於「忽大忽小」與「打破直線」的極致視覺需求
+
+- [2025/12/22 11:10 v0.82] 檔案: `src/components/LobbyView.tsx` | 內容: 強化 LobbyView 錯落感排版 (Organic Staggered Layout)：1. 大幅增加隨機右邊距至 80px-160px，並將垂直偏移擴大至 +/- 80px；2. `TimelineTrack` 容器高度增至 600px 並加寬上下內距 (py-24) 以容納劇烈的垂直浮動 | 原因: 應使用者要求，進一步增強版面的視覺張力與錯落感，打破單調的直線排列
+
+- [2025/12/22 11:00 v0.81] 檔案: `src/components/LobbyView.tsx` | 內容: 實作 LobbyView 錯落感排版 (Organic Staggered Layout)：1. `BubbleCard` 使用識別碼種子計算隨機右邊距 (12px-62px) 與垂直偏移 (-20px 至 +20px)，打破整齊格線；2. `TimelineTrack` 增加上下內距 (py-10) 並移除固定水平間距，改由卡片邊距控制 | 原因: 模擬 Plurk 河道不規則流動感，創造更自然有機的閱讀節奏
+
+- [2025/12/22 10:50 v0.80] 檔案: `src/components/LobbyView.tsx`, `src/app/page.tsx` | 內容: 1. `LobbyView`: 移除介面雜訊（分類橫列），重構 Header 為相對定位並置中標題，釋放更多垂直空間給瀑布流；2. `page.tsx`: 實作身分分流登出邏輯，懸浮登出按鈕僅對訪客 (`isGuest`) 顯示，註冊用戶預設隱藏（移至 Pantry） | 原因: 優化介面佈局並落實分眾登出體驗
+
 - [2025/12/22 10:40 v0.79] 檔案: `src/components/LobbyView.tsx` | 內容: 全面實作 Plurk 風格河道：1. `TimelineTrack` 模擬無限橫向捲動畫布，支援拖曳阻尼與邊界限制；2. `BubbleCard` 實作隨機寬度 (260px-420px) 創造錯落感，並更新視覺樣式為側邊光條設計 | 原因: 滿足使用者對於 Plurk 風格動態河道的具體需求
 
 - [2025/12/22 10:20 v0.78] 檔案: `src/components/LobbyView.tsx` | 內容: 重構為 `MasonryTrack` 元件，使用 `transform: translateX` 取代 `scrollLeft`，實現更流暢的拖曳體驗；加入慣性動畫與邊界橡皮筋效果；維持 3 列網格佈局 (`grid-rows-[repeat(3,120px)]`) | 原因: 提升拖曳互動的效能與觸感，接近原生應用體驗

@@ -11,6 +11,7 @@ import { ShaderGradientCanvas, ShaderGradient } from "shadergradient";
 import * as reactSpring from "@react-spring/three";
 import * as drei from "@react-three/drei";
 import * as fiber from "@react-three/fiber";
+import { LogOut } from "lucide-react";
 
 /**
  * 首頁元件
@@ -279,16 +280,16 @@ export default function Home() {
           />
         </ShaderGradientCanvas>
       </div>
-      {/* 逃生入口：全局最頂層登出按鈕 */}
-      <div className="absolute top-6 left-6 z-50 pointer-events-auto">
+      {/* Global Floating Actions - Only for Guest */}
+      {session?.user?.is_anonymous && (
         <button
           onClick={() => supabase.auth.signOut()}
-          className="px-4 py-2 bg-blue-900/40 backdrop-blur-md hover:bg-white/10 border border-white/5 text-blue-200/50 hover:text-white text-[9px] tracking-[0.2em] uppercase rounded-xl transition-all active:scale-95 shadow-xl"
-          title="終止潛行並返回水面"
+          className="fixed top-6 left-6 z-50 flex items-center gap-2 px-4 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-200 border border-red-500/30 rounded-full backdrop-blur-md text-xs font-bold transition-all group pointer-events-auto"
         >
-          終止潛行
+          <LogOut size={14} className="group-hover:-translate-x-0.5 transition-transform" />
+          <span>終止潛行</span>
         </button>
-      </div>
+      )}
 
       {/* 主要內容區域：根據 currentView 切換顯示 */}
       <div className="w-full h-full relative z-0">

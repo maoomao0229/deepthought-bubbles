@@ -59,7 +59,7 @@ const TimelineTrack: React.FC<TimelineTrackProps> = ({ children }) => {
     return (
         // Timeline Holder (視窗)
         <div
-            className="relative w-full h-[400px] overflow-hidden cursor-grab active:cursor-grabbing select-none py-2"
+            className="relative w-full h-[700px] overflow-hidden cursor-grab active:cursor-grabbing select-none py-24"
             onMouseDown={(e) => handleStart(e.clientX)}
             onMouseMove={(e) => handleMove(e.clientX)}
             onMouseUp={handleEnd}
@@ -71,7 +71,7 @@ const TimelineTrack: React.FC<TimelineTrackProps> = ({ children }) => {
             {/* Block Content (畫布) */}
             <div
                 ref={trackRef}
-                className="absolute top-0 left-0 h-full grid grid-rows-[repeat(3,110px)] grid-flow-col gap-x-6 gap-y-4 px-10 transition-transform duration-75 ease-out will-change-transform width-max"
+                className="absolute top-0 left-0 h-full grid grid-rows-[repeat(3,120px)] grid-flow-col gap-y-6 px-10 transition-transform duration-75 ease-out will-change-transform width-max"
                 style={{
                     transform: `translate3d(${panX}px, 0, 0)`,
                     width: 'max-content' // 自動撐開寬度
@@ -92,18 +92,27 @@ interface BubbleCardProps {
 }
 
 const BubbleCard = ({ bubble, onClick }: BubbleCardProps) => {
-    // 根據 ID 產生穩定的隨機寬度 (260px ~ 420px)
-    const randomWidth = React.useMemo(() => {
-        if (!bubble.id) return 300;
+    // 根據 ID 產生穩定的隨機視覺參數
+    const { width, marginRight, translateY } = React.useMemo(() => {
+        if (!bubble.id) return { width: 300, marginRight: 20, translateY: 0 };
         const idStr = String(bubble.id);
         const seed = idStr.split("").reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0);
-        return 260 + (seed % 160);
+
+        return {
+            width: 260 + (seed % 140),          // 寬度: 260px ~ 400px
+            marginRight: 80 + (seed % 240),     // 右邊距: 80px ~ 320px (極大間距變異)
+            translateY: -80 + (seed % 240)      // 垂直偏移: -80px ~ +160px (極大垂直浮動)
+        };
     }, [bubble.id]);
 
     return (
         <div
             onClick={onClick}
-            style={{ width: `${randomWidth}px` }}
+            style={{
+                width: `${width}px`,
+                marginRight: `${marginRight}px`,
+                transform: `translateY(${translateY}px)`
+            }}
             className="shrink-0 h-[110px] relative bg-blue-900/30 backdrop-blur-md border border-white/10 rounded-xl p-4 hover:bg-blue-800/50 hover:scale-[1.02] transition-all shadow-lg cursor-pointer flex flex-col justify-between group overflow-hidden"
         >
             {/* 裝飾：左側光條 */}
@@ -183,25 +192,26 @@ const LobbyView = ({ bubbles, onSend, isUnlocked = false }: LobbyViewProps) => {
         <div className="w-full h-full bg-transparent overflow-hidden relative font-sans">
             <div className={`w-full h-full flex flex-col transition-all duration-700 ${!isUnlocked ? "blur-2xl scale-105 opacity-30 select-none pointer-events-none" : "blur-0 scale-100 opacity-100"}`}>
 
-                {/* Header */}
-                <div className="fixed top-0 left-0 right-0 z-40 bg-blue-950/40 backdrop-blur-md px-6 py-4 border-b border-white/5 pointer-events-auto">
-                    <div className="flex items-center justify-between">
-                        <h1 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
-                            <Waves className="text-blue-400" size={18} />
-                            意識大廳
-                        </h1>
-                        <button
-                            onClick={() => setIsNewBubbleOpen(true)}
-                            className="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-400 text-white rounded-full text-[10px] font-bold transition-all shadow-lg shadow-blue-500/20 active:scale-95"
-                        >
-                            <Plus size={12} />
-                            發起思考
-                        </button>
-                    </div>
+                {/* Header - Simplified */}
+                <div className="relative flex items-center justify-center h-16 px-6 z-40 bg-blue-950/40 backdrop-blur-md border-b border-white/5 pointer-events-auto shrink-0">
+                    {/* Centered Title */}
+                    <h1 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
+                        <Waves className="text-blue-400" size={18} />
+                        意識大廳
+                    </h1>
+
+                    {/* Right Action Button */}
+                    <button
+                        onClick={() => setIsNewBubbleOpen(true)}
+                        className="absolute right-6 flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-400 text-white rounded-full text-[10px] font-bold transition-all shadow-lg shadow-blue-500/20 active:scale-95"
+                    >
+                        <Plus size={12} />
+                        發起思考
+                    </button>
                 </div>
 
-                {/* Content - Netflix Style Rows */}
-                <div className="pt-24 pb-32 space-y-8 overflow-y-auto h-full">
+                {/* Scrollable Content */}
+                <div className="flex-1 overflow-y-auto no-scrollbar pb-32 space-y-8">
                     {TOPIC_OPTIONS.map(topic => {
                         const topicBubbles = groupedBubbles[topic];
                         if (!topicBubbles || topicBubbles.length === 0) return null;
