@@ -139,7 +139,7 @@ const AuthView = () => {
                 {/* 登入按鈕 */}
                 <button
                     onClick={() => setStage("login")}
-                    className="w-full bg-blue-900/30 backdrop-blur-xl hover:bg-blue-900/40 text-gray-50 py-4 rounded-2xl border border-white/10 transition-all font-medium text-base shadow-lg hover:border-white/20 active:scale-[0.98]"
+                    className="w-full bg-blue-900/30 backdrop-blur-xl hover:bg-blue-900/40 text-gray-50 py-4 rounded-2xl border border-white/10 transition-all font-medium text-base shadow-lg hover:border-white/20 active:scale-[0.98] touch-manipulation"
                 >
                     登入
                 </button>
@@ -147,7 +147,7 @@ const AuthView = () => {
                 {/* 註冊按鈕 */}
                 <button
                     onClick={() => setStage("signup")}
-                    className="w-full bg-blue-900/30 backdrop-blur-xl hover:bg-blue-900/40 text-gray-50 py-4 rounded-2xl border border-white/10 transition-all font-medium text-base shadow-lg hover:border-white/20 active:scale-[0.98]"
+                    className="w-full bg-blue-900/30 backdrop-blur-xl hover:bg-blue-900/40 text-gray-50 py-4 rounded-2xl border border-white/10 transition-all font-medium text-base shadow-lg hover:border-white/20 active:scale-[0.98] touch-manipulation"
                 >
                     註冊
                 </button>
@@ -156,7 +156,7 @@ const AuthView = () => {
                 <button
                     onClick={handleAnonymousLogin}
                     disabled={isLoading}
-                    className="w-full bg-transparent hover:bg-blue-300/5 text-blue-300/80 py-3 rounded-2xl border border-dashed border-blue-300/20 transition-all flex items-center justify-center gap-2 text-sm font-medium disabled:opacity-50"
+                    className="w-full bg-transparent hover:bg-blue-300/5 text-blue-300/80 py-3 rounded-2xl border border-dashed border-blue-300/20 transition-all flex items-center justify-center gap-2 text-sm font-medium disabled:opacity-50 touch-manipulation"
                 >
                     <Ghost size={16} className="text-blue-300/60" />
                     先以訪客身分逛逛
@@ -237,7 +237,7 @@ const AuthView = () => {
                 <button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full bg-linear-to-r from-blue-500 to-indigo-500 hover:from-blue-400 hover:to-indigo-400 text-gray-50 font-bold py-3 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-blue-500/20 active:scale-[0.98]"
+                    className="w-full bg-linear-to-r from-blue-500 to-indigo-500 hover:from-blue-400 hover:to-indigo-400 text-gray-50 font-bold py-3 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-blue-500/20 active:scale-[0.98] touch-manipulation"
                 >
                     {isLoading ? (
                         <div className="w-5 h-5 border-2 border-gray-50/30 border-t-gray-50 rounded-full animate-spin" />
@@ -262,7 +262,7 @@ const AuthView = () => {
                     type="button"
                     onClick={handleGoogleLogin}
                     disabled={isLoading}
-                    className="w-full bg-gray-50/5 hover:bg-gray-50/10 text-gray-50 py-2.5 rounded-xl border border-gray-50/10 transition-all flex items-center justify-center gap-2 text-sm font-medium disabled:opacity-50 hover:border-gray-50/20 active:bg-gray-50/15 shadow-sm"
+                    className="w-full bg-gray-50/5 hover:bg-gray-50/10 text-gray-50 py-2.5 rounded-xl border border-gray-50/10 transition-all flex items-center justify-center gap-2 text-sm font-medium disabled:opacity-50 hover:border-gray-50/20 active:bg-gray-50/15 shadow-sm touch-manipulation"
                 >
                     <Globe size={14} className="text-blue-300" />
                     Google 登入探索
@@ -272,7 +272,7 @@ const AuthView = () => {
                     type="button"
                     onClick={handleAnonymousLogin}
                     disabled={isLoading}
-                    className="w-full bg-transparent hover:bg-blue-300/5 text-blue-300/80 py-2.5 rounded-xl border border-dashed border-blue-300/20 transition-all flex items-center justify-center gap-2 text-xs font-medium disabled:opacity-50"
+                    className="w-full bg-transparent hover:bg-blue-300/5 text-blue-300/80 py-2.5 rounded-xl border border-dashed border-blue-300/20 transition-all flex items-center justify-center gap-2 text-xs font-medium disabled:opacity-50 touch-manipulation"
                 >
                     <Ghost size={14} className="text-blue-300/60" />
                     先以訪客身分逛逛

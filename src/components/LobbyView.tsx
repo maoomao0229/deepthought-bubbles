@@ -353,7 +353,7 @@ const LobbyView = ({ bubbles, onSend, isUnlocked = false }: LobbyViewProps) => {
                 >
                     <button
                         onClick={() => setIsNewBubbleOpen(true)}
-                        className="pointer-events-auto flex items-center gap-2 px-6 py-2.5 bg-blue-500/80 hover:bg-blue-400 text-white rounded-full text-sm font-bold shadow-[0_0_20px_rgba(59,130,246,0.5)] backdrop-blur-md transition-all hover:scale-105 active:scale-95 border border-white/20"
+                        className="pointer-events-auto flex items-center gap-2 px-6 py-2.5 bg-blue-500/80 hover:bg-blue-400 text-white rounded-full text-sm font-bold shadow-[0_0_20px_rgba(59,130,246,0.5)] backdrop-blur-md transition-all hover:scale-105 active:scale-95 border border-white/20 touch-manipulation"
                     >
                         <Plus size={16} />
                         發起思考
@@ -544,7 +544,7 @@ const LobbyView = ({ bubbles, onSend, isUnlocked = false }: LobbyViewProps) => {
                                 <button
                                     onClick={handleSendReply}
                                     disabled={!replyContent.trim() || isSubmitting}
-                                    className={`h-12 w-12 flex items-center justify-center rounded-xl transition-all ${replyContent.trim() && !isSubmitting
+                                    className={`h-12 w-12 flex items-center justify-center rounded-xl transition-all touch-manipulation ${replyContent.trim() && !isSubmitting
                                         ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/20 active:scale-95"
                                         : "bg-white/5 text-blue-400/20 cursor-not-allowed"
                                         }`}
@@ -607,6 +607,23 @@ const LobbyView = ({ bubbles, onSend, isUnlocked = false }: LobbyViewProps) => {
                             <textarea
                                 value={replyContent}
                                 onChange={(e) => setReplyContent(e.target.value)}
+                                onKeyDown={async (e) => {
+                                    // [Mobile/Desktop] Ctrl+Enter 鍵送出支援 (防止 IME composing 時誤觸)
+                                    if (e.nativeEvent.isComposing) return;
+                                    if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+                                        e.preventDefault();
+                                        const topicInput = document.getElementById("lobby-topic") as HTMLInputElement;
+                                        const titleInput = document.getElementById("lobby-title") as HTMLInputElement;
+                                        const topicValue = topicInput?.value || "";
+                                        const titleValue = titleInput?.value || "";
+                                        if (!replyContent.trim() || !topicValue.trim() || !titleValue.trim() || isSubmitting) return;
+                                        setIsSubmitting(true);
+                                        await onSend(replyContent, null, topicValue, titleValue);
+                                        setReplyContent("");
+                                        setIsSubmitting(false);
+                                        setIsNewBubbleOpen(false);
+                                    }
+                                }}
                                 placeholder="捕捉你的意識流..."
                                 className="w-full h-40 bg-blue-950/30 rounded-2xl p-5 text-gray-50 placeholder-blue-400/30 resize-none focus:outline-none focus:ring-1 focus:ring-blue-500/50 border border-white/10 leading-relaxed transition-all"
                                 autoFocus
@@ -626,8 +643,8 @@ const LobbyView = ({ bubbles, onSend, isUnlocked = false }: LobbyViewProps) => {
                                     setIsNewBubbleOpen(false);
                                 }}
                                 disabled={!replyContent.trim() || isSubmitting}
-                                className={`w-full py-4 rounded-full text-base font-bold tracking-widest transition-all shadow-xl shadow-blue-500/10 ${replyContent.trim() && !isSubmitting
-                                    ? "bg-linear-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white transform hover:scale-[1.02]"
+                                className={`w-full py-4 rounded-full text-base font-bold tracking-widest transition-all shadow-xl shadow-blue-500/10 touch-manipulation min-h-[56px] ${replyContent.trim() && !isSubmitting
+                                    ? "bg-linear-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white transform hover:scale-[1.02] active:scale-[0.98]"
                                     : "bg-blue-800/50 text-blue-500/50 cursor-not-allowed border border-white/5"
                                     }`}
                             >

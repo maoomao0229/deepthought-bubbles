@@ -377,6 +377,14 @@ const DiveModal = ({
             <textarea
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
+              onKeyDown={(e) => {
+                // [Mobile/Desktop] Enter 鍵送出支援 (防止 IME composing 時誤觸)
+                if (e.nativeEvent.isComposing) return;
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSubmit();
+                }
+              }}
               placeholder={isUnlocked ? "輸入你的見解..." : "回應此觀點以解鎖更多回聲..."}
               className="flex-1 bg-transparent border-none focus:ring-0 text-base text-blue-50 placeholder-blue-400/20 p-1 min-h-[44px] max-h-32 resize-none leading-relaxed"
               rows={1}
@@ -385,7 +393,7 @@ const DiveModal = ({
             <button
               onClick={handleSubmit}
               disabled={!inputValue.trim() || isSubmitting}
-              className={`p-3 rounded-xl transition-all min-w-[48px] min-h-[48px] flex items-center justify-center ${inputValue.trim() && !isSubmitting
+              className={`p-3 rounded-xl transition-all min-w-[48px] min-h-[48px] flex items-center justify-center touch-manipulation ${inputValue.trim() && !isSubmitting
                 ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/20 active:scale-95"
                 : "bg-white/5 text-blue-400/20 cursor-not-allowed"
                 }`}
@@ -483,6 +491,14 @@ const NewBubbleModal = ({ onClose, onSend }: { onClose: () => void; onSend: (con
                 <textarea
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
+                  onKeyDown={(e) => {
+                    // [Mobile/Desktop] Enter 鍵送出支援 (防止 IME composing 時誤觸)
+                    if (e.nativeEvent.isComposing) return;
+                    if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+                      e.preventDefault();
+                      handleSubmit();
+                    }
+                  }}
                   placeholder="在此刻，捕捉你的意識流..."
                   className="w-full h-32 bg-blue-950/30 rounded-2xl p-4 text-gray-50 placeholder-blue-400/20 resize-none focus:outline-none focus:ring-1 focus:ring-blue-500/30 border border-white/5 leading-relaxed transition-all"
                 />
@@ -496,8 +512,8 @@ const NewBubbleModal = ({ onClose, onSend }: { onClose: () => void; onSend: (con
           <button
             onClick={handleSubmit}
             disabled={!content.trim() || !topic.trim() || !title.trim() || isSubmitting}
-            className={`w-full py-4 rounded-full text-base font-bold tracking-widest transition-all shadow-xl ${content.trim() && topic.trim() && title.trim() && !isSubmitting
-              ? "bg-linear-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white transform hover:scale-[1.02]"
+            className={`w-full py-4 rounded-full text-base font-bold tracking-widest transition-all shadow-xl touch-manipulation min-h-[56px] ${content.trim() && topic.trim() && title.trim() && !isSubmitting
+              ? "bg-linear-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white transform hover:scale-[1.02] active:scale-[0.98]"
               : "bg-blue-800/50 text-blue-500/50 cursor-not-allowed border border-white/5"
               }`}
           >
