@@ -288,7 +288,7 @@ const LobbyView = ({ bubbles, onSend, isUnlocked = false }: LobbyViewProps) => {
         const fetchReplies = async () => {
             const { data, error } = await supabase
                 .from("bubbles")
-                .select("*")
+                .select("*, profiles(username, avatar_url, level)")
                 .eq("parent_id", selectedBubble.id)
                 .order("created_at", { ascending: true });
             if (!error && data) setReplies(data);
@@ -305,7 +305,7 @@ const LobbyView = ({ bubbles, onSend, isUnlocked = false }: LobbyViewProps) => {
         // 重新載入回覆
         const { data } = await supabase
             .from("bubbles")
-            .select("*")
+            .select("*, profiles(username, avatar_url, level)")
             .eq("parent_id", selectedBubble.id)
             .order("created_at", { ascending: true });
         if (data) setReplies(data);
@@ -472,8 +472,18 @@ const LobbyView = ({ bubbles, onSend, isUnlocked = false }: LobbyViewProps) => {
                                             {/* Anonymous UI: User info toggled by state */}
                                             {isIdentityVisible && (
                                                 <div className="flex items-center gap-2 mt-2 animate-fade-in">
-                                                    <div className="w-4 h-4 rounded-full bg-indigo-600 flex items-center justify-center text-[6px] text-white">潛</div>
-                                                    <span className="text-[8px] text-indigo-300">潛水員</span>
+                                                    {/* Avatar */}
+                                                    <div className="w-4 h-4 rounded-full bg-indigo-600 flex items-center justify-center overflow-hidden border border-white/20">
+                                                        {reply.profiles?.avatar_url ? (
+                                                            <img src={reply.profiles.avatar_url} alt="Av" className="w-full h-full object-cover" />
+                                                        ) : (
+                                                            <span className="text-[6px] text-white">潛</span>
+                                                        )}
+                                                    </div>
+                                                    {/* Username */}
+                                                    <span className="text-[8px] text-indigo-300">
+                                                        {reply.profiles?.username || '潛水員'}
+                                                    </span>
                                                 </div>
                                             )}
                                         </div>

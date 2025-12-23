@@ -191,7 +191,7 @@ const DiveModal = ({
   const fetchReplies = async () => {
     const { data, error } = await supabase
       .from("bubbles")
-      .select("*")
+      .select("*, profiles(username, avatar_url, level)")
       .eq("parent_id", topic.id)
       .order("created_at", { ascending: true });
 
@@ -306,6 +306,9 @@ const DiveModal = ({
 
                         <div className="flex justify-between items-center mt-2">
                           <span className="text-[9px] text-blue-400/30">
+                            <span className="mr-2 text-blue-300 font-bold">
+                              {reply.profiles?.username || 'Unknown Diver'}
+                            </span>
                             {new Date(reply.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                           </span>
                           {isIdentityVisible && (

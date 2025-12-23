@@ -89,7 +89,7 @@ export default function Home() {
     // 1. 取得所有主氣泡 (給 Lobby)，排除留言
     const { data: allData, error } = await supabase
       .from("bubbles")
-      .select("*")
+      .select("*, profiles(username, avatar_url, level)")
       .is("parent_id", null) // 只取主氣泡，排除留言
       .order("created_at", { ascending: false });
 

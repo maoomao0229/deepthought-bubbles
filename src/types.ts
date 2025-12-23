@@ -34,3 +34,18 @@ export interface UserLevel {
     levelName: string; // Sea Dog, Bottlenose Dolphin, etc.
     nextLevelXP: number;
 }
+
+export interface Bubble {
+    id: string;
+    user_id: string;
+    content: string;
+    created_at: string;
+    topic?: string;
+    title?: string;
+    parent_id?: string | null;
+    profiles?: {
+        username: string;
+        avatar_url: string;
+        level: number;
+    } | null;
+}
