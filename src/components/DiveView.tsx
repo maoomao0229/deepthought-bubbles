@@ -200,11 +200,17 @@ const DiveModal = ({
       const repliesWithProfiles = await Promise.all(
         data.map(async (reply) => {
           if (!reply.user_id) return reply;
-          const { data: profile } = await supabase
+          const { data: profile, error } = await supabase
             .from('profiles')
             .select('username, avatar_url, level')
             .eq('id', reply.user_id)
             .single();
+
+          // 加入這行除錯：
+          if (error || !profile) {
+            console.log('找不到 Profile:', reply.user_id, error);
+          }
+
           return { ...reply, profiles: profile };
         })
       );
