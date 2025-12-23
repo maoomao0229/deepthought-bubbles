@@ -391,9 +391,15 @@ const DiveModal = ({
               style={{ fontSize: '16px' }} // 防止 iOS 自動縮放
             />
             <button
+              type="button"
               onClick={handleSubmit}
+              onTouchEnd={(e) => {
+                // [iOS Fix] iOS Safari 有時 onClick 不觸發，使用 onTouchEnd 作為備援
+                e.preventDefault();
+                handleSubmit();
+              }}
               disabled={!inputValue.trim() || isSubmitting}
-              className={`p-3 rounded-xl transition-all min-w-[48px] min-h-[48px] flex items-center justify-center touch-manipulation ${inputValue.trim() && !isSubmitting
+              className={`p-3 rounded-xl transition-all min-w-[48px] min-h-[48px] flex items-center justify-center touch-manipulation cursor-pointer ${inputValue.trim() && !isSubmitting
                 ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/20 active:scale-95"
                 : "bg-white/5 text-blue-400/20 cursor-not-allowed"
                 }`}
@@ -441,7 +447,10 @@ const NewBubbleModal = ({ onClose, onSend }: { onClose: () => void; onSend: (con
   return (
     <div className="fixed inset-0 z-2000 flex items-center justify-center px-4">
       <div className="absolute inset-0 bg-blue-950/80 backdrop-blur-xl animate-fade-in" onClick={onClose} />
-      <div className="relative w-full max-w-lg bg-blue-900/90 backdrop-blur-2xl border border-white/10 shadow-2xl rounded-4xl p-8 flex flex-col items-center animate-scale-up">
+      <div
+        className="relative w-full max-w-lg bg-blue-900/90 backdrop-blur-2xl border border-white/10 shadow-2xl rounded-4xl p-8 flex flex-col items-center animate-scale-up pointer-events-auto"
+        onTouchStart={(e) => e.stopPropagation()}
+      >
         <button onClick={onClose} className="absolute top-6 right-6 p-2 rounded-full hover:bg-white/10 text-blue-200">
           <X size={24} />
         </button>
@@ -510,9 +519,15 @@ const NewBubbleModal = ({ onClose, onSend }: { onClose: () => void; onSend: (con
           </div>
 
           <button
+            type="button"
             onClick={handleSubmit}
+            onTouchEnd={(e) => {
+              // [iOS Fix] iOS Safari 有時 onClick 不觸發，使用 onTouchEnd 作為備援
+              e.preventDefault();
+              handleSubmit();
+            }}
             disabled={!content.trim() || !topic.trim() || !title.trim() || isSubmitting}
-            className={`w-full py-4 rounded-full text-base font-bold tracking-widest transition-all shadow-xl touch-manipulation min-h-[56px] ${content.trim() && topic.trim() && title.trim() && !isSubmitting
+            className={`w-full py-4 rounded-full text-base font-bold tracking-widest transition-all shadow-xl touch-manipulation min-h-[56px] cursor-pointer select-none ${content.trim() && topic.trim() && title.trim() && !isSubmitting
               ? "bg-linear-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white transform hover:scale-[1.02] active:scale-[0.98]"
               : "bg-blue-800/50 text-blue-500/50 cursor-not-allowed border border-white/5"
               }`}

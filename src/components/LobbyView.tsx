@@ -542,9 +542,15 @@ const LobbyView = ({ bubbles, onSend, isUnlocked = false }: LobbyViewProps) => {
                                     style={{ fontSize: '16px' }} // Prevent iOS zoom
                                 />
                                 <button
+                                    type="button"
                                     onClick={handleSendReply}
+                                    onTouchEnd={(e) => {
+                                        // [iOS Fix] iOS Safari 有時 onClick 不觸發，使用 onTouchEnd 作為備援
+                                        e.preventDefault();
+                                        handleSendReply();
+                                    }}
                                     disabled={!replyContent.trim() || isSubmitting}
-                                    className={`h-12 w-12 flex items-center justify-center rounded-xl transition-all touch-manipulation ${replyContent.trim() && !isSubmitting
+                                    className={`h-12 w-12 flex items-center justify-center rounded-xl transition-all touch-manipulation cursor-pointer ${replyContent.trim() && !isSubmitting
                                         ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/20 active:scale-95"
                                         : "bg-white/5 text-blue-400/20 cursor-not-allowed"
                                         }`}
@@ -562,8 +568,8 @@ const LobbyView = ({ bubbles, onSend, isUnlocked = false }: LobbyViewProps) => {
                 <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
                     <div className="absolute inset-0 bg-blue-950/80 backdrop-blur-md" onClick={() => setIsNewBubbleOpen(false)} />
                     <div
-                        className="relative w-full max-w-lg bg-blue-900/90 backdrop-blur-2xl border border-white/10 shadow-2xl rounded-4xl p-8 pb-10 flex flex-col items-center animate-scale-up"
-                        onTouchStart={(e) => e.stopPropagation()} // [iOS Fix] 阻擋觸控事件穿透
+                        className="relative w-full max-w-lg bg-blue-900/90 backdrop-blur-2xl border border-white/10 shadow-2xl rounded-4xl p-8 pb-10 flex flex-col items-center animate-scale-up pointer-events-auto"
+                        onTouchStart={(e) => e.stopPropagation()}
                     >
                         <button onClick={() => setIsNewBubbleOpen(false)} className="absolute top-6 right-6 p-2 rounded-full hover:bg-white/10 text-blue-200">
                             <X size={24} />
@@ -629,6 +635,7 @@ const LobbyView = ({ bubbles, onSend, isUnlocked = false }: LobbyViewProps) => {
                                 autoFocus
                             />
                             <button
+                                type="button"
                                 onClick={async () => {
                                     const topicInput = document.getElementById("lobby-topic") as HTMLInputElement;
                                     const titleInput = document.getElementById("lobby-title") as HTMLInputElement;
@@ -642,8 +649,23 @@ const LobbyView = ({ bubbles, onSend, isUnlocked = false }: LobbyViewProps) => {
                                     setIsSubmitting(false);
                                     setIsNewBubbleOpen(false);
                                 }}
+                                onTouchEnd={async (e) => {
+                                    // [iOS Fix] iOS Safari 有時 onClick 不觸發，使用 onTouchEnd 作為備援
+                                    e.preventDefault();
+                                    const topicInput = document.getElementById("lobby-topic") as HTMLInputElement;
+                                    const titleInput = document.getElementById("lobby-title") as HTMLInputElement;
+                                    const topicValue = topicInput?.value || "";
+                                    const titleValue = titleInput?.value || "";
+
+                                    if (!replyContent.trim() || !topicValue.trim() || !titleValue.trim() || isSubmitting) return;
+                                    setIsSubmitting(true);
+                                    await onSend(replyContent, null, topicValue, titleValue);
+                                    setReplyContent("");
+                                    setIsSubmitting(false);
+                                    setIsNewBubbleOpen(false);
+                                }}
                                 disabled={!replyContent.trim() || isSubmitting}
-                                className={`w-full py-4 rounded-full text-base font-bold tracking-widest transition-all shadow-xl shadow-blue-500/10 touch-manipulation min-h-[56px] ${replyContent.trim() && !isSubmitting
+                                className={`w-full py-4 rounded-full text-base font-bold tracking-widest transition-all shadow-xl shadow-blue-500/10 touch-manipulation min-h-[56px] cursor-pointer select-none ${replyContent.trim() && !isSubmitting
                                     ? "bg-linear-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white transform hover:scale-[1.02] active:scale-[0.98]"
                                     : "bg-blue-800/50 text-blue-500/50 cursor-not-allowed border border-white/5"
                                     }`}

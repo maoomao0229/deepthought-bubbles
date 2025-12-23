@@ -1,5 +1,6 @@
 # 迭代紀錄 (Iteration Log)
 
+- [2025/12/23 13:36 v1.05] 檔案: `DiveView.tsx`, `LobbyView.tsx` | 內容: iOS Safari 按鈕觸控修復：1. 所有發送按鈕添加 `onTouchEnd` 事件作為 `onClick` 備援觸發；2. Modal 容器添加 `pointer-events-auto` 確保觸控事件正確傳遞；3. 按鈕添加 `type="button"`、`cursor-pointer`、`select-none` 讓 iOS 正確識別可點擊元素 | 原因: 解決 iOS 使用者回報的「釋放氣泡」按鈕無法觸發問題
 - [2025/12/23 10:00 v1.04] 檔案: `AuthView.tsx`, `DiveView.tsx`, `LobbyView.tsx` | 內容: 手機端按鈕觸控優化：1. 為所有登入按鈕 (登入/註冊/訪客/Google) 添加 `touch-manipulation` 消除 300ms 點擊延遲；2. 「釋放氣泡」按鈕增加 `min-h-[56px]` 與 `active:scale-[0.98]` 提升觸控區域和回饋；3. DiveModal 回覆輸入框支援 Enter 鍵送出；4. NewBubbleModal 內文支援 Ctrl+Enter 送出 | 原因: 解決使用者回報的 Android 手機端「釋放氣泡」按鈕點選不到的問題，並提供鍵盤快捷鍵支援
 - [2025/12/23 01:45 v1.03] 檔案: `LobbyView.tsx`, `DiveView.tsx` | 內容: UI 細節優化：1. 將贊助圖示 (Shrimp/Fish) 移至貼文內容區與收藏圖示並排；2. 實作動態身份切換按鈕 (Eye/EyeOff)，點擊可即時切換留言區的匿名/公開狀態 | 原因: 優化視覺動線，提供更直覺的隱私控制體驗
 - [2025/12/23 01:35 v1.02] 檔案: `LobbyView.tsx`, `DiveView.tsx` | 內容: 實作留言區深度排序與介面優化：1. 留言依字數排序 (Surface/Midzone/Depth)；2. 匿名化處理 (隱藏頭像/名稱)；3. 新增 UI 預留圖示 (收藏 Bookmark、贊助 Shrimp、身份切換 Toggle) | 原因: 配合新版互動設計需求，強調內容本身的深度並預留未來功能入口
