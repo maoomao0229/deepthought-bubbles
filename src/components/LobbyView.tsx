@@ -449,9 +449,9 @@ const LobbyView = ({ bubbles, onSend, isUnlocked = false }: LobbyViewProps) => {
                                             {isIdentityVisible ? "顯示身份" : "匿名"}
                                         </span>
                                         {isIdentityVisible ? (
-                                            <Eye size={20} className="text-blue-400" />
+                                            <img src="/whale.png" alt="顯示身份" className="w-5 h-5 object-contain opacity-80" />
                                         ) : (
-                                            <EyeOff size={20} className="text-blue-400/30" />
+                                            <img src="/tail-of-whale.png" alt="匿名" className="w-5 h-5 object-contain opacity-50" />
                                         )}
                                     </button>
                                 </div>
