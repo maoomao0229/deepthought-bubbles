@@ -288,10 +288,25 @@ const LobbyView = ({ bubbles, onSend, isUnlocked = false }: LobbyViewProps) => {
         const fetchReplies = async () => {
             const { data, error } = await supabase
                 .from("bubbles")
-                .select("*, profiles(username, avatar_url, level)")
+                .select("*")
                 .eq("parent_id", selectedBubble.id)
                 .order("created_at", { ascending: true });
-            if (!error && data) setReplies(data);
+
+            if (!error && data) {
+                // [Fix] Client-side join
+                const repliesWithProfiles = await Promise.all(
+                    data.map(async (reply) => {
+                        if (!reply.user_id) return reply;
+                        const { data: profile } = await supabase
+                            .from('profiles')
+                            .select('username, avatar_url, level')
+                            .eq('id', reply.user_id)
+                            .single();
+                        return { ...reply, profiles: profile };
+                    })
+                );
+                setReplies(repliesWithProfiles);
+            }
         };
         fetchReplies();
     }, [selectedBubble]);
@@ -305,10 +320,25 @@ const LobbyView = ({ bubbles, onSend, isUnlocked = false }: LobbyViewProps) => {
         // 重新載入回覆
         const { data } = await supabase
             .from("bubbles")
-            .select("*, profiles(username, avatar_url, level)")
+            .select("*")
             .eq("parent_id", selectedBubble.id)
             .order("created_at", { ascending: true });
-        if (data) setReplies(data);
+
+        if (data) {
+            // [Fix] Client-side join for new replies
+            const repliesWithProfiles = await Promise.all(
+                data.map(async (reply) => {
+                    if (!reply.user_id) return reply;
+                    const { data: profile } = await supabase
+                        .from('profiles')
+                        .select('username, avatar_url, level')
+                        .eq('id', reply.user_id)
+                        .single();
+                    return { ...reply, profiles: profile };
+                })
+            );
+            setReplies(repliesWithProfiles);
+        }
         setIsSubmitting(false);
     };
 

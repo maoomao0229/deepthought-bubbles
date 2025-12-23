@@ -89,7 +89,7 @@ export default function Home() {
     // 1. 取得所有主氣泡 (給 Lobby)，排除留言
     const { data: allData, error } = await supabase
       .from("bubbles")
-      .select("*, profiles(username, avatar_url, level)")
+      .select("*")
       .is("parent_id", null) // 只取主氣泡，排除留言
       .order("created_at", { ascending: false });
 
@@ -97,7 +97,21 @@ export default function Home() {
       console.error("Error fetching bubbles:", error);
       return;
     }
-    setAllBubbles(allData || []);
+
+    // [Fix] Client-side join for profiles to avoid missing FK relationship errors
+    const bubblesWithProfiles = await Promise.all(
+      (allData || []).map(async (bubble) => {
+        if (!bubble.user_id) return bubble;
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('username, avatar_url, level')
+          .eq('id', bubble.user_id)
+          .single();
+        return { ...bubble, profiles: profile };
+      })
+    );
+
+    setAllBubbles(bubblesWithProfiles);
 
     // 2. 準備 DiveView 資料 (包含部分隨機性)
     if (allData) {

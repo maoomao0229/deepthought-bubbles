@@ -191,11 +191,25 @@ const DiveModal = ({
   const fetchReplies = async () => {
     const { data, error } = await supabase
       .from("bubbles")
-      .select("*, profiles(username, avatar_url, level)")
+      .select("*")
       .eq("parent_id", topic.id)
       .order("created_at", { ascending: true });
 
-    if (!error) setReplies(data || []);
+    if (!error && data) {
+      // [Fix] Client-side join
+      const repliesWithProfiles = await Promise.all(
+        data.map(async (reply) => {
+          if (!reply.user_id) return reply;
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('username, avatar_url, level')
+            .eq('id', reply.user_id)
+            .single();
+          return { ...reply, profiles: profile };
+        })
+      );
+      setReplies(repliesWithProfiles);
+    }
   };
 
   const handleSubmit = async () => {
